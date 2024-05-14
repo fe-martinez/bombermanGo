@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -22,12 +21,14 @@ type Position struct {
 type Player struct {
 	id string
 	//position Position no anda el juego si uso esto xd lol
-	X float32
-	Y float32
+	X             float32
+	Y             float32
+	lives         int8
+	maxBombs      int8
+	bombQualities BombQualities
 }
 
 func initGame(gameMap Map) Game {
-
 	game := Game{
 		Players: make([]Player, 0),
 		GameMap: gameMap,
@@ -42,6 +43,7 @@ func createPlayer(game *Game, playerId string) {
 		player.id = playerId
 		player.X = float32(rand.Intn(game.GameMap.size))
 		player.Y = float32(rand.Intn(game.GameMap.size))
+		player.lives = 6
 		if !checkCollision(player.X, player.Y, *game) {
 			break
 		}
@@ -76,7 +78,6 @@ func placeBomb(position Position, game *Game) {
 		Timer: BOMBTIME,
 	}
 	game.GameMap.Bombs = append(game.GameMap.Bombs, bomb)
-	fmt.Println("Bomb placed at", position)
 }
 
 func movePlayer(game *Game, direction string, playerId string) {
@@ -114,6 +115,21 @@ func checkCollision(x, y float32, game Game) bool {
 			return true
 		}
 	}
+
+	//Chequear si esto está bien please
+	for _, bomb := range game.GameMap.Bombs {
+		bombRect := rl.NewRectangle(bomb.X*50, bomb.Y*50, 50, 50)
+		if rl.CheckCollisionRecs(playerRect, bombRect) {
+			return true
+		}
+	}
+
+	// for _, enemy := range game.GameMap.Enemies {
+	// 	enemyRect := rl.NewRectangle(enemy.X*50, enemy.Y*50, 50, 50)
+	// 	if rl.CheckCollisionRecs(playerRect, enemyRect) {
+	// 		return true
+	// 	}
+	// }
 
 	return false
 }
