@@ -39,6 +39,18 @@ func createGame() Game {
 	return game
 }
 
+func handleConnections(listener net.Listener, game *Game) {
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("Error accepting connection:", err)
+			continue
+		}
+
+		go handleConnection(conn, game)
+	}
+}
+
 func startServer() {
 	informUser()
 
@@ -48,23 +60,15 @@ func startServer() {
 
 	game := createGame()
 
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			fmt.Println("Error accepting connection:", err)
-			continue
-		}
-
-		go handleConnection(conn, &game)
-	}
+	handleConnections(listener, &game)
 }
 
-func newPlayer(game *Game, playerId string) string {
+func createNewPlayer(game *Game, playerId string) bool {
 	if len(game.Players) < 4 {
 		createPlayer(game, playerId)
-		return createRandomUid()
+		return true
 	}
-	return ""
+	return false
 }
 
 func move(msg *Message, game *Game) {
@@ -104,18 +108,7 @@ func createRandomUid() string {
 	return id.String()
 }
 
-func handleConnection(conn net.Conn, game *Game) {
-	defer conn.Close()
-	// When a player connects, we first return his ID.
-	playerID := createRandomUid()
-	result := newPlayer(game, playerID)
-	if result == "" {
-		fmt.Println("Game is full")
-		return
-	}
-	encoder := json.NewEncoder(conn)
-	encoder.Encode(playerID)
-
+func handleMessages(conn net.Conn, game *Game) {
 	decoder := json.NewDecoder(conn)
 	for {
 		var msg Message
@@ -127,5 +120,19 @@ func handleConnection(conn net.Conn, game *Game) {
 		fmt.Println(game.Players)
 		handleMessage(conn, &msg, game)
 	}
+}
+
+func handleConnection(conn net.Conn, game *Game) {
+	defer conn.Close()
+	playerID := createRandomUid()
+	created := createNewPlayer(game, playerID)
+	if !created {
+		fmt.Println("Game is full")
+		return
+	}
+	encoder := json.NewEncoder(conn)
+	encoder.Encode(playerID)
+
+	handleMessages(conn, game)
 
 }
