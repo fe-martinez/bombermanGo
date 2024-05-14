@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -20,7 +21,7 @@ type Position struct {
 
 type Player struct {
 	id string
-	//position Position
+	//position Position no anda el juego si uso esto xd lol
 	X float32
 	Y float32
 }
@@ -34,19 +35,6 @@ func initGame(gameMap Map) Game {
 
 	return game
 }
-
-// func createPlayer(game *Game, playerId string) {
-// 	player := Player{}
-// 	for {
-// 		player.id = playerId
-// 		player.position.X = float32(rand.Intn(game.GameMap.size))
-// 		player.position.Y = float32(rand.Intn(game.GameMap.size))
-// 		if !checkCollision(player.position.X, player.position.Y, *game) {
-// 			break
-// 		}
-// 	}
-// 	game.Players = append(game.Players, player)
-// }
 
 func createPlayer(game *Game, playerId string) {
 	player := Player{}
@@ -70,49 +58,26 @@ func getPlayerPositionInList(game *Game, id string) int {
 	return -1
 }
 
-// func getPlayerPosition(clientID string, game Game) Position {
-// 	for i := range game.Players {
-// 		if game.Players[i].id == clientID {
-// 			return game.Players[i].position
-// 		}
-// 	}
-// 	return Position{}
-// }
+func getPlayerPosition(clientID string, game Game) Position {
+	position := Position{}
+	for i := range game.Players {
+		if game.Players[i].id == clientID {
+			position.X = game.Players[i].X
+			position.Y = game.Players[i].Y
+		}
+	}
+	return position
+}
 
-// func placeBomb(position Position, game *Game) {
-// 	bomb := Bomb{
-// 		X:     position.X,
-// 		Y:     position.Y,
-// 		Timer: BOMBTIME,
-// 	}
-// 	game.GameMap.Bombs = append(game.GameMap.Bombs, bomb)
-// }
-
-// func movePlayer(game *Game, direction string, playerId string) {
-// 	playerPosition := getPlayerPositionInList(game, playerId)
-// 	if playerPosition == -1 {
-// 		return
-// 	}
-
-// 	switch direction {
-// 	case "up":
-// 		if !checkCollision(game.Players[playerPosition].position.X, game.Players[playerPosition].position.Y-0.05, *game) {
-// 			game.Players[playerPosition].position.Y = game.Players[playerPosition].position.Y - 0.05
-// 		}
-// 	case "down":
-// 		if !checkCollision(game.Players[playerPosition].position.X, game.Players[playerPosition].position.Y+0.05, *game) {
-// 			game.Players[playerPosition].position.Y = game.Players[playerPosition].position.Y + 0.05
-// 		}
-// 	case "left":
-// 		if !checkCollision(game.Players[playerPosition].position.X-0.05, game.Players[playerPosition].position.Y, *game) {
-// 			game.Players[playerPosition].position.X = game.Players[playerPosition].position.X - 0.05
-// 		}
-// 	case "right":
-// 		if !checkCollision(game.Players[playerPosition].position.X+0.05, game.Players[playerPosition].position.Y, *game) {
-// 			game.Players[playerPosition].position.X = game.Players[playerPosition].position.X + 0.05
-// 		}
-// 	}
-// }
+func placeBomb(position Position, game *Game) {
+	bomb := Bomb{
+		X:     position.X,
+		Y:     position.Y,
+		Timer: BOMBTIME,
+	}
+	game.GameMap.Bombs = append(game.GameMap.Bombs, bomb)
+	fmt.Println("Bomb placed at", position)
+}
 
 func movePlayer(game *Game, direction string, playerId string) {
 	playerPosition := getPlayerPositionInList(game, playerId)

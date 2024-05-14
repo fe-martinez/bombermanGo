@@ -9,8 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-var id = 0
-
 // Action: conect or move
 // Data: the command (up, down, left, right, bomb, etc)
 type Message struct {
@@ -74,7 +72,8 @@ func handleMessage(conn net.Conn, msg *Message, game *Game) {
 	case "join":
 		json.NewEncoder(conn).Encode(game)
 	case "bomb":
-		fmt.Println("Bomb")
+		position := getPlayerPosition(msg.PlayerID, *game)
+		placeBomb(position, game)
 	case "move":
 		var moveData struct {
 			Direction string
