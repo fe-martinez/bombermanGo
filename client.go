@@ -9,7 +9,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func client() {
+func startClient() {
 	conn, err := net.Dial("tcp", "localhost:8080")
 	if err != nil {
 		fmt.Println("Error connecting to server:", err)
@@ -18,7 +18,7 @@ func client() {
 	defer conn.Close()
 
 	decoder := json.NewDecoder(conn)
-	var clientID int
+	var clientID string
 	err = decoder.Decode(&clientID)
 	if err != nil {
 		log.Fatal(err)
@@ -57,7 +57,19 @@ func client() {
 		drawGame(game)
 		move := handleInput()
 
-		if move == "none" {
+		if move == "bomb" {
+			message := Message{
+				Action:   "bomb",
+				Data:     nil,
+				PlayerID: clientID,
+			}
+
+			err = encoder.Encode(message)
+			if err != nil {
+				fmt.Println("Error encoding message:", err)
+				return
+			}
+		} else if move == "none" {
 			message := Message{
 				Action:   "update",
 				Data:     nil,
@@ -88,20 +100,4 @@ func client() {
 		}
 
 	}
-}
-
-func handleInput() string {
-	if rl.IsKeyDown(rl.KeyW) {
-		return "up"
-	}
-	if rl.IsKeyDown(rl.KeyS) {
-		return "down"
-	}
-	if rl.IsKeyDown(rl.KeyA) {
-		return "left"
-	}
-	if rl.IsKeyDown(rl.KeyD) {
-		return "right"
-	}
-	return "none"
 }

@@ -5,29 +5,50 @@ import (
 	"fmt"
 	"net"
 	"os"
+
+	"github.com/google/uuid"
 )
 
+var id = 0
+
+// Action: conect or move
+// Data: the command (up, down, left, right, bomb, etc)
 type Message struct {
 	Action   string
 	Data     map[string]interface{}
-	PlayerID int
+	PlayerID string
 }
 
 const (
 	serverAddress = "localhost:8080"
 )
 
-func server() {
+func informUser() {
 	fmt.Println("Starting game server at", serverAddress)
+}
 
+func listen() net.Listener {
 	listener, err := net.Listen("tcp", serverAddress)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
 		os.Exit(1)
 	}
+	return listener
+}
+func createGame() Game {
+	gameMap := createMap(15, 16)
+	game := initGame(gameMap)
+	return game
+}
+
+func startServer() {
+	informUser()
+
+	listener := listen()
+
 	defer listener.Close()
 
-	game := initGame(15, 16)
+	game := createGame()
 
 	for {
 		conn, err := listener.Accept()
@@ -40,16 +61,20 @@ func server() {
 	}
 }
 
-func newPlayer(game *Game) int {
-	return createPlayer(game)
+func newPlayer(game *Game, playerId string) string {
+	if len(game.Players) < 4 {
+		createPlayer(game, playerId)
+		return createRandomUid()
+	}
+	return ""
 }
 
 func handleMessage(conn net.Conn, msg *Message, game *Game) {
 	switch msg.Action {
 	case "join":
 		json.NewEncoder(conn).Encode(game)
-	case "leave":
-		//Handle leave
+	case "bomb":
+		fmt.Println("Bomb")
 	case "move":
 		var moveData struct {
 			Direction string
@@ -67,11 +92,23 @@ func handleMessage(conn net.Conn, msg *Message, game *Game) {
 	}
 }
 
+func createRandomUid() string {
+	id, err := uuid.NewRandom()
+	if err != nil {
+		fmt.Println("Error generating UUID: ", err)
+	}
+	return id.String()
+}
+
 func handleConnection(conn net.Conn, game *Game) {
 	defer conn.Close()
-
 	// When a player connects, we first return his ID.
-	playerID := newPlayer(game)
+	playerID := createRandomUid()
+	result := newPlayer(game, playerID)
+	if result == "" {
+		fmt.Println("Game is full")
+		return
+	}
 	encoder := json.NewEncoder(conn)
 	encoder.Encode(playerID)
 

@@ -26,11 +26,11 @@ func main() {
 }
 
 func runClient() {
-	client()
+	startClient()
 	fmt.Println("Running client...")
 }
 
 func runServer() {
-	server()
+	startServer()
 	fmt.Println("Running server...")
 }
