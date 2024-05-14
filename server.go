@@ -67,6 +67,17 @@ func newPlayer(game *Game, playerId string) string {
 	return ""
 }
 
+func move(msg *Message, game *Game) {
+	var moveData struct {
+		Direction string
+	}
+	moveData.Direction = msg.Data["direction"].(string)
+	// fmt.Println(moveData)
+	// fmt.Println("move: ", moveData.Direction)
+
+	movePlayer(game, moveData.Direction, msg.PlayerID)
+}
+
 func handleMessage(conn net.Conn, msg *Message, game *Game) {
 	switch msg.Action {
 	case "join":
@@ -74,15 +85,9 @@ func handleMessage(conn net.Conn, msg *Message, game *Game) {
 	case "bomb":
 		position := getPlayerPosition(msg.PlayerID, *game)
 		placeBomb(position, game)
+		json.NewEncoder(conn).Encode(game)
 	case "move":
-		var moveData struct {
-			Direction string
-		}
-		moveData.Direction = msg.Data["direction"].(string)
-		fmt.Println(moveData)
-		fmt.Println("move: ", moveData.Direction)
-
-		movePlayer(game, moveData.Direction, msg.PlayerID)
+		move(msg, game)
 		json.NewEncoder(conn).Encode(game)
 	case "update":
 		json.NewEncoder(conn).Encode(game)
