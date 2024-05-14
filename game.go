@@ -11,6 +11,7 @@ const BOMBTIME = 3
 type Game struct {
 	Players []Player
 	GameMap Map
+	level   int8
 }
 
 type Position struct {

@@ -36,7 +36,7 @@ type Bomb struct {
 }
 
 // Esta función hay que cambiarla para que ponga algún mapa predefinido
-// Quizás podríamos tener varios algoritmos de mapas y elegir uno al azar
+// Podemos hacer algoritmos de mapas según el nivel así que recibiríamos el nivel
 func createMap(wallsAmount int, mapSize int) Map {
 	walls := []Wall{}
 	for i := 0; i < wallsAmount; i++ {
