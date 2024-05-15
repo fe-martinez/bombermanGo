@@ -95,6 +95,8 @@ func handleMessage(conn net.Conn, msg *Message, game *Game) {
 		json.NewEncoder(conn).Encode(game)
 	case "update":
 		json.NewEncoder(conn).Encode(game)
+	case "leave":
+		disconnectPlayer(game, msg.PlayerID)
 	default:
 		fmt.Println("Unknown message action: ", msg.Action)
 	}

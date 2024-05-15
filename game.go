@@ -52,6 +52,14 @@ func createPlayer(game *Game, playerId string) {
 	game.Players = append(game.Players, player)
 }
 
+func disconnectPlayer(game *Game, playerId string) {
+	playerPosition := getPlayerPositionInList(game, playerId)
+	if playerPosition == -1 {
+		return
+	}
+	game.Players = append(game.Players[:playerPosition], game.Players[playerPosition+1:]...)
+}
+
 func getPlayerPositionInList(game *Game, id string) int {
 	for i := range game.Players {
 		if game.Players[i].id == id {

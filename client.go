@@ -99,5 +99,19 @@ func startClient() {
 			}
 		}
 
+		if rl.WindowShouldClose() {
+			message := Message{
+				Action:   "leave",
+				Data:     nil,
+				PlayerID: clientID,
+			}
+
+			err = encoder.Encode(message)
+			if err != nil {
+				fmt.Println("Error encoding message:", err)
+				return
+			}
+		}
+
 	}
 }
