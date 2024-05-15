@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -9,9 +10,10 @@ import (
 const BOMBTIME = 3
 
 type Game struct {
+	GameId  string
+	Level   int8
 	Players []Player
 	GameMap Map
-	level   int8
 }
 
 type Position struct {
@@ -22,15 +24,18 @@ type Position struct {
 type Player struct {
 	id string
 	//position Position no anda el juego si uso esto xd lol
-	X             float32
-	Y             float32
-	lives         int8
-	maxBombs      int8
-	bombQualities BombQualities
+	X        float32
+	Y        float32
+	lives    int8
+	maxBombs int8
+	bombs    []Bomb
+	powerUps []string
 }
 
-func initGame(gameMap Map) Game {
+func initGame(gameMap Map, gameId string) Game {
 	game := Game{
+		GameId:  gameId,
+		Level:   1,
 		Players: make([]Player, 0),
 		GameMap: gameMap,
 	}
@@ -45,7 +50,7 @@ func createPlayer(game *Game, playerId string) {
 		player.X = float32(rand.Intn(game.GameMap.size))
 		player.Y = float32(rand.Intn(game.GameMap.size))
 		player.lives = 6
-		if !checkCollision(player.X, player.Y, *game) {
+		if !checkCollision(player.X, player.Y, *game, playerId) {
 			break
 		}
 	}
@@ -80,13 +85,13 @@ func getPlayerPosition(clientID string, game Game) Position {
 	return position
 }
 
-func placeBomb(position Position, game *Game) {
-	bomb := Bomb{
-		X:     position.X,
-		Y:     position.Y,
-		Timer: BOMBTIME,
-	}
-	game.GameMap.Bombs = append(game.GameMap.Bombs, bomb)
+func placeBomb(position Position, playerId string) {
+	// bomb := Bomb{
+	// 	X:     position.X,
+	// 	Y:     position.Y,
+	// 	Timer: BOMBTIME,
+	// }
+	fmt.Println("Placing bomb... TO-DO!")
 }
 
 func movePlayer(game *Game, direction string, playerId string) {
@@ -97,25 +102,30 @@ func movePlayer(game *Game, direction string, playerId string) {
 
 	switch direction {
 	case "up":
-		if !checkCollision(game.Players[playerPosition].X, game.Players[playerPosition].Y-0.05, *game) {
+		if !checkCollision(game.Players[playerPosition].X, game.Players[playerPosition].Y-0.05, *game, playerId) {
 			game.Players[playerPosition].Y = game.Players[playerPosition].Y - 0.05
 		}
 	case "down":
-		if !checkCollision(game.Players[playerPosition].X, game.Players[playerPosition].Y+0.05, *game) {
+		if !checkCollision(game.Players[playerPosition].X, game.Players[playerPosition].Y+0.05, *game, playerId) {
 			game.Players[playerPosition].Y = game.Players[playerPosition].Y + 0.05
 		}
 	case "left":
-		if !checkCollision(game.Players[playerPosition].X-0.05, game.Players[playerPosition].Y, *game) {
+		if !checkCollision(game.Players[playerPosition].X-0.05, game.Players[playerPosition].Y, *game, playerId) {
 			game.Players[playerPosition].X = game.Players[playerPosition].X - 0.05
 		}
 	case "right":
-		if !checkCollision(game.Players[playerPosition].X+0.05, game.Players[playerPosition].Y, *game) {
+		if !checkCollision(game.Players[playerPosition].X+0.05, game.Players[playerPosition].Y, *game, playerId) {
 			game.Players[playerPosition].X = game.Players[playerPosition].X + 0.05
 		}
 	}
 }
 
-func checkCollision(x, y float32, game Game) bool {
+func checkCollision(x float32, y float32, game Game, playerID string) bool {
+	// playerPosition := getPlayerPositionInList(&game, playerID)
+	// if playerPosition == -1 {
+	// 	return false
+	// }
+
 	playerRect := rl.NewRectangle(x*50, y*50, 50, 50)
 
 	for _, wall := range game.GameMap.Walls {
@@ -124,18 +134,10 @@ func checkCollision(x, y float32, game Game) bool {
 			return true
 		}
 	}
-
-	//Chequear si esto está bien please
-	// for _, bomb := range game.GameMap.Bombs {
-	// 	bombRect := rl.NewRectangle(bomb.X*50, bomb.Y*50, 50, 50)
-	// 	if rl.CheckCollisionRecs(playerRect, bombRect) {
-	// 		return true
-	// 	}
-	// }
-
-	// for _, enemy := range game.GameMap.Enemies {
-	// 	enemyRect := rl.NewRectangle(enemy.X*50, enemy.Y*50, 50, 50)
-	// 	if rl.CheckCollisionRecs(playerRect, enemyRect) {
+	//Ni idea, no funciona
+	// for _, player := range game.Players {
+	// 	otherPlayerRect := rl.NewRectangle(player.X*50, player.Y*50, 50, 50)
+	// 	if rl.CheckCollisionRecs(playerRect, otherPlayerRect) && player.id != game.Players[playerPosition].id {
 	// 		return true
 	// 	}
 	// }

@@ -33,9 +33,9 @@ func listen() net.Listener {
 	}
 	return listener
 }
-func createGame() Game {
+func createGame(gameId string) Game {
 	gameMap := createMap(15, 16)
-	game := initGame(gameMap)
+	game := initGame(gameMap, gameId)
 	return game
 }
 
@@ -58,7 +58,8 @@ func startServer() {
 
 	defer listener.Close()
 
-	game := createGame()
+	gameId := createRandomUid()
+	game := createGame(gameId)
 
 	handleConnections(listener, &game)
 }
@@ -88,7 +89,7 @@ func handleMessage(conn net.Conn, msg *Message, game *Game) {
 		json.NewEncoder(conn).Encode(game)
 	case "bomb":
 		position := getPlayerPosition(msg.PlayerID, *game)
-		placeBomb(position, game)
+		placeBomb(position, msg.PlayerID)
 		json.NewEncoder(conn).Encode(game)
 	case "move":
 		move(msg, game)

@@ -36,7 +36,7 @@ func startClient() {
 		return
 	}
 
-	rl.InitWindow(800, 800, "raylib [core] example - basic window")
+	rl.InitWindow(800, 800, "Bomberman Go!")
 	defer rl.CloseWindow()
 
 	rl.SetTargetFPS(60)

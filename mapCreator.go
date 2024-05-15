@@ -5,16 +5,8 @@ import (
 )
 
 type Map struct {
-	Walls   []Wall
-	Bombs   []Bomb
-	Enemies []Enemy
-	size    int
-}
-
-type Enemy struct {
-	X     float32
-	Y     float32
-	lives int8
+	Walls []Wall
+	size  int
 }
 
 type Wall struct {
@@ -23,16 +15,12 @@ type Wall struct {
 	indestructible bool
 }
 
-type BombQualities struct {
+type Bomb struct {
+	X       float32
+	Y       float32
+	Timer   float32
 	alcance float32
 	power   int8
-}
-
-type Bomb struct {
-	X             float32
-	Y             float32
-	Timer         float32
-	bombQualities BombQualities
 }
 
 // Esta función hay que cambiarla para que ponga algún mapa predefinido
@@ -47,20 +35,9 @@ func createMap(wallsAmount int, mapSize int) Map {
 		})
 	}
 
-	enemies := []Enemy{}
-	for i := 0; i < 4; i++ {
-		enemies = append(enemies, Enemy{
-			X:     float32(rand.Intn(mapSize)),
-			Y:     float32(rand.Intn(mapSize)),
-			lives: 1,
-		})
-	}
-
 	gameMap := Map{
-		Walls:   walls,
-		Bombs:   []Bomb{},
-		Enemies: enemies,
-		size:    mapSize,
+		Walls: walls,
+		size:  mapSize,
 	}
 
 	return gameMap
