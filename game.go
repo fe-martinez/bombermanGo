@@ -126,12 +126,12 @@ func checkCollision(x, y float32, game Game) bool {
 	}
 
 	//Chequear si esto está bien please
-	for _, bomb := range game.GameMap.Bombs {
-		bombRect := rl.NewRectangle(bomb.X*50, bomb.Y*50, 50, 50)
-		if rl.CheckCollisionRecs(playerRect, bombRect) {
-			return true
-		}
-	}
+	// for _, bomb := range game.GameMap.Bombs {
+	// 	bombRect := rl.NewRectangle(bomb.X*50, bomb.Y*50, 50, 50)
+	// 	if rl.CheckCollisionRecs(playerRect, bombRect) {
+	// 		return true
+	// 	}
+	// }
 
 	// for _, enemy := range game.GameMap.Enemies {
 	// 	enemyRect := rl.NewRectangle(enemy.X*50, enemy.Y*50, 50, 50)
