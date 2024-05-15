@@ -15,14 +15,6 @@ type Wall struct {
 	indestructible bool
 }
 
-type Bomb struct {
-	X       float32
-	Y       float32
-	Timer   float32
-	alcance float32
-	power   int8
-}
-
 // Esta función hay que cambiarla para que ponga algún mapa predefinido
 // Podemos hacer algoritmos de mapas según el nivel así que recibiríamos el nivel
 func createMap(wallsAmount int, mapSize int) Map {

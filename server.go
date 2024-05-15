@@ -89,7 +89,7 @@ func handleMessage(conn net.Conn, msg *Message, game *Game) {
 		json.NewEncoder(conn).Encode(game)
 	case "bomb":
 		position := getPlayerPosition(msg.PlayerID, *game)
-		placeBomb(position, msg.PlayerID)
+		placeBomb(position, msg.PlayerID, game)
 		json.NewEncoder(conn).Encode(game)
 	case "move":
 		move(msg, game)

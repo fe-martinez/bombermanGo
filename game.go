@@ -7,7 +7,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-const BOMBTIME = 3
+const BOMBTIME = 3.00
 
 type Game struct {
 	GameId  string
@@ -21,6 +21,19 @@ type Position struct {
 	Y float32
 }
 
+type PowerUp struct {
+	name  string
+	timer float32
+}
+
+type Bomb struct {
+	X       float32
+	Y       float32
+	Timer   float32
+	Alcance int8
+	Power   int8
+}
+
 type Player struct {
 	id string
 	//position Position no anda el juego si uso esto xd lol
@@ -29,7 +42,7 @@ type Player struct {
 	lives    int8
 	maxBombs int8
 	bombs    []Bomb
-	powerUps []string
+	powerUps []PowerUp
 }
 
 func initGame(gameMap Map, gameId string) Game {
@@ -50,6 +63,9 @@ func createPlayer(game *Game, playerId string) {
 		player.X = float32(rand.Intn(game.GameMap.size))
 		player.Y = float32(rand.Intn(game.GameMap.size))
 		player.lives = 6
+		player.maxBombs = 1
+		player.bombs = make([]Bomb, 0)
+		player.powerUps = make([]PowerUp, 0)
 		if !checkCollision(player.X, player.Y, *game, playerId) {
 			break
 		}
@@ -85,13 +101,72 @@ func getPlayerPosition(clientID string, game Game) Position {
 	return position
 }
 
-func placeBomb(position Position, playerId string) {
-	// bomb := Bomb{
-	// 	X:     position.X,
-	// 	Y:     position.Y,
-	// 	Timer: BOMBTIME,
-	// }
-	fmt.Println("Placing bomb... TO-DO!")
+func getPlayerPowerUps(game *Game, playerId string) []PowerUp {
+	i := getPlayerPositionInList(game, playerId)
+	if i == -1 {
+		return nil
+	}
+	powerUps := game.Players[i].powerUps
+	return powerUps
+}
+
+func powerUpIs(PowerUpName string, powerUp []PowerUp) bool {
+	for i := range powerUp {
+		if powerUp[i].name == PowerUpName {
+			return true
+		}
+	}
+	return false
+}
+
+func insertBombInPlayer(game *Game, playerId string, bomb Bomb) {
+
+	i := getPlayerPositionInList(game, playerId)
+	if i == -1 {
+		return
+	}
+	game.Players[i].bombs = append(game.Players[i].bombs, bomb)
+}
+
+func getPlayer(playerId string, game Game) Player {
+	for i := range game.Players {
+		if game.Players[i].id == playerId {
+			return game.Players[i]
+		}
+	}
+	return Player{}
+}
+
+// Esto hay que refactorizarlo
+func placeBomb(position Position, playerId string, game *Game) {
+	powerUps := getPlayerPowerUps(game, playerId)
+	if powerUps == nil {
+		return
+	}
+
+	player := getPlayer(playerId, *game)
+	if int8(len(player.bombs)) >= player.maxBombs {
+		return
+	}
+
+	var alcance = 1
+	var power = 1
+	if powerUpIs("alcance_mejorado", powerUps) {
+		alcance = 2
+	}
+	if powerUpIs("potencia_mejorada", powerUps) {
+		power = 2
+	}
+	bomb := Bomb{
+		X:       position.X,
+		Y:       position.Y,
+		Timer:   BOMBTIME,
+		Alcance: int8(alcance),
+		Power:   int8(power),
+	}
+
+	insertBombInPlayer(game, playerId, bomb)
+	fmt.Println("Bomb placed")
 }
 
 func movePlayer(game *Game, direction string, playerId string) {

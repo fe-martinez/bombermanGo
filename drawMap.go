@@ -10,6 +10,9 @@ func drawGame(game Game) {
 
 	for _, player := range game.Players {
 		rl.DrawRectangle(int32(player.X*50), int32(player.Y*50), 50, 50, rl.Red)
+		for _, bomb := range player.bombs {
+			rl.DrawRectangle(int32(bomb.X*50), int32(bomb.Y*50), 50, 50, rl.Blue)
+		}
 	}
 
 	for _, wall := range game.GameMap.Walls {
