@@ -1,42 +1,28 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
 	"os"
-
-	"github.com/google/uuid"
+	// "encoding/json"
+	// "fmt"
+	// "net"
+	// "os"
 )
 
-// Action: conect or move
-// Data: the command (up, down, left, right, bomb, etc)
-type Message struct {
-	Action   string
-	Data     map[string]interface{}
-	PlayerID string
-}
+const SERVER_ADDRESS = "localhost:8080"
 
-const (
-	serverAddress = "localhost:8080"
-)
-
-func informUser() {
+func informUser(serverAddress string) {
 	fmt.Println("Starting game server at", serverAddress)
 }
 
-func listen() net.Listener {
+func listen(serverAddress string) net.Listener {
 	listener, err := net.Listen("tcp", serverAddress)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
 		os.Exit(1)
 	}
 	return listener
-}
-func createGame(gameId string) Game {
-	gameMap := createMap(15, 16)
-	game := initGame(gameMap, gameId)
-	return game
 }
 
 func handleConnections(listener net.Listener, game *Game) {
@@ -51,91 +37,124 @@ func handleConnections(listener net.Listener, game *Game) {
 	}
 }
 
-func startServer() {
-	informUser()
+func handleConnection(conn net.Conn, Game *Game) {
+	defer conn.Close()
+	playerID := createRandomUid()
+	//Generar posición
+	if !connectPlayer(playerID, Game) {
+		fmt.Println("Game is full!")
+		return
+	}
+	fmt.Println("Player connected:", playerID)
 
-	listener := listen()
+	sendId(conn, playerID)
+	handleMessages(conn, Game)
+	//Lo que sigue iría con otro encoding
+	/*	encoder := json.NewEncoder(conn)
+		encoder.Encode(playerID)
 
-	defer listener.Close()
-
-	gameId := createRandomUid()
-	game := createGame(gameId)
-
-	handleConnections(listener, &game)
+		handleMessages(conn, game)
+	*/
 }
 
-func createNewPlayer(game *Game, playerId string) bool {
-	if len(game.Players) < 4 {
-		createPlayer(game, playerId)
+func readClientMessage(conn net.Conn) (ClientMessage, error) {
+	// Leer los datos enviados por el cliente
+	buffer := make([]byte, 1024)
+	_, err := conn.Read(buffer)
+	if err != nil {
+		return ClientMessage{}, fmt.Errorf("error al leer del cliente: %s", err)
+	}
+
+	// Decodificar el mensaje recibido
+	clientMsg, err := decodeClientMessage(buffer)
+	if err != nil {
+		return ClientMessage{}, fmt.Errorf("error al decodificar el mensaje del cliente: %s", err)
+	}
+
+	return clientMsg, nil
+}
+
+func sendMessageToClient(conn net.Conn, game *Game) {
+	encodedGame, err := encodeGame(*game)
+	if err != nil {
+		fmt.Println("Error encoding game:", err)
+		return
+	}
+	_, err = conn.Write(encodedGame)
+	if err != nil {
+		fmt.Println("Error al enviar el juego al cliente:", err)
+		return
+	}
+
+	fmt.Println("Juego enviado exitosamente al cliente.")
+}
+
+func respondToClient(conn net.Conn, message ClientMessage, game *Game) {
+	switch message.Action {
+	case "bomb":
+		//Place the bomb
+	case "move":
+		//Mover personaje
+	case "update":
+		//Enviar juego
+		sendMessageToClient(conn, game)
+	case "leave":
+		game.removePlayer(message.ID)
+		fmt.Println("Player left:", message.ID)
+	default:
+		fmt.Println("Unknown message action: ", message.Action)
+	}
+}
+
+func handleMessages(conn net.Conn, game *Game) {
+	defer conn.Close()
+
+	message, err := readClientMessage(conn)
+	if err != nil {
+		return
+	}
+	fmt.Println("Message received: ", message)
+	respondToClient(conn, message, game)
+}
+
+func sendId(conn net.Conn, playerID string) {
+	_, err := conn.Write([]byte(playerID))
+	if err != nil {
+		fmt.Println("Error sending player ID to client: ", err)
+	}
+}
+
+func connectPlayer(playerID string, Game *Game) bool {
+	playerPosition := Game.generateValidPosition(15)
+	player := createPlayer(playerID, playerPosition, Game)
+	if player != nil {
+		Game.addPlayer(player)
 		return true
 	}
 	return false
 }
 
-func move(msg *Message, game *Game) {
-	var moveData struct {
-		Direction string
-	}
-	moveData.Direction = msg.Data["direction"].(string)
-	// fmt.Println(moveData)
-	// fmt.Println("move: ", moveData.Direction)
-
-	movePlayer(game, moveData.Direction, msg.PlayerID)
-}
-
-func handleMessage(conn net.Conn, msg *Message, game *Game) {
-	switch msg.Action {
-	case "join":
-		json.NewEncoder(conn).Encode(game)
-	case "bomb":
-		position := getPlayerPosition(msg.PlayerID, *game)
-		placeBomb(position, msg.PlayerID, game)
-		json.NewEncoder(conn).Encode(game)
-	case "move":
-		move(msg, game)
-		json.NewEncoder(conn).Encode(game)
-	case "update":
-		json.NewEncoder(conn).Encode(game)
-	case "leave":
-		disconnectPlayer(game, msg.PlayerID)
-	default:
-		fmt.Println("Unknown message action: ", msg.Action)
+func createPlayer(playerID string, position *Position, Game *Game) *Player {
+	if Game.isFull() {
+		return nil
+	} else {
+		return NewPlayer(playerID, position)
 	}
 }
 
-func createRandomUid() string {
-	id, err := uuid.NewRandom()
-	if err != nil {
-		fmt.Println("Error generating UUID: ", err)
-	}
-	return id.String()
+func startServer() {
+	informUser(SERVER_ADDRESS)
+
+	listener := listen(SERVER_ADDRESS)
+
+	defer listener.Close()
+
+	GameMap := createMap(15, 16)
+	GameId := createRandomUid()
+	Game := createGame(GameId, GameMap)
+	handleConnections(listener, Game)
 }
 
-func handleMessages(conn net.Conn, game *Game) {
-	decoder := json.NewDecoder(conn)
-	for {
-		var msg Message
-		err := decoder.Decode(&msg)
-		if err != nil {
-			fmt.Println("Error decoding message: ", err)
-			return
-		}
-		fmt.Println(game.Players)
-		handleMessage(conn, &msg, game)
-	}
-}
-
-func handleConnection(conn net.Conn, game *Game) {
-	defer conn.Close()
-	playerID := createRandomUid()
-	created := createNewPlayer(game, playerID)
-	if !created {
-		fmt.Println("Game is full")
-		return
-	}
-	encoder := json.NewEncoder(conn)
-	encoder.Encode(playerID)
-
-	handleMessages(conn, game)
-
+func createGame(GameId string, GameMap *GameMap) *Game {
+	return NewGame(GameId, GameMap)
 }
