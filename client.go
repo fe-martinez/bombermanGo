@@ -60,9 +60,6 @@ func sendMessage(ClientMessage ClientMessage, connection net.Conn) {
 		fmt.Println("Error al enviar el mensaje:", err)
 		return
 	}
-
-	fmt.Println("Mensaje enviado exitosamente.")
-
 }
 
 func sendMove(move string, connection net.Conn, playerID string) {
@@ -93,7 +90,7 @@ func sendMessages(connection net.Conn, playerID string) {
 	if input != "none" {
 		sendInput(input, connection, playerID)
 	} else {
-		//askForUpdates(connection, playerID)
+		askForUpdates(connection, playerID)
 	}
 }
 
@@ -128,8 +125,8 @@ func startClient() {
 	go updateGame(connection, &game)
 
 	for !WindowShouldClose() {
-		//drawGame(game)
-		drawGame2()
+		drawGame(game)
+		//drawGame2()
 		sendMessages(connection, playerID)
 		if WindowShouldClose() {
 			sendLeaveMessage(connection, playerID)
