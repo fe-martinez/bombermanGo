@@ -48,13 +48,10 @@ func handleConnection(conn net.Conn, Game *Game) {
 	fmt.Println("Player connected:", playerID)
 
 	sendId(conn, playerID)
-	handleMessages(conn, Game)
-	//Lo que sigue iría con otro encoding
-	/*	encoder := json.NewEncoder(conn)
-		encoder.Encode(playerID)
 
-		handleMessages(conn, game)
-	*/
+	for {
+		handleMessages(conn, Game)
+	}
 }
 
 func readClientMessage(conn net.Conn) (ClientMessage, error) {
@@ -107,8 +104,6 @@ func respondToClient(conn net.Conn, message ClientMessage, game *Game) {
 }
 
 func handleMessages(conn net.Conn, game *Game) {
-	defer conn.Close()
-
 	message, err := readClientMessage(conn)
 	if err != nil {
 		return

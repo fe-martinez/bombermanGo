@@ -4,6 +4,7 @@ import (
 	// "encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	// "log"
 	"net"
@@ -37,17 +38,15 @@ func receiveMessageFromServer(conn net.Conn) (*Game, error) {
 }
 
 func updateGame(conn net.Conn, game *Game) {
-	go func() {
-		fmt.Println("Updating game...")
+	fmt.Println("Updating game...")
 
-		updatedGame, err := receiveMessageFromServer(conn)
-		if err != nil {
-			fmt.Println("Error al recibir el juego actualizado:", err)
-			return
-		}
+	updatedGame, err := receiveMessageFromServer(conn)
+	if err != nil {
+		fmt.Println("Error al recibir el juego actualizado:", err)
+		return
+	}
 
-		*game = *updatedGame
-	}()
+	*game = *updatedGame
 }
 
 func sendMessage(ClientMessage ClientMessage, connection net.Conn) {
@@ -103,18 +102,30 @@ func sendLeaveMessage(connection net.Conn, playerID string) {
 	sendMessage(ClientMessage, connection)
 }
 
+func receiveId(conn net.Conn) (string, error) {
+	buffer := make([]byte, 37)
+	n, err := conn.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+	id := string(buffer[:n])
+	return strings.TrimSpace(id), nil
+}
+
 func startClient() {
 	connection := dial(SERVER_ADDRESS)
-
 	defer connection.Close()
 
-	playerID := receiveId(connection)
+	playerID, err := receiveId(connection)
+	if err != nil {
+		fmt.Println("Error while receiving player ID: ", err)
+	}
 	welcomeUser(playerID)
 
 	initWindow()
 
 	var game Game
-	updateGame(connection, &game)
+	go updateGame(connection, &game)
 
 	for !WindowShouldClose() {
 		//drawGame(game)
@@ -124,14 +135,4 @@ func startClient() {
 			sendLeaveMessage(connection, playerID)
 		}
 	}
-}
-
-func receiveId(conn net.Conn) string {
-	buffer := make([]byte, 37)
-	n, err := conn.Read(buffer)
-	if err != nil {
-		fmt.Println("Error reading from server:", err)
-		return ""
-	}
-	return string(buffer[:n])
 }
