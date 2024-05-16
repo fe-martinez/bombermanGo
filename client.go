@@ -94,7 +94,7 @@ func sendMessages(connection net.Conn, playerID string) {
 	if input != "none" {
 		sendInput(input, connection, playerID)
 	} else {
-		askForUpdates(connection, playerID)
+		//askForUpdates(connection, playerID)
 	}
 }
 

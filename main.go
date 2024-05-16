@@ -5,16 +5,23 @@ import (
 	"os"
 )
 
-func main() {
-	fmt.Println(os.Args)
-
-	if len(os.Args) < 2 {
+func validateArgs() {
+	if len(os.Args) != 2 {
 		fmt.Println("Usage: go run main.go [client|server]")
-		return
+		fmt.Println("P.S.: remember to run the server before you try to run the client!")
+		os.Exit(1)
 	}
+}
 
-	arg := os.Args[1]
+func runClient() {
+	startClient()
+}
 
+func runServer() {
+	startServer()
+}
+
+func run(arg string) {
 	switch arg {
 	case "client":
 		runClient()
@@ -25,12 +32,10 @@ func main() {
 	}
 }
 
-func runClient() {
-	startClient()
-	fmt.Println("Running client...")
-}
+func main() {
+	validateArgs()
 
-func runServer() {
-	startServer()
-	fmt.Println("Running server...")
+	arg := os.Args[1]
+
+	run(arg)
 }
