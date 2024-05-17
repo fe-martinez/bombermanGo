@@ -16,6 +16,7 @@ func handlePlayerAction(msg utils.ClientMessage, game *model.Game) {
 		fmt.Println("No action was sent")
 	case utils.ActionLeave:
 		fmt.Println("Player disconnected")
+		game.RemovePlayer(msg.ID)
 	default:
 		fmt.Println("Action unknown")
 	}

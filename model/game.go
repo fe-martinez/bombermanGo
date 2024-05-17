@@ -1,9 +1,6 @@
 package model
 
 import (
-	"bytes"
-	"encoding/gob"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -55,32 +52,4 @@ func (g *Game) AddPlayer(player *Player) {
 
 func (g *Game) RemovePlayer(playerID string) {
 	delete(g.Players, playerID)
-}
-
-func EncodeGame(game Game) ([]byte, error) {
-	buf := new(bytes.Buffer)
-
-	enc := gob.NewEncoder(buf)
-
-	err := enc.Encode(game)
-	if err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
-}
-
-func DecodeGame(encodedGame []byte) (*Game, error) {
-	buf := bytes.NewBuffer(encodedGame)
-
-	dec := gob.NewDecoder(buf)
-
-	var game Game
-
-	err := dec.Decode(&game)
-	if err != nil {
-		return nil, err
-	}
-
-	return &game, nil
 }

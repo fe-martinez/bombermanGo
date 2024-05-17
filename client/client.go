@@ -2,6 +2,7 @@ package client
 
 import (
 	"bombman/model"
+	"bombman/utils"
 	"bombman/view"
 	"fmt"
 	"net"
@@ -91,7 +92,7 @@ func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
 		return nil, fmt.Errorf("error al leer del servidor: %s", err)
 	}
 	mu.Lock()
-	decodedGame, err := model.DecodeGame(buffer[:n])
+	decodedGame, err := utils.DecodeGame(buffer[:n])
 	mu.Unlock()
 	if err != nil {
 		return nil, fmt.Errorf("error al decodificar el juego del servidor: %s", err)

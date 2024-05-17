@@ -23,7 +23,7 @@ func readClientMessage(conn net.Conn) (utils.ClientMessage, error) {
 }
 
 func sendMessageToClient(conn net.Conn, game *model.Game) {
-	encodedGame, err := model.EncodeGame(*game)
+	encodedGame, err := utils.EncodeGame(*game)
 	if err != nil {
 		fmt.Println("Error encoding game:", err)
 		return
