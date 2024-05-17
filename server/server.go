@@ -82,7 +82,6 @@ func (s *Server) handleMessages(conn net.Conn, game *model.Game) {
 	}
 	fmt.Println("Message received: ", message)
 	handleMove(message, game)
-	respondToClient(conn, game)
 }
 
 func (s *Server) gameLoop() {

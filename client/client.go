@@ -7,9 +7,12 @@ import (
 	"net"
 	"os"
 	"strings"
+	"sync"
 )
 
 const SERVER_ADDRESS = "localhost:8080"
+
+var mu sync.Mutex
 
 type Client struct {
 	connection net.Conn
@@ -81,12 +84,15 @@ func dial(serverAddress string) net.Conn {
 }
 
 func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
-	buffer := make([]byte, 2048)
+	buffer := make([]byte, 4096)
 	n, err := conn.Read(buffer)
+	fmt.Println(n)
 	if err != nil {
 		return nil, fmt.Errorf("error al leer del servidor: %s", err)
 	}
+	mu.Lock()
 	decodedGame, err := model.DecodeGame(buffer[:n])
+	mu.Unlock()
 	if err != nil {
 		return nil, fmt.Errorf("error al decodificar el juego del servidor: %s", err)
 	}
@@ -97,6 +103,7 @@ func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
 func updateGame(conn net.Conn, game *model.Game) {
 	for {
 		updatedGame, err := receiveMessageFromServer(conn)
+		fmt.Println(updatedGame)
 		if err != nil {
 			fmt.Println("Error al recibir el juego actualizado:", err)
 			return
