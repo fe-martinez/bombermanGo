@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -52,6 +54,11 @@ func drawWalls(game Game) {
 }
 
 func drawGame(game Game) {
+	if len(game.Players) == 0 {
+		fmt.Println("No players")
+		return
+	}
+
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.RayWhite)
 

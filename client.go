@@ -2,6 +2,7 @@ package main
 
 import (
 	// "encoding/json"
+
 	"fmt"
 	"os"
 	"strings"
@@ -38,15 +39,17 @@ func receiveMessageFromServer(conn net.Conn) (*Game, error) {
 }
 
 func updateGame(conn net.Conn, game *Game) {
-	fmt.Println("Updating game...")
+	for {
+		fmt.Println("Updating game...")
 
-	updatedGame, err := receiveMessageFromServer(conn)
-	if err != nil {
-		fmt.Println("Error al recibir el juego actualizado:", err)
-		return
+		updatedGame, err := receiveMessageFromServer(conn)
+		if err != nil {
+			fmt.Println("Error al recibir el juego actualizado:", err)
+			return
+		}
+
+		*game = *updatedGame
 	}
-
-	*game = *updatedGame
 }
 
 func sendMessage(ClientMessage ClientMessage, connection net.Conn) {
