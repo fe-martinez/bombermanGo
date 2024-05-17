@@ -16,6 +16,7 @@ type Server struct {
 }
 
 const SERVER_ADDRESS = "localhost:8080"
+const GAME_SPEED = 33 * time.Millisecond
 
 func NewServer(address string, maxPlayers int) (*Server, error) {
 	listener, err := listen(SERVER_ADDRESS)
@@ -78,11 +79,11 @@ func (s *Server) handleMessages(conn net.Conn, game *model.Game) {
 	if err != nil {
 		return
 	}
-	handlePlayerMove(message, game)
+	handlePlayerAction(message, game)
 }
 
 func (s *Server) broadcastLoop() {
-	ticker := time.NewTicker(33 * time.Millisecond)
+	ticker := time.NewTicker(GAME_SPEED)
 	defer ticker.Stop()
 
 	for {

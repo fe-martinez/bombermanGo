@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func handlePlayerMove(msg utils.ClientMessage, game *model.Game) {
+func handlePlayerAction(msg utils.ClientMessage, game *model.Game) {
 	switch msg.Action {
 	case utils.ActionMove:
 		fmt.Println("Received: ", msg.Data)
