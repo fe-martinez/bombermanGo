@@ -1,13 +1,11 @@
-package main
+package server
 
 import (
+	"bombman/model"
+	"bombman/utils"
 	"fmt"
 	"net"
 	"os"
-	// "encoding/json"
-	// "fmt"
-	// "net"
-	// "os"
 )
 
 const SERVER_ADDRESS = "localhost:8080"
@@ -25,7 +23,7 @@ func listen(serverAddress string) net.Listener {
 	return listener
 }
 
-func handleConnections(listener net.Listener, game *Game) {
+func handleConnections(listener net.Listener, game *model.Game) {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -37,9 +35,9 @@ func handleConnections(listener net.Listener, game *Game) {
 	}
 }
 
-func handleConnection(conn net.Conn, Game *Game) {
+func handleConnection(conn net.Conn, Game *model.Game) {
 	defer conn.Close()
-	playerID := createRandomUid()
+	playerID := utils.CreateRandomUid()
 	//Generar posición
 	if !connectPlayer(playerID, Game) {
 		fmt.Println("Game is full!")
@@ -54,25 +52,25 @@ func handleConnection(conn net.Conn, Game *Game) {
 	}
 }
 
-func readClientMessage(conn net.Conn) (ClientMessage, error) {
+func readClientMessage(conn net.Conn) (utils.ClientMessage, error) {
 	// Leer los datos enviados por el cliente
 	buffer := make([]byte, 1024)
 	_, err := conn.Read(buffer)
 	if err != nil {
-		return ClientMessage{}, fmt.Errorf("error al leer del cliente: %s", err)
+		return utils.ClientMessage{}, fmt.Errorf("error al leer del cliente: %s", err)
 	}
 
 	// Decodificar el mensaje recibido
-	clientMsg, err := decodeClientMessage(buffer)
+	clientMsg, err := utils.DecodeClientMessage(buffer)
 	if err != nil {
-		return ClientMessage{}, fmt.Errorf("error al decodificar el mensaje del cliente: %s", err)
+		return utils.ClientMessage{}, fmt.Errorf("error al decodificar el mensaje del cliente: %s", err)
 	}
 
 	return clientMsg, nil
 }
 
-func sendMessageToClient(conn net.Conn, game *Game) {
-	encodedGame, err := encodeGame(*game)
+func sendMessageToClient(conn net.Conn, game *model.Game) {
+	encodedGame, err := model.EncodeGame(*game)
 	if err != nil {
 		fmt.Println("Error encoding game:", err)
 		return
@@ -86,7 +84,7 @@ func sendMessageToClient(conn net.Conn, game *Game) {
 	fmt.Println("Juego enviado exitosamente al cliente.")
 }
 
-func respondToClient(conn net.Conn, message ClientMessage, game *Game) {
+func respondToClient(conn net.Conn, message utils.ClientMessage, game *model.Game) {
 	switch message.Action {
 	case "bomb":
 		//Place the bomb
@@ -96,14 +94,14 @@ func respondToClient(conn net.Conn, message ClientMessage, game *Game) {
 		//Enviar juego
 		sendMessageToClient(conn, game)
 	case "leave":
-		game.removePlayer(message.ID)
+		game.RemovePlayer(message.ID)
 		fmt.Println("Player left:", message.ID)
 	default:
 		fmt.Println("Unknown message action: ", message.Action)
 	}
 }
 
-func handleMessages(conn net.Conn, game *Game) {
+func handleMessages(conn net.Conn, game *model.Game) {
 	message, err := readClientMessage(conn)
 	if err != nil {
 		return
@@ -119,37 +117,37 @@ func sendId(conn net.Conn, playerID string) {
 	}
 }
 
-func connectPlayer(playerID string, Game *Game) bool {
-	playerPosition := Game.generateValidPosition(15)
+func connectPlayer(playerID string, Game *model.Game) bool {
+	playerPosition := Game.GenerateValidPosition(15)
 	player := createPlayer(playerID, playerPosition, Game)
 	if player != nil {
-		Game.addPlayer(player)
+		Game.AddPlayer(player)
 		return true
 	}
 	return false
 }
 
-func createPlayer(playerID string, position *Position, Game *Game) *Player {
-	if Game.isFull() {
+func createPlayer(playerID string, position *model.Position, Game *model.Game) *model.Player {
+	if Game.IsFull() {
 		return nil
 	} else {
-		return NewPlayer(playerID, position)
+		return model.NewPlayer(playerID, position)
 	}
 }
 
-func startServer() {
+func StartServer() {
 	informUser(SERVER_ADDRESS)
 
 	listener := listen(SERVER_ADDRESS)
 
 	defer listener.Close()
 
-	GameMap := createMap(15, 16)
-	GameId := createRandomUid()
+	GameMap := model.CreateMap(15, 16)
+	GameId := utils.CreateRandomUid()
 	Game := createGame(GameId, GameMap)
 	handleConnections(listener, Game)
 }
 
-func createGame(GameId string, GameMap *GameMap) *Game {
-	return NewGame(GameId, GameMap)
+func createGame(GameId string, GameMap *model.GameMap) *model.Game {
+	return model.NewGame(GameId, GameMap)
 }

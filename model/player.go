@@ -1,4 +1,4 @@
-package main
+package model
 
 const PLAYER_LIVES = 6
 const PLAYER_BOMBS = 1

@@ -1,4 +1,4 @@
-package main
+package model
 
 import "math/rand"
 
@@ -15,7 +15,7 @@ type Wall struct {
 }
 
 // Por ahora crea un mapa con paredes en posiciones aleatorias. Hay que armar bien los algoritmos acá jeje
-func createMap(wallsAmount int, mapSize int) *GameMap {
+func CreateMap(wallsAmount int, mapSize int) *GameMap {
 	walls := []Wall{}
 	for i := 0; i < wallsAmount; i++ {
 		WallPosition := &Position{float32(rand.Intn(mapSize)), float32(rand.Intn(mapSize))}

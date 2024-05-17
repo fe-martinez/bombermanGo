@@ -1,4 +1,4 @@
-package main
+package model
 
 type Bomb struct {
 	Position Position

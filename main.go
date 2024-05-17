@@ -1,24 +1,26 @@
 package main
 
 import (
+	"bombman/client"
+	"bombman/server"
 	"fmt"
 	"os"
 )
 
 func validateArgs() {
 	if len(os.Args) != 2 {
-		fmt.Println("Usage: go run main.go [client|server]")
+		fmt.Println("Usage: go run . [client|server]")
 		fmt.Println("P.S.: remember to run the server before you try to run the client!")
 		os.Exit(1)
 	}
 }
 
 func runClient() {
-	startClient()
+	client.StartClient()
 }
 
 func runServer() {
-	startServer()
+	server.StartServer()
 }
 
 func run(arg string) {
@@ -28,7 +30,7 @@ func run(arg string) {
 	case "server":
 		runServer()
 	default:
-		fmt.Println("Invalid argument. Usage: go run main.go [client|server]")
+		fmt.Println("Invalid argument. Usage: go run . [client|server]")
 	}
 }
 

@@ -1,4 +1,4 @@
-package main
+package model
 
 import (
 	"bytes"
@@ -37,7 +37,7 @@ func (g *Game) collidesWithWalls(position Position) bool {
 	return false
 }
 
-func (g *Game) generateValidPosition(mapSize int) *Position {
+func (g *Game) GenerateValidPosition(mapSize int) *Position {
 	var ValidPosition = getRandomPosition(mapSize)
 	for g.collidesWithWalls(*ValidPosition) {
 		ValidPosition = getRandomPosition(mapSize)
@@ -45,19 +45,19 @@ func (g *Game) generateValidPosition(mapSize int) *Position {
 	return ValidPosition
 }
 
-func (g *Game) isFull() bool {
+func (g *Game) IsFull() bool {
 	return len(g.Players) == MAX_PLAYERS
 }
 
-func (g *Game) addPlayer(player *Player) {
+func (g *Game) AddPlayer(player *Player) {
 	g.Players[player.ID] = player
 }
 
-func (g *Game) removePlayer(playerID string) {
+func (g *Game) RemovePlayer(playerID string) {
 	delete(g.Players, playerID)
 }
 
-func encodeGame(game Game) ([]byte, error) {
+func EncodeGame(game Game) ([]byte, error) {
 	buf := new(bytes.Buffer)
 
 	enc := gob.NewEncoder(buf)
@@ -70,17 +70,17 @@ func encodeGame(game Game) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func decodeGame(encodedGame []byte) (*Game, error) {
+func DecodeGame(encodedGame []byte) (*Game, error) {
 	buf := bytes.NewBuffer(encodedGame)
-	
+
 	dec := gob.NewDecoder(buf)
-	
+
 	var game Game
-	
+
 	err := dec.Decode(&game)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &game, nil
 }

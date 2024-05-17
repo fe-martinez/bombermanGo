@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ type ClientMessage struct {
 	ID     string
 }
 
-func encodeClientMessage(msg ClientMessage) ([]byte, error) {
+func EncodeClientMessage(msg ClientMessage) ([]byte, error) {
 	buf := new(bytes.Buffer)
 
 	enc := gob.NewEncoder(buf)
@@ -24,7 +24,7 @@ func encodeClientMessage(msg ClientMessage) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func decodeClientMessage(encodedMsg []byte) (ClientMessage, error) {
+func DecodeClientMessage(encodedMsg []byte) (ClientMessage, error) {
 	buf := bytes.NewBuffer(encodedMsg)
 
 	var msg ClientMessage
