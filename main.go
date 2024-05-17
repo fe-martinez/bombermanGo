@@ -16,7 +16,8 @@ func validateArgs() {
 }
 
 func runClient() {
-	client.StartClient()
+	client := client.NewClient()
+	client.Start()
 }
 
 func runServer() {

@@ -6,10 +6,19 @@ import (
 )
 
 type ClientMessage struct {
-	Action string
+	Action MessageAction
 	Data   interface{}
 	ID     string
 }
+
+type MessageAction string
+
+const (
+	ActionMove   MessageAction = "move"
+	ActionBomb   MessageAction = "bomb"
+	ActionUpdate MessageAction = "update"
+	ActionLeave  MessageAction = "leave"
+)
 
 func EncodeClientMessage(msg ClientMessage) ([]byte, error) {
 	buf := new(bytes.Buffer)

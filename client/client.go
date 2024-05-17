@@ -2,7 +2,6 @@ package client
 
 import (
 	"bombman/model"
-	"bombman/utils"
 	"bombman/view"
 	"fmt"
 	"net"
@@ -12,8 +11,64 @@ import (
 
 const SERVER_ADDRESS = "localhost:8080"
 
-func welcomeUser(playerID string) {
+type Client struct {
+	connection net.Conn
+	playerID   string
+	game       model.Game
+}
+
+func NewClient() *Client {
+	connection := dial(SERVER_ADDRESS)
+	playerID, err := receiveId(connection)
+	if err != nil {
+		fmt.Println("Error while receiving player id")
+		return nil
+	}
 	fmt.Println("Connected to server with ID:", playerID)
+	view.InitWindow()
+
+	var game model.Game
+	//	loadGame(connection, &game)
+
+	return &Client{
+		connection: connection,
+		playerID:   playerID,
+		game:       game,
+	}
+}
+
+func (c *Client) sendMessages(input string) {
+	if input != "none" {
+		c.sendInput(input)
+	} else {
+		SendUpdateMessage(c.connection, c.playerID)
+	}
+}
+
+func (c *Client) sendInput(input string) {
+	if input == "bomb" {
+		SendBombMessage(c.connection, c.playerID)
+	} else {
+		SendMoveMessage(input, c.connection, c.playerID)
+	}
+}
+
+func (c *Client) sendLeaveMessage() {
+	SendLeaveMessage(c.connection, c.playerID)
+}
+
+func (c *Client) Start() {
+	defer c.connection.Close()
+	go updateGame(c.connection, &c.game)
+
+	for !view.WindowShouldClose() {
+		view.DrawGame(c.game)
+		input := handleInput()
+		c.sendMessages(input)
+		if view.WindowShouldClose() {
+			c.sendLeaveMessage()
+		}
+	}
 }
 
 func dial(serverAddress string) net.Conn {
@@ -24,12 +79,14 @@ func dial(serverAddress string) net.Conn {
 	}
 	return connection
 }
+
 func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
 	buffer := make([]byte, 1024)
 	n, err := conn.Read(buffer)
 	if err != nil {
 		return nil, fmt.Errorf("error al leer del servidor: %s", err)
 	}
+	fmt.Println("Estoy en receive message from server!")
 
 	decodedGame, err := model.DecodeGame(buffer[:n])
 	if err != nil {
@@ -53,56 +110,6 @@ func updateGame(conn net.Conn, game *model.Game) {
 	}
 }
 
-func sendMessage(ClientMessage utils.ClientMessage, connection net.Conn) {
-	encoded, err := utils.EncodeClientMessage(ClientMessage)
-	if err != nil {
-		fmt.Println("Error encoding message:", err)
-		return
-	}
-	_, err = connection.Write(encoded)
-	if err != nil {
-		fmt.Println("Error al enviar el mensaje:", err)
-		return
-	}
-}
-
-func sendMove(move string, connection net.Conn, playerID string) {
-	ClientMessage := utils.ClientMessage{Action: "move", Data: move, ID: playerID}
-	sendMessage(ClientMessage, connection)
-}
-
-func sendBomb(connection net.Conn, playerID string) {
-	ClientMessage := utils.ClientMessage{Action: "bomb", Data: nil, ID: playerID}
-	sendMessage(ClientMessage, connection)
-}
-
-func sendInput(input string, connection net.Conn, playerID string) {
-	if input == "bomb" {
-		sendBomb(connection, playerID)
-	} else {
-		sendMove(input, connection, playerID)
-	}
-}
-
-func askForUpdates(connection net.Conn, playerID string) {
-	ClientMessage := utils.ClientMessage{Action: "update", Data: nil, ID: playerID}
-	sendMessage(ClientMessage, connection)
-}
-
-func sendMessages(connection net.Conn, playerID string) {
-	input := handleInput()
-	if input != "none" {
-		sendInput(input, connection, playerID)
-	} else {
-		askForUpdates(connection, playerID)
-	}
-}
-
-func sendLeaveMessage(connection net.Conn, playerID string) {
-	ClientMessage := utils.ClientMessage{Action: "leave", Data: nil, ID: playerID}
-	sendMessage(ClientMessage, connection)
-}
-
 func receiveId(conn net.Conn) (string, error) {
 	buffer := make([]byte, 37)
 	n, err := conn.Read(buffer)
@@ -111,29 +118,4 @@ func receiveId(conn net.Conn) (string, error) {
 	}
 	id := string(buffer[:n])
 	return strings.TrimSpace(id), nil
-}
-
-func StartClient() {
-	connection := dial(SERVER_ADDRESS)
-	defer connection.Close()
-
-	playerID, err := receiveId(connection)
-	if err != nil {
-		fmt.Println("Error while receiving player ID: ", err)
-	}
-	welcomeUser(playerID)
-
-	view.InitWindow()
-
-	var game model.Game
-	go updateGame(connection, &game)
-
-	for !view.WindowShouldClose() {
-		view.DrawGame(game)
-		//drawGame2()
-		sendMessages(connection, playerID)
-		if view.WindowShouldClose() {
-			sendLeaveMessage(connection, playerID)
-		}
-	}
 }
