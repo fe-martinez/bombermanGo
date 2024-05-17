@@ -7,6 +7,8 @@ import (
 	"os"
 )
 
+const SERVER_ADDRESS = "localhost:8080"
+
 func validateArgs() {
 	if len(os.Args) != 2 {
 		fmt.Println("Usage: go run . [client|server]")
@@ -21,7 +23,12 @@ func runClient() {
 }
 
 func runServer() {
-	server.StartServer()
+	server, err := server.NewServer(SERVER_ADDRESS, 4)
+	if err != nil {
+		fmt.Println("Error while starting server: ", err)
+	}
+
+	server.Start()
 }
 
 func run(arg string) {

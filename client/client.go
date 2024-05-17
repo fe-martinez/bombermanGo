@@ -25,7 +25,6 @@ func NewClient() *Client {
 		return nil
 	}
 	fmt.Println("Connected to server with ID:", playerID)
-	view.InitWindow()
 
 	var game model.Game
 	//	loadGame(connection, &game)
@@ -59,6 +58,7 @@ func (c *Client) sendLeaveMessage() {
 
 func (c *Client) Start() {
 	defer c.connection.Close()
+	view.InitWindow()
 	go updateGame(c.connection, &c.game)
 
 	for !view.WindowShouldClose() {
@@ -81,13 +81,11 @@ func dial(serverAddress string) net.Conn {
 }
 
 func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, 2048)
 	n, err := conn.Read(buffer)
 	if err != nil {
 		return nil, fmt.Errorf("error al leer del servidor: %s", err)
 	}
-	fmt.Println("Estoy en receive message from server!")
-
 	decodedGame, err := model.DecodeGame(buffer[:n])
 	if err != nil {
 		return nil, fmt.Errorf("error al decodificar el juego del servidor: %s", err)
@@ -98,14 +96,11 @@ func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
 
 func updateGame(conn net.Conn, game *model.Game) {
 	for {
-		fmt.Println("Updating game...")
-
 		updatedGame, err := receiveMessageFromServer(conn)
 		if err != nil {
 			fmt.Println("Error al recibir el juego actualizado:", err)
 			return
 		}
-
 		*game = *updatedGame
 	}
 }
