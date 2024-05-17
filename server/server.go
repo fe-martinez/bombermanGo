@@ -25,7 +25,7 @@ func NewServer(address string, maxPlayers int) (*Server, error) {
 
 	gameMap := model.CreateMap(15, 16)
 	gameId := utils.CreateRandomUid()
-	game := createGame(gameId, gameMap)
+	game := model.NewGame(gameId, gameMap)
 
 	return &Server{
 		address:  address,
@@ -36,9 +36,9 @@ func NewServer(address string, maxPlayers int) (*Server, error) {
 }
 
 func (s *Server) Start() {
-	informUser(SERVER_ADDRESS)
+	fmt.Println("Starting game server at", SERVER_ADDRESS)
 	go s.handleConnections()
-	go s.gameLoop()
+	go s.broadcastLoop()
 	select {}
 }
 
@@ -65,8 +65,6 @@ func (s *Server) handleConnection(conn net.Conn) {
 	player := model.NewPlayer(playerID, s.game.GenerateValidPosition(mapSize))
 	s.game.AddPlayer(player)
 
-	fmt.Println("Player connected:", playerID)
-
 	s.clients[playerID] = conn
 	sendId(conn, playerID)
 
@@ -80,11 +78,10 @@ func (s *Server) handleMessages(conn net.Conn, game *model.Game) {
 	if err != nil {
 		return
 	}
-	fmt.Println("Message received: ", message)
-	handleMove(message, game)
+	handlePlayerMove(message, game)
 }
 
-func (s *Server) gameLoop() {
+func (s *Server) broadcastLoop() {
 	ticker := time.NewTicker(33 * time.Millisecond)
 	defer ticker.Stop()
 
@@ -101,28 +98,10 @@ func (s *Server) broadcastGameState() {
 	}
 }
 
-// func (s *Server) gameLoop() {
-// 	ticker := time.NewTicker(33 * time.Millisecond)
-// 	defer ticker.Stop()
-
-// 	for range ticker.C {
-// 		s.
-// 	}
-
-// }
-
-func informUser(serverAddress string) {
-	fmt.Println("Starting game server at", serverAddress)
-}
-
 func listen(serverAddress string) (net.Listener, error) {
 	listener, err := net.Listen("tcp", serverAddress)
 	if err != nil {
 		return nil, err
 	}
 	return listener, nil
-}
-
-func createGame(GameId string, GameMap *model.GameMap) *model.Game {
-	return model.NewGame(GameId, GameMap)
 }

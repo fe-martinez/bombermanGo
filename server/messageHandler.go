@@ -4,7 +4,6 @@ import (
 	"bombman/model"
 	"bombman/utils"
 	"fmt"
-	"log"
 	"net"
 )
 
@@ -34,16 +33,11 @@ func sendMessageToClient(conn net.Conn, game *model.Game) {
 		fmt.Println("Error al enviar el juego al cliente:", err)
 		return
 	}
-
-	log.Println("Juego enviado exitosamente al cliente.")
-}
-
-func respondToClient(conn net.Conn, game *model.Game) {
-	sendMessageToClient(conn, game)
 }
 
 func sendId(conn net.Conn, playerID string) {
-	_, err := conn.Write([]byte(playerID))
+	n, err := conn.Write([]byte(playerID))
+	fmt.Println(n)
 	if err != nil {
 		fmt.Println("Error sending player ID to client: ", err)
 	}
