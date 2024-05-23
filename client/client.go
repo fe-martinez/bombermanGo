@@ -54,7 +54,9 @@ func (c *Client) sendInput(input string) {
 	} else if input == "create" {
 		SendCreateGameMessage(c.connection, c.playerID)
 	} else if input == "join" {
-		SendJoinGameMessage(c.connection, c.playerID, "1")
+		lobbyID := string(view.InputChars[:])
+		SendJoinGameMessage(c.connection, c.playerID, lobbyID)
+		fmt.Println(lobbyID)
 	} else {
 		SendMoveMessage(input, c.connection, c.playerID)
 	}
@@ -73,9 +75,19 @@ func (c *Client) handleMainMenu() {
 		c.gameState = "game"
 		c.sendMessages("create")
 	} else if input == "join" {
-		go updateGame(c.connection, &c.game)
-		c.gameState = "game"
+		// go updateGame(c.connection, &c.game)
+		c.gameState = "lobby-selection"
 	}
+}
+
+func (c *Client) handleLobbySelection() {
+	view.DrawLobbySelectionScreen()
+
+	userInput := handleLobbySelectionInput()
+	if userInput != "none" && len(view.InputChars) == 5 {
+		c.sendMessages(userInput)
+	}
+
 }
 
 func (c *Client) handleGame() {
@@ -96,6 +108,8 @@ func (c *Client) Start() {
 	for !view.WindowShouldClose() {
 		if c.gameState == "main-menu" {
 			c.handleMainMenu()
+		} else if c.gameState == "lobby-selection" {
+			c.handleLobbySelection()
 		} else if c.gameState == "game" {
 			c.handleGame()
 		}

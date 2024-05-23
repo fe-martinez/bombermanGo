@@ -44,3 +44,10 @@ func handleMainMenuInput() string {
 	}
 	return "none"
 }
+
+func handleLobbySelectionInput() string {
+	if rl.IsKeyDown(rl.KeyEnter) {
+		return "join"
+	}
+	return "none"
+}
