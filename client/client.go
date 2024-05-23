@@ -45,14 +45,16 @@ func NewClient() *Client {
 func (c *Client) sendMessages(input string) {
 	if input != "none" {
 		c.sendInput(input)
-	} else {
-		SendUpdateMessage(c.connection, c.playerID)
 	}
 }
 
 func (c *Client) sendInput(input string) {
 	if input == "bomb" {
 		SendBombMessage(c.connection, c.playerID)
+	} else if input == "create" {
+		SendCreateGameMessage(c.connection, c.playerID)
+	} else if input == "join" {
+		SendJoinGameMessage(c.connection, c.playerID, "1")
 	} else {
 		SendMoveMessage(input, c.connection, c.playerID)
 	}
@@ -69,6 +71,7 @@ func (c *Client) handleMainMenu() {
 	if input == "create" {
 		go updateGame(c.connection, &c.game)
 		c.gameState = "game"
+		c.sendMessages("create")
 	} else if input == "join" {
 		go updateGame(c.connection, &c.game)
 		c.gameState = "game"
@@ -76,6 +79,7 @@ func (c *Client) handleMainMenu() {
 }
 
 func (c *Client) handleGame() {
+	fmt.Println(c.game)
 	view.DrawGame(c.game)
 	input := handleInput()
 	c.sendMessages(input)

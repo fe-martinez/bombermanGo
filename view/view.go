@@ -2,7 +2,6 @@ package view
 
 import (
 	"bombman/model"
-	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -56,7 +55,6 @@ func drawWalls(game model.Game) {
 
 func DrawGame(game model.Game) {
 	if len(game.Players) == 0 {
-		fmt.Println("No players")
 		return
 	}
 
