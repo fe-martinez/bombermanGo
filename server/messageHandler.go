@@ -36,8 +36,7 @@ func sendMessageToClient(conn net.Conn, game *model.Game) {
 }
 
 func sendId(conn net.Conn, playerID string) {
-	n, err := conn.Write([]byte(playerID))
-	fmt.Println(n)
+	_, err := conn.Write([]byte(playerID))
 	if err != nil {
 		fmt.Println("Error sending player ID to client: ", err)
 	}

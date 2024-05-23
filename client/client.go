@@ -19,6 +19,7 @@ type Client struct {
 	connection net.Conn
 	playerID   string
 	game       model.Game
+	gameState  string
 }
 
 func NewClient() *Client {
@@ -37,6 +38,7 @@ func NewClient() *Client {
 		connection: connection,
 		playerID:   playerID,
 		game:       game,
+		gameState:  "main-menu",
 	}
 }
 
@@ -60,17 +62,38 @@ func (c *Client) sendLeaveMessage() {
 	SendLeaveMessage(c.connection, c.playerID)
 }
 
+func (c *Client) handleMainMenu() {
+	view.DrawMainMenuScreen()
+
+	input := handleMainMenuInput()
+	if input == "create" {
+		go updateGame(c.connection, &c.game)
+		c.gameState = "game"
+	} else if input == "join" {
+		go updateGame(c.connection, &c.game)
+		c.gameState = "game"
+	}
+}
+
+func (c *Client) handleGame() {
+	view.DrawGame(c.game)
+	input := handleInput()
+	c.sendMessages(input)
+	if view.WindowShouldClose() {
+		c.sendLeaveMessage()
+	}
+}
+
 func (c *Client) Start() {
 	defer c.connection.Close()
 	view.InitWindow()
 	go updateGame(c.connection, &c.game)
 
 	for !view.WindowShouldClose() {
-		view.DrawGame(c.game)
-		input := handleInput()
-		c.sendMessages(input)
-		if view.WindowShouldClose() {
-			c.sendLeaveMessage()
+		if c.gameState == "main-menu" {
+			c.handleMainMenu()
+		} else if c.gameState == "game" {
+			c.handleGame()
 		}
 	}
 }
@@ -85,7 +108,7 @@ func dial(serverAddress string) net.Conn {
 }
 
 func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
-	buffer := make([]byte, 4096)
+	buffer := make([]byte, 9000)
 	n, err := conn.Read(buffer)
 	fmt.Println(n)
 	if err != nil {

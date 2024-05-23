@@ -9,7 +9,7 @@ import (
 
 func InitWindow() {
 	rl.InitWindow(800, 800, "Bomberman Go!")
-	rl.SetTargetFPS(60)
+	rl.SetTargetFPS(30)
 }
 
 func WindowShouldClose() bool {
@@ -71,5 +71,28 @@ func DrawGame(game model.Game) {
 
 	drawPowerUps(game)
 
+	rl.EndDrawing()
+}
+
+const LOBBY_TITLE_POS_X = 350
+const LOBBY_TITLE_POS_Y = 200
+
+const CREATE_GAME_POS_X = 250
+const CREATE_GAME_POS_Y = 350
+
+const JOIN_GAME_POS_X = 250
+const JOIN_GAME_POS_Y = 450
+
+const BUTTON_WIDTH = 350
+const BUTTON_HEIGHT = 50
+
+func DrawMainMenuScreen() {
+	rl.BeginDrawing()
+	rl.ClearBackground(rl.Beige)
+	rl.DrawText("Lobby screen", LOBBY_TITLE_POS_X, LOBBY_TITLE_POS_Y, 20, rl.Maroon)
+	rl.DrawRectangle(CREATE_GAME_POS_X, CREATE_GAME_POS_Y, BUTTON_WIDTH, BUTTON_HEIGHT, rl.DarkPurple)
+	rl.DrawText("Create game", CREATE_GAME_POS_X+10, CREATE_GAME_POS_Y+15, 20, rl.White)
+	rl.DrawRectangle(JOIN_GAME_POS_X, JOIN_GAME_POS_Y, BUTTON_WIDTH, BUTTON_HEIGHT, rl.DarkPurple)
+	rl.DrawText("Join game", JOIN_GAME_POS_X+10, JOIN_GAME_POS_Y+15, 20, rl.White)
 	rl.EndDrawing()
 }
