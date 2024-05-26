@@ -32,7 +32,6 @@ func NewClient() *Client {
 	fmt.Println("Connected to server with ID:", playerID)
 
 	var game model.Game
-	//	loadGame(connection, &game)
 
 	return &Client{
 		connection: connection,
@@ -75,14 +74,11 @@ func (c *Client) handleMainMenu() {
 		c.gameState = "game"
 		c.sendMessages("create")
 	} else if input == "join" {
-		// go updateGame(c.connection, &c.game)
 		c.gameState = "lobby-selection"
 	}
 }
 
 func (c *Client) handleLobbySelection() {
-	view.DrawLobbySelectionScreen()
-
 	userInput, lobbyID := handleLobbySelectionInput()
 	if userInput != "none" && len(lobbyID) == 3 {
 		c.sendMessages(lobbyID)
@@ -90,6 +86,7 @@ func (c *Client) handleLobbySelection() {
 		go updateGame(c.connection, &c.game)
 	}
 
+	view.DrawLobbySelectionScreen(lobbyID)
 }
 
 func (c *Client) handleGame() {

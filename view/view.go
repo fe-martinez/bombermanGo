@@ -106,12 +106,14 @@ const (
 )
 
 // Raylib no tiene cajas de texto, este es un intento de simular una
-func DrawLobbySelectionScreen() {
+func DrawLobbySelectionScreen(lobbyID string) {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.Beige)
 
 	rl.DrawText("Enter Game ID", INPUT_BOX_POS_X, INPUT_BOX_POS_Y-40, 20, rl.Maroon)
 	rl.DrawRectangleLines(INPUT_BOX_POS_X, INPUT_BOX_POS_Y, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT, rl.DarkPurple)
+
+	rl.DrawText(lobbyID, INPUT_BOX_POS_X+10, INPUT_BOX_POS_Y+15, 20, rl.Maroon)
 
 	rl.EndDrawing()
 }

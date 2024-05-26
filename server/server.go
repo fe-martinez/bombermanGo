@@ -4,18 +4,12 @@ import (
 	"bombman/model"
 	"bombman/utils"
 	"fmt"
+	"log"
 	"math/rand"
 	"net"
 	"strconv"
 	"time"
 )
-
-// type Server struct {
-// 	address  string
-// 	listener net.Listener
-// 	game     *model.Game
-// 	clients  map[string]net.Conn
-// }
 
 type Server struct {
 	address  string
@@ -34,9 +28,16 @@ type Lobby struct {
 type Client struct {
 	clientID   string
 	connection net.Conn
-	state      string
+	state      ClientState
 	lobbyID    string
 }
+
+type ClientState string
+
+const (
+	MainMenu ClientState = "main-menu"
+	Game     ClientState = "game"
+)
 
 const SERVER_ADDRESS = "localhost:8080"
 const GAME_SPEED = 33 * time.Millisecond
@@ -56,7 +57,7 @@ func NewServer(address string, maxPlayers int) (*Server, error) {
 }
 
 func (s *Server) Start() {
-	fmt.Println("Starting game server at", SERVER_ADDRESS)
+	log.Println("Starting game server at", SERVER_ADDRESS)
 	go s.handleConnections()
 	go s.broadcastLoop()
 	select {}
@@ -66,7 +67,7 @@ func (s *Server) handleConnections() {
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
-			fmt.Printf("Error accepting connection: %v\n", err)
+			log.Printf("Error accepting connection: %v\n", err)
 			continue
 		}
 
@@ -79,7 +80,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	playerID := utils.CreateRandomUid()
 
-	client := Client{clientID: playerID, connection: conn, state: "main-menu", lobbyID: ""}
+	client := Client{clientID: playerID, connection: conn, state: MainMenu, lobbyID: ""}
 
 	s.clients[playerID] = client
 	sendId(conn, playerID)
@@ -95,7 +96,7 @@ func (s *Server) handleMessages(client *Client) {
 		return
 	}
 
-	if client.state == "main-menu" {
+	if client.state == MainMenu {
 		s.handleMainMenuAction(message, client)
 	} else {
 		lobby := s.lobbies[client.lobbyID]
@@ -106,11 +107,16 @@ func (s *Server) handleMessages(client *Client) {
 func (s *Server) handleMainMenuAction(msg utils.ClientMessage, client *Client) {
 	switch msg.Action {
 	case utils.ActionCreateGame:
-		_ = s.createLobby(client)
+		lobby := s.createLobby(client)
+		if lobby == nil {
+			log.Println("Error creating lobby")
+			return
+		}
 	case utils.ActionJoinGame:
 		lobbyID := msg.Data.(string)
 		lobby := s.joinLobby(lobbyID, client)
 		if lobby == nil {
+			log.Println("Error joining lobby")
 			return
 		}
 	default:
@@ -126,6 +132,18 @@ func (s *Server) createUniqueLobbyID() string {
 	return randomValue
 }
 
+func (s *Server) addClientToLobby(lobbyID string, client *Client) {
+	lobby := s.lobbies[lobbyID]
+	player := model.NewPlayer(client.clientID, lobby.game.GenerateValidPosition(lobby.game.GameMap.Size))
+
+	lobby.game.AddPlayer(player)
+	lobby.clients[client.clientID] = client.connection
+	s.lobbies[lobbyID] = lobby
+
+	client.state = Game
+	s.clients[client.clientID] = *client
+}
+
 func (s *Server) createLobby(client *Client) *Lobby {
 	lobbyID := s.createUniqueLobbyID()
 	gameMap := model.CreateMap(15, 16)
@@ -135,37 +153,32 @@ func (s *Server) createLobby(client *Client) *Lobby {
 		clients: make(map[string]net.Conn),
 		game:    model.NewGame(lobbyID, gameMap),
 	}
-
-	player := model.NewPlayer(client.clientID, lobby.game.GenerateValidPosition(lobby.game.GameMap.Size))
-
-	lobby.game.AddPlayer(player)
-	lobby.clients[client.clientID] = client.connection
 	s.lobbies[lobbyID] = lobby
-
-	client.state = "game"
-	s.clients[client.clientID] = *client
-
+	s.addClientToLobby(lobbyID, client)
 	return lobby
 }
 
 func (s *Server) joinLobby(lobbyID string, client *Client) *Lobby {
 	lobby := s.lobbies[lobbyID]
-
 	if lobby == nil {
-		fmt.Println("Lobby not found")
+		log.Println("Lobby", lobbyID, "not found")
 		return nil
 	}
-
-	player := model.NewPlayer(client.clientID, lobby.game.GenerateValidPosition(lobby.game.GameMap.Size))
-	lobby.game.AddPlayer(player)
-
-	lobby.clients[client.clientID] = client.connection
-
-	s.lobbies[lobbyID] = lobby
-
-	client.state = "game"
-	s.clients[client.clientID] = *client
+	s.addClientToLobby(lobbyID, client)
 	return lobby
+}
+
+func (s *Server) disconnectClient(clientID string) {
+	client := s.clients[clientID]
+	if client.state == Game {
+		lobby := s.lobbies[client.lobbyID]
+		lobby.game.RemovePlayer(clientID)
+		delete(lobby.clients, clientID)
+		if len(lobby.clients) == 0 {
+			delete(s.lobbies, client.lobbyID)
+		}
+	}
+	delete(s.clients, clientID)
 }
 
 func (s *Server) broadcastLoop() {
@@ -181,8 +194,6 @@ func (s *Server) broadcastLoop() {
 func (s *Server) broadcastGameState() {
 	for _, lobby := range s.lobbies {
 		gameState := lobby.game
-		fmt.Println("Players in game:", len(gameState.Players))
-		fmt.Println("Broadcasting game state for lobby ", lobby.id)
 		for _, conn := range lobby.clients {
 			sendMessageToClient(conn, gameState)
 		}

@@ -59,5 +59,6 @@ func handleLobbySelectionInput() (string, string) {
 		userInput = ""
 		return "join", result
 	}
-	return "none", ""
+
+	return "none", userInput
 }
