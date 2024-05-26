@@ -53,10 +53,10 @@ func (c *Client) sendInput(input string) {
 		SendBombMessage(c.connection, c.playerID)
 	} else if input == "create" {
 		SendCreateGameMessage(c.connection, c.playerID)
-	} else if input == "join" {
-		lobbyID := string(view.InputChars[:])
+	} else if len(input) == 3 { // Esto esta mal. TO DO
+		lobbyID := input
+		fmt.Println("Lobby code:", lobbyID)
 		SendJoinGameMessage(c.connection, c.playerID, lobbyID)
-		fmt.Println(lobbyID)
 	} else {
 		SendMoveMessage(input, c.connection, c.playerID)
 	}
@@ -83,9 +83,11 @@ func (c *Client) handleMainMenu() {
 func (c *Client) handleLobbySelection() {
 	view.DrawLobbySelectionScreen()
 
-	userInput := handleLobbySelectionInput()
-	if userInput != "none" && len(view.InputChars) == 5 {
-		c.sendMessages(userInput)
+	userInput, lobbyID := handleLobbySelectionInput()
+	if userInput != "none" && len(lobbyID) == 3 {
+		c.sendMessages(lobbyID)
+		c.gameState = "game"
+		go updateGame(c.connection, &c.game)
 	}
 
 }
@@ -103,7 +105,6 @@ func (c *Client) handleGame() {
 func (c *Client) Start() {
 	defer c.connection.Close()
 	view.InitWindow()
-	go updateGame(c.connection, &c.game)
 
 	for !view.WindowShouldClose() {
 		if c.gameState == "main-menu" {
@@ -145,7 +146,6 @@ func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
 func updateGame(conn net.Conn, game *model.Game) {
 	for {
 		updatedGame, err := receiveMessageFromServer(conn)
-		fmt.Println(updatedGame)
 		if err != nil {
 			fmt.Println("Error al recibir el juego actualizado:", err)
 			return

@@ -45,9 +45,19 @@ func handleMainMenuInput() string {
 	return "none"
 }
 
-func handleLobbySelectionInput() string {
-	if rl.IsKeyDown(rl.KeyEnter) {
-		return "join"
+var userInput string
+
+func handleLobbySelectionInput() (string, string) {
+	key := rl.GetCharPressed()
+
+	if key != 0 {
+		userInput += string(key)
 	}
-	return "none"
+
+	if rl.IsKeyDown(rl.KeyEnter) {
+		result := userInput
+		userInput = ""
+		return "join", result
+	}
+	return "none", ""
 }

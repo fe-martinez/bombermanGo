@@ -79,7 +79,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	playerID := utils.CreateRandomUid()
 
-	client := Client{connection: conn, state: "main-menu"}
+	client := Client{clientID: playerID, connection: conn, state: "main-menu", lobbyID: ""}
 
 	s.clients[playerID] = client
 	sendId(conn, playerID)
@@ -106,14 +106,13 @@ func (s *Server) handleMessages(client *Client) {
 func (s *Server) handleMainMenuAction(msg utils.ClientMessage, client *Client) {
 	switch msg.Action {
 	case utils.ActionCreateGame:
-		lobby := s.createLobby(client)
-		client.lobbyID = lobby.id
-		client.state = "game"
+		_ = s.createLobby(client)
 	case utils.ActionJoinGame:
 		lobbyID := msg.Data.(string)
 		lobby := s.joinLobby(lobbyID, client)
-		client.lobbyID = lobby.id
-		client.state = "game"
+		if lobby == nil {
+			return
+		}
 	default:
 		fmt.Println("Action unknown")
 	}
@@ -143,11 +142,15 @@ func (s *Server) createLobby(client *Client) *Lobby {
 	lobby.clients[client.clientID] = client.connection
 	s.lobbies[lobbyID] = lobby
 
+	client.state = "game"
+	s.clients[client.clientID] = *client
+
 	return lobby
 }
 
 func (s *Server) joinLobby(lobbyID string, client *Client) *Lobby {
 	lobby := s.lobbies[lobbyID]
+
 	if lobby == nil {
 		fmt.Println("Lobby not found")
 		return nil
@@ -155,7 +158,13 @@ func (s *Server) joinLobby(lobbyID string, client *Client) *Lobby {
 
 	player := model.NewPlayer(client.clientID, lobby.game.GenerateValidPosition(lobby.game.GameMap.Size))
 	lobby.game.AddPlayer(player)
+
 	lobby.clients[client.clientID] = client.connection
+
+	s.lobbies[lobbyID] = lobby
+
+	client.state = "game"
+	s.clients[client.clientID] = *client
 	return lobby
 }
 
@@ -172,8 +181,8 @@ func (s *Server) broadcastLoop() {
 func (s *Server) broadcastGameState() {
 	for _, lobby := range s.lobbies {
 		gameState := lobby.game
+		fmt.Println("Players in game:", len(gameState.Players))
 		fmt.Println("Broadcasting game state for lobby ", lobby.id)
-		fmt.Println(gameState)
 		for _, conn := range lobby.clients {
 			sendMessageToClient(conn, gameState)
 		}

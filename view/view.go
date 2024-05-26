@@ -2,6 +2,7 @@ package view
 
 import (
 	"bombman/model"
+	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -58,6 +59,8 @@ func DrawGame(game model.Game) {
 		return
 	}
 
+	fmt.Println("Players in game:", len(game.Players))
+
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.RayWhite)
 
@@ -95,11 +98,6 @@ func DrawMainMenuScreen() {
 	rl.EndDrawing()
 }
 
-const MAX_INPUT_CHARS = 4
-
-var InputChars [MAX_INPUT_CHARS + 1]byte
-var letterCount = 0
-
 const (
 	INPUT_BOX_POS_X  = 250
 	INPUT_BOX_POS_Y  = 450
@@ -115,15 +113,5 @@ func DrawLobbySelectionScreen() {
 	rl.DrawText("Enter Game ID", INPUT_BOX_POS_X, INPUT_BOX_POS_Y-40, 20, rl.Maroon)
 	rl.DrawRectangleLines(INPUT_BOX_POS_X, INPUT_BOX_POS_Y, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT, rl.DarkPurple)
 
-	key := rl.GetKeyPressed()
-	if key >= 32 && key <= 125 && letterCount < MAX_INPUT_CHARS {
-		InputChars[letterCount] = byte(key)
-		letterCount++
-	} else if key == 8 && letterCount > 0 {
-		letterCount--
-		InputChars[letterCount] = 0
-	}
-
-	rl.DrawText(string(InputChars[:letterCount]), INPUT_BOX_POS_X+5, INPUT_BOX_POS_Y+8, 20, rl.Maroon)
 	rl.EndDrawing()
 }
