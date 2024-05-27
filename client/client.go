@@ -15,11 +15,21 @@ const SERVER_ADDRESS = "localhost:8080"
 
 var mu sync.Mutex
 
+// A type for game states in the client
+type ClientEnumState string
+
+// Constants for the different game states
+const (
+	MainMenu       ClientEnumState = "main-menu"
+	LobbySelection ClientEnumState = "lobby-selection"
+	Game           ClientEnumState = "game"
+)
+
 type Client struct {
 	connection net.Conn
 	playerID   string
 	game       model.Game
-	gameState  string
+	gameState  ClientState
 }
 
 func NewClient() *Client {
@@ -37,25 +47,13 @@ func NewClient() *Client {
 		connection: connection,
 		playerID:   playerID,
 		game:       game,
-		gameState:  "main-menu",
+		gameState:  &MainMenuState{},
 	}
 }
 
-func (c *Client) sendMessages(input string) {
-	if input != "none" {
-		c.sendInput(input)
-	}
-}
-
-func (c *Client) sendInput(input string) {
+func (c *Client) sendGameInput(input string) {
 	if input == "bomb" {
 		SendBombMessage(c.connection, c.playerID)
-	} else if input == "create" {
-		SendCreateGameMessage(c.connection, c.playerID)
-	} else if len(input) == 3 { // Esto esta mal. TO DO
-		lobbyID := input
-		fmt.Println("Lobby code:", lobbyID)
-		SendJoinGameMessage(c.connection, c.playerID, lobbyID)
 	} else {
 		SendMoveMessage(input, c.connection, c.playerID)
 	}
@@ -65,38 +63,12 @@ func (c *Client) sendLeaveMessage() {
 	SendLeaveMessage(c.connection, c.playerID)
 }
 
-func (c *Client) handleMainMenu() {
-	view.DrawMainMenuScreen()
-
-	input := handleMainMenuInput()
-	if input == "create" {
-		go updateGame(c.connection, &c.game)
-		c.gameState = "game"
-		c.sendMessages("create")
-	} else if input == "join" {
-		c.gameState = "lobby-selection"
-	}
+func (c *Client) sendCreateGameMessage() {
+	SendCreateGameMessage(c.connection, c.playerID)
 }
 
-func (c *Client) handleLobbySelection() {
-	userInput, lobbyID := handleLobbySelectionInput()
-	if userInput != "none" && len(lobbyID) == 3 {
-		c.sendMessages(lobbyID)
-		c.gameState = "game"
-		go updateGame(c.connection, &c.game)
-	}
-
-	view.DrawLobbySelectionScreen(lobbyID)
-}
-
-func (c *Client) handleGame() {
-	fmt.Println(c.game)
-	view.DrawGame(c.game)
-	input := handleInput()
-	c.sendMessages(input)
-	if view.WindowShouldClose() {
-		c.sendLeaveMessage()
-	}
+func (c *Client) sendJoinGameMessage(lobbyID string) {
+	SendJoinGameMessage(c.connection, c.playerID, lobbyID)
 }
 
 func (c *Client) Start() {
@@ -104,13 +76,7 @@ func (c *Client) Start() {
 	view.InitWindow()
 
 	for !view.WindowShouldClose() {
-		if c.gameState == "main-menu" {
-			c.handleMainMenu()
-		} else if c.gameState == "lobby-selection" {
-			c.handleLobbySelection()
-		} else if c.gameState == "game" {
-			c.handleGame()
-		}
+		c.gameState.Handle(c)
 	}
 }
 
