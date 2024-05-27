@@ -144,6 +144,7 @@ func (s *Server) addClientToLobby(lobbyID string, client *Client) {
 	lobby.clients[client.clientID] = client.connection
 	s.lobbies[lobbyID] = lobby
 
+	client.lobbyID = lobbyID
 	client.state = Game
 	s.clients[client.clientID] = *client
 }
