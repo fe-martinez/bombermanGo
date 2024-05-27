@@ -121,6 +121,8 @@ func (s *Server) handleMainMenuAction(msg utils.ClientMessage, client *Client) {
 		lobby := s.joinLobby(lobbyID, client)
 		if lobby == nil {
 			log.Println("Error joining lobby")
+			// Return error message to client
+
 			return
 		}
 	default:
@@ -167,7 +169,10 @@ func (s *Server) joinLobby(lobbyID string, client *Client) *Lobby {
 	lobby := s.lobbies[lobbyID]
 	if lobby == nil {
 		log.Println("Lobby", lobbyID, "not found")
+		sendJoinLobbyAck(client.connection, lobbyID, false)
 		return nil
+	} else {
+		sendJoinLobbyAck(client.connection, lobbyID, true)
 	}
 	s.addClientToLobby(lobbyID, client)
 	return lobby

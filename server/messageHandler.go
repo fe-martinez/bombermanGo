@@ -3,9 +3,16 @@ package server
 import (
 	"bombman/model"
 	"bombman/utils"
+	"encoding/gob"
 	"fmt"
 	"net"
 )
+
+type JoinLobbyAck struct {
+	Success bool
+	LobbyID string
+	Message string
+}
 
 func readClientMessage(conn net.Conn) (utils.ClientMessage, error) {
 	buffer := make([]byte, 1024)
@@ -32,6 +39,25 @@ func sendMessageToClient(conn net.Conn, game *model.Game) {
 	if err != nil {
 		fmt.Println("Error al enviar el juego al cliente:", err)
 		return
+	}
+}
+
+// Create a function to aknowledge the client that he has successfully joined the lobby or that the lobby is full or does not exist
+func sendJoinLobbyAck(conn net.Conn, lobbyID string, success bool) {
+	var msg JoinLobbyAck
+	msg.LobbyID = lobbyID
+	msg.Success = success
+
+	if success {
+		msg.Message = "Joined lobby " + lobbyID
+	} else {
+		msg.Message = "Failed to join lobby " + lobbyID
+	}
+
+	enc := gob.NewEncoder(conn)
+	err := enc.Encode(msg)
+	if err != nil {
+		fmt.Println("Error sending join lobby ack to client:", err)
 	}
 }
 

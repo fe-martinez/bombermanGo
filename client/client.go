@@ -89,7 +89,7 @@ func dial(serverAddress string) net.Conn {
 	return connection
 }
 
-func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
+func receiveGameFromServer(conn net.Conn) (*model.Game, error) {
 	buffer := make([]byte, 9000)
 	n, err := conn.Read(buffer)
 	fmt.Println(n)
@@ -108,7 +108,7 @@ func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
 
 func updateGame(conn net.Conn, game *model.Game) {
 	for {
-		updatedGame, err := receiveMessageFromServer(conn)
+		updatedGame, err := receiveGameFromServer(conn)
 		if err != nil {
 			fmt.Println("Error al recibir el juego actualizado:", err)
 			return
