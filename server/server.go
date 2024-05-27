@@ -100,6 +100,10 @@ func (s *Server) handleMessages(client *Client) {
 		s.handleMainMenuAction(message, client)
 	} else {
 		lobby := s.lobbies[client.lobbyID]
+		if message.Action == utils.ActionLeave {
+			s.disconnectClient(client.clientID)
+			return
+		}
 		handlePlayerAction(message, lobby.game)
 	}
 }
