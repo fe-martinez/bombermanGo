@@ -42,22 +42,29 @@ func sendMessageToClient(conn net.Conn, game *model.Game) {
 	}
 }
 
-// Create a function to aknowledge the client that he has successfully joined the lobby or that the lobby is full or does not exist
-func sendJoinLobbyAck(conn net.Conn, lobbyID string, success bool) {
+func sendJoinLobbySuccess(conn net.Conn, lobbyID string) {
 	var msg JoinLobbyAck
 	msg.LobbyID = lobbyID
-	msg.Success = success
-
-	if success {
-		msg.Message = "Joined lobby " + lobbyID
-	} else {
-		msg.Message = "Failed to join lobby " + lobbyID
-	}
+	msg.Success = true
+	msg.Message = "Joined lobby " + lobbyID
 
 	enc := gob.NewEncoder(conn)
 	err := enc.Encode(msg)
 	if err != nil {
-		fmt.Println("Error sending join lobby ack to client:", err)
+		fmt.Println("Error encoding join lobby success: ", err)
+	}
+}
+
+func sendJoinLobbyFailure(conn net.Conn, lobbyID string) {
+	var msg JoinLobbyAck
+	msg.LobbyID = lobbyID
+	msg.Success = false
+	msg.Message = "Failed to join lobby " + lobbyID
+
+	enc := gob.NewEncoder(conn)
+	err := enc.Encode(msg)
+	if err != nil {
+		fmt.Println("Error encoding join lobby failure: ", err)
 	}
 }
 

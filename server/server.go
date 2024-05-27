@@ -169,13 +169,13 @@ func (s *Server) joinLobby(lobbyID string, client *Client) *Lobby {
 	lobby := s.lobbies[lobbyID]
 	if lobby == nil {
 		log.Println("Lobby", lobbyID, "not found")
-		sendJoinLobbyAck(client.connection, lobbyID, false)
+		sendJoinLobbyFailure(client.connection, lobbyID)
 		return nil
 	} else {
-		sendJoinLobbyAck(client.connection, lobbyID, true)
+		sendJoinLobbySuccess(client.connection, lobbyID)
+		s.addClientToLobby(lobbyID, client)
+		return lobby
 	}
-	s.addClientToLobby(lobbyID, client)
-	return lobby
 }
 
 func (s *Server) disconnectClient(clientID string) {
