@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bombman/model"
 	"bombman/utils"
 	"fmt"
 	"log"
@@ -15,14 +14,7 @@ type Server struct {
 	address  string
 	listener net.Listener
 	lobbies  map[string]*Lobby
-	clients  map[string]Client
-}
-
-type Lobby struct {
-	ownerID string
-	id      string
-	clients map[string]net.Conn
-	game    *model.Game
+	clients  map[string]*Client
 }
 
 type Client struct {
@@ -51,12 +43,13 @@ func NewServer(address string, maxPlayers int) (*Server, error) {
 	return &Server{
 		address:  address,
 		listener: listener,
-		clients:  make(map[string]Client),
+		clients:  make(map[string]*Client),
 		lobbies:  make(map[string]*Lobby),
 	}, nil
 }
 
 func (s *Server) Start() {
+	fmt.Println("Starting server")
 	log.Println("Starting game server at", SERVER_ADDRESS)
 	go s.handleConnections()
 	go s.broadcastLoop()
@@ -82,7 +75,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	client := Client{clientID: playerID, connection: conn, state: MainMenu, lobbyID: ""}
 
-	s.clients[playerID] = client
+	s.clients[playerID] = &client
 	sendId(conn, playerID)
 
 	for {
@@ -121,8 +114,6 @@ func (s *Server) handleMainMenuAction(msg utils.ClientMessage, client *Client) {
 		lobby := s.joinLobby(lobbyID, client)
 		if lobby == nil {
 			log.Println("Error joining lobby")
-			// Return error message to client
-
 			return
 		}
 	default:
@@ -138,30 +129,11 @@ func (s *Server) createUniqueLobbyID() string {
 	return randomValue
 }
 
-func (s *Server) addClientToLobby(lobbyID string, client *Client) {
-	lobby := s.lobbies[lobbyID]
-	player := model.NewPlayer(client.clientID, lobby.game.GenerateValidPosition(lobby.game.GameMap.Size))
-
-	lobby.game.AddPlayer(player)
-	lobby.clients[client.clientID] = client.connection
-	s.lobbies[lobbyID] = lobby
-
-	client.lobbyID = lobbyID
-	client.state = Game
-	s.clients[client.clientID] = *client
-}
-
 func (s *Server) createLobby(client *Client) *Lobby {
 	lobbyID := s.createUniqueLobbyID()
-	gameMap := model.CreateMap(15, 16)
-	lobby := &Lobby{
-		ownerID: client.clientID,
-		id:      lobbyID,
-		clients: make(map[string]net.Conn),
-		game:    model.NewGame(lobbyID, gameMap),
-	}
+	lobby := NewLobby(client.clientID, lobbyID)
+	lobby.AddClient(client)
 	s.lobbies[lobbyID] = lobby
-	s.addClientToLobby(lobbyID, client)
 	return lobby
 }
 
@@ -173,7 +145,7 @@ func (s *Server) joinLobby(lobbyID string, client *Client) *Lobby {
 		return nil
 	} else {
 		sendJoinLobbySuccess(client.connection, lobbyID)
-		s.addClientToLobby(lobbyID, client)
+		lobby.AddClient(client)
 		return lobby
 	}
 }
@@ -182,8 +154,7 @@ func (s *Server) disconnectClient(clientID string) {
 	client := s.clients[clientID]
 	if client.state == Game {
 		lobby := s.lobbies[client.lobbyID]
-		lobby.game.RemovePlayer(clientID)
-		delete(lobby.clients, clientID)
+		lobby.RemoveClient(client)
 		if len(lobby.clients) == 0 {
 			delete(s.lobbies, client.lobbyID)
 		}
@@ -203,10 +174,7 @@ func (s *Server) broadcastLoop() {
 
 func (s *Server) broadcastGameState() {
 	for _, lobby := range s.lobbies {
-		gameState := lobby.game
-		for _, conn := range lobby.clients {
-			sendMessageToClient(conn, gameState)
-		}
+		lobby.BroadcastGameState()
 	}
 }
 
