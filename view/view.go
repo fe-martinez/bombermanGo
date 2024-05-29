@@ -56,9 +56,10 @@ func drawWalls(game model.Game) {
 
 func DrawGame(game model.Game) {
 	if len(game.Players) == 0 {
-		fmt.Println("No players")
 		return
 	}
+
+	fmt.Println("Players in game:", len(game.Players))
 
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.RayWhite)
@@ -94,5 +95,25 @@ func DrawMainMenuScreen() {
 	rl.DrawText("Create game", CREATE_GAME_POS_X+10, CREATE_GAME_POS_Y+15, 20, rl.White)
 	rl.DrawRectangle(JOIN_GAME_POS_X, JOIN_GAME_POS_Y, BUTTON_WIDTH, BUTTON_HEIGHT, rl.DarkPurple)
 	rl.DrawText("Join game", JOIN_GAME_POS_X+10, JOIN_GAME_POS_Y+15, 20, rl.White)
+	rl.EndDrawing()
+}
+
+const (
+	INPUT_BOX_POS_X  = 250
+	INPUT_BOX_POS_Y  = 450
+	INPUT_BOX_WIDTH  = 350
+	INPUT_BOX_HEIGHT = 50
+)
+
+// Raylib no tiene cajas de texto, este es un intento de simular una
+func DrawLobbySelectionScreen(lobbyID string) {
+	rl.BeginDrawing()
+	rl.ClearBackground(rl.Beige)
+
+	rl.DrawText("Enter Game ID", INPUT_BOX_POS_X, INPUT_BOX_POS_Y-40, 20, rl.Maroon)
+	rl.DrawRectangleLines(INPUT_BOX_POS_X, INPUT_BOX_POS_Y, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT, rl.DarkPurple)
+
+	rl.DrawText(lobbyID, INPUT_BOX_POS_X+10, INPUT_BOX_POS_Y+15, 20, rl.Maroon)
+
 	rl.EndDrawing()
 }

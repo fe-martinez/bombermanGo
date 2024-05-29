@@ -14,10 +14,11 @@ type ClientMessage struct {
 type MessageAction string
 
 const (
-	ActionMove   MessageAction = "move"
-	ActionBomb   MessageAction = "bomb"
-	ActionUpdate MessageAction = "update"
-	ActionLeave  MessageAction = "leave"
+	ActionMove       MessageAction = "move"
+	ActionBomb       MessageAction = "bomb"
+	ActionLeave      MessageAction = "leave"
+	ActionJoinGame   MessageAction = "join"
+	ActionCreateGame MessageAction = "create-game"
 )
 
 func EncodeClientMessage(msg ClientMessage) ([]byte, error) {

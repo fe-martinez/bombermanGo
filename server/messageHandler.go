@@ -3,9 +3,16 @@ package server
 import (
 	"bombman/model"
 	"bombman/utils"
+	"encoding/gob"
 	"fmt"
 	"net"
 )
+
+type JoinLobbyAck struct {
+	Success bool
+	LobbyID string
+	Message string
+}
 
 func readClientMessage(conn net.Conn) (utils.ClientMessage, error) {
 	buffer := make([]byte, 1024)
@@ -32,6 +39,32 @@ func sendMessageToClient(conn net.Conn, game *model.Game) {
 	if err != nil {
 		fmt.Println("Error al enviar el juego al cliente:", err)
 		return
+	}
+}
+
+func sendJoinLobbySuccess(conn net.Conn, lobbyID string) {
+	var msg JoinLobbyAck
+	msg.LobbyID = lobbyID
+	msg.Success = true
+	msg.Message = "Joined lobby " + lobbyID
+
+	enc := gob.NewEncoder(conn)
+	err := enc.Encode(msg)
+	if err != nil {
+		fmt.Println("Error encoding join lobby success: ", err)
+	}
+}
+
+func sendJoinLobbyFailure(conn net.Conn, lobbyID string) {
+	var msg JoinLobbyAck
+	msg.LobbyID = lobbyID
+	msg.Success = false
+	msg.Message = "Failed to join lobby " + lobbyID
+
+	enc := gob.NewEncoder(conn)
+	err := enc.Encode(msg)
+	if err != nil {
+		fmt.Println("Error encoding join lobby failure: ", err)
 	}
 }
 

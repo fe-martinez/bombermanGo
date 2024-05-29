@@ -15,11 +15,21 @@ const SERVER_ADDRESS = "localhost:8080"
 
 var mu sync.Mutex
 
+// A type for game states in the client
+type ClientEnumState string
+
+// Constants for the different game states
+const (
+	MainMenu       ClientEnumState = "main-menu"
+	LobbySelection ClientEnumState = "lobby-selection"
+	Game           ClientEnumState = "game"
+)
+
 type Client struct {
 	connection net.Conn
 	playerID   string
 	game       model.Game
-	gameState  string
+	gameState  ClientState
 }
 
 func NewClient() *Client {
@@ -32,25 +42,16 @@ func NewClient() *Client {
 	fmt.Println("Connected to server with ID:", playerID)
 
 	var game model.Game
-	//	loadGame(connection, &game)
 
 	return &Client{
 		connection: connection,
 		playerID:   playerID,
 		game:       game,
-		gameState:  "main-menu",
+		gameState:  &MainMenuState{},
 	}
 }
 
-func (c *Client) sendMessages(input string) {
-	if input != "none" {
-		c.sendInput(input)
-	} else {
-		SendUpdateMessage(c.connection, c.playerID)
-	}
-}
-
-func (c *Client) sendInput(input string) {
+func (c *Client) sendGameInput(input string) {
 	if input == "bomb" {
 		SendBombMessage(c.connection, c.playerID)
 	} else {
@@ -62,39 +63,20 @@ func (c *Client) sendLeaveMessage() {
 	SendLeaveMessage(c.connection, c.playerID)
 }
 
-func (c *Client) handleMainMenu() {
-	view.DrawMainMenuScreen()
-
-	input := handleMainMenuInput()
-	if input == "create" {
-		go updateGame(c.connection, &c.game)
-		c.gameState = "game"
-	} else if input == "join" {
-		go updateGame(c.connection, &c.game)
-		c.gameState = "game"
-	}
+func (c *Client) sendCreateGameMessage() {
+	SendCreateGameMessage(c.connection, c.playerID)
 }
 
-func (c *Client) handleGame() {
-	view.DrawGame(c.game)
-	input := handleInput()
-	c.sendMessages(input)
-	if view.WindowShouldClose() {
-		c.sendLeaveMessage()
-	}
+func (c *Client) sendJoinGameMessage(lobbyID string) {
+	SendJoinGameMessage(c.connection, c.playerID, lobbyID)
 }
 
 func (c *Client) Start() {
 	defer c.connection.Close()
 	view.InitWindow()
-	go updateGame(c.connection, &c.game)
 
 	for !view.WindowShouldClose() {
-		if c.gameState == "main-menu" {
-			c.handleMainMenu()
-		} else if c.gameState == "game" {
-			c.handleGame()
-		}
+		c.gameState.Handle(c)
 	}
 }
 
@@ -107,7 +89,7 @@ func dial(serverAddress string) net.Conn {
 	return connection
 }
 
-func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
+func receiveGameFromServer(conn net.Conn) (*model.Game, error) {
 	buffer := make([]byte, 9000)
 	n, err := conn.Read(buffer)
 	fmt.Println(n)
@@ -126,8 +108,7 @@ func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
 
 func updateGame(conn net.Conn, game *model.Game) {
 	for {
-		updatedGame, err := receiveMessageFromServer(conn)
-		fmt.Println(updatedGame)
+		updatedGame, err := receiveGameFromServer(conn)
 		if err != nil {
 			fmt.Println("Error al recibir el juego actualizado:", err)
 			return

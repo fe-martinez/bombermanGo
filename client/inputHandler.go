@@ -44,3 +44,21 @@ func handleMainMenuInput() string {
 	}
 	return "none"
 }
+
+var userInput string
+
+func handleLobbySelectionInput() (string, string) {
+	key := rl.GetCharPressed()
+
+	if key != 0 {
+		userInput += string(key)
+	}
+
+	if rl.IsKeyDown(rl.KeyEnter) {
+		result := userInput
+		userInput = ""
+		return "join", result
+	}
+
+	return "none", userInput
+}

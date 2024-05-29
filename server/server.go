@@ -1,18 +1,20 @@
 package server
 
 import (
-	"bombman/model"
 	"bombman/utils"
 	"fmt"
+	"log"
+	"math/rand"
 	"net"
+	"strconv"
 	"time"
 )
 
 type Server struct {
 	address  string
 	listener net.Listener
-	game     *model.Game
-	clients  map[string]net.Conn
+	lobbies  map[string]*Lobby
+	clients  map[string]*Client
 }
 
 const SERVER_ADDRESS = "localhost:8080"
@@ -24,20 +26,16 @@ func NewServer(address string, maxPlayers int) (*Server, error) {
 		return nil, err
 	}
 
-	gameMap := model.CreateMap(15, 16)
-	gameId := utils.CreateRandomUid()
-	game := model.NewGame(gameId, gameMap)
-
 	return &Server{
 		address:  address,
 		listener: listener,
-		game:     game,
-		clients:  make(map[string]net.Conn),
+		clients:  make(map[string]*Client),
+		lobbies:  make(map[string]*Lobby),
 	}, nil
 }
 
 func (s *Server) Start() {
-	fmt.Println("Starting game server at", SERVER_ADDRESS)
+	log.Println("Starting game server at", SERVER_ADDRESS)
 	go s.handleConnections()
 	go s.broadcastLoop()
 	select {}
@@ -47,7 +45,7 @@ func (s *Server) handleConnections() {
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
-			fmt.Printf("Error accepting connection: %v\n", err)
+			log.Printf("Error accepting connection: %v\n", err)
 			continue
 		}
 
@@ -57,29 +55,94 @@ func (s *Server) handleConnections() {
 
 func (s *Server) handleConnection(conn net.Conn) {
 	defer conn.Close()
-	if s.game.IsFull() {
-		return
-	}
 
 	playerID := utils.CreateRandomUid()
-	mapSize := s.game.GameMap.Size
-	player := model.NewPlayer(playerID, s.game.GenerateValidPosition(mapSize))
-	s.game.AddPlayer(player)
 
-	s.clients[playerID] = conn
+	client := Client{clientID: playerID, connection: conn, state: MainMenu, lobbyID: ""}
+
+	s.clients[playerID] = &client
 	sendId(conn, playerID)
 
 	for {
-		s.handleMessages(conn, s.game)
+		err := s.handleMessage(&client)
+		if err != nil {
+			log.Printf("Error handling client message: %v\n", err)
+		}
 	}
 }
 
-func (s *Server) handleMessages(conn net.Conn, game *model.Game) {
-	message, err := readClientMessage(conn)
+func (s *Server) handleMessage(client *Client) error {
+	message, err := readClientMessage(client.connection)
 	if err != nil {
-		return
+		return err
 	}
-	handlePlayerAction(message, game)
+
+	if client.state == MainMenu {
+		s.handleMainMenuAction(message, client)
+	} else {
+		lobby := s.lobbies[client.lobbyID]
+		if message.Action == utils.ActionLeave {
+			s.disconnectClient(client.clientID)
+			return nil
+		}
+		handlePlayerAction(message, lobby.game)
+	}
+
+	return nil
+}
+
+func (s *Server) handleMainMenuAction(msg utils.ClientMessage, client *Client) {
+	switch msg.Action {
+	case utils.ActionCreateGame:
+		s.createLobby(client)
+	case utils.ActionJoinGame:
+		lobbyID := msg.Data.(string)
+		s.joinLobby(lobbyID, client)
+	default:
+		fmt.Println("Action unknown")
+	}
+}
+
+func (s *Server) createLobby(client *Client) {
+	lobbyID := s.createUniqueLobbyID()
+	lobby := NewLobby(client.clientID, lobbyID)
+	lobby.AddClient(client)
+	s.lobbies[lobbyID] = lobby
+
+	if lobby == nil {
+		log.Println("Failed to create lobby")
+	}
+}
+
+func (s *Server) joinLobby(lobbyID string, client *Client) {
+	lobby := s.lobbies[lobbyID]
+	if lobby == nil {
+		log.Println("Lobby", lobbyID, "not found")
+		sendJoinLobbyFailure(client.connection, lobbyID)
+	} else {
+		sendJoinLobbySuccess(client.connection, lobbyID)
+		lobby.AddClient(client)
+	}
+}
+
+func (s *Server) disconnectClient(clientID string) {
+	client := s.clients[clientID]
+	if client.state == Game {
+		lobby := s.lobbies[client.lobbyID]
+		lobby.RemoveClient(client)
+		if len(lobby.clients) == 0 {
+			delete(s.lobbies, client.lobbyID)
+		}
+	}
+	delete(s.clients, clientID)
+}
+
+func (s *Server) createUniqueLobbyID() string {
+	randomValue := strconv.Itoa(rand.Intn(1000))
+	for s.lobbies[randomValue] != nil {
+		randomValue = strconv.Itoa(rand.Intn(1000))
+	}
+	return randomValue
 }
 
 func (s *Server) broadcastLoop() {
@@ -93,9 +156,8 @@ func (s *Server) broadcastLoop() {
 }
 
 func (s *Server) broadcastGameState() {
-	gameState := s.game
-	for _, conn := range s.clients {
-		sendMessageToClient(conn, gameState)
+	for _, lobby := range s.lobbies {
+		lobby.BroadcastGameState()
 	}
 }
 
