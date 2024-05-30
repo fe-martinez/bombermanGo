@@ -9,9 +9,10 @@ func (m *MainMenuState) Handle(c *Client) {
 
 	input := handleMainMenuInput()
 	if input == "create" {
-		go updateGame(c.connection, &c.game)
-		c.gameState = &PlayingState{}
+		//go updateGame(c.connection, &c.game)
+		//c.gameState = &PlayingState{}
 		c.sendCreateGameMessage()
+		c.gameState = &WaitingMenuState{}
 	} else if input == "join" {
 		c.gameState = &LobbySelectionState{}
 	}

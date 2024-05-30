@@ -117,3 +117,24 @@ func DrawLobbySelectionScreen(lobbyID string) {
 
 	rl.EndDrawing()
 }
+
+const START_TITLE_POS_X = 350
+const START_TITLE_POS_Y = 200
+const START_GAME_POS_X = 250
+const START_GAME_POS_Y = 450
+const PLAYER_START_POS_X = 100
+const PLAYER_START_POS_Y = 150
+const PLAYER_GAP_Y = 30
+
+func DrawWaitingMenu(players []string) {
+	rl.BeginDrawing()
+	rl.ClearBackground(rl.Beige)
+	rl.DrawText("Are you ready for the game?", START_TITLE_POS_X, START_TITLE_POS_Y, 20, rl.Maroon)
+	rl.DrawRectangle(START_GAME_POS_X, START_GAME_POS_Y, BUTTON_WIDTH, BUTTON_HEIGHT, rl.DarkPurple)
+	for i, player := range players {
+		yPos := PLAYER_START_POS_Y + int32(i)*PLAYER_GAP_Y
+		rl.DrawText(player, PLAYER_START_POS_X, yPos, 20, rl.Black)
+	}
+	rl.DrawText("Start Game", START_GAME_POS_X+10, START_GAME_POS_Y+15, 20, rl.White)
+	rl.EndDrawing()
+}
