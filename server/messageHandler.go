@@ -68,7 +68,14 @@ func sendJoinLobbyFailure(conn net.Conn, lobbyID string) {
 	}
 }
 
-func sendId(conn net.Conn, playerID string) {
+func sendLobbyId(conn net.Conn, lobbyID string) {
+	_, err := conn.Write([]byte(lobbyID))
+	if err != nil {
+		fmt.Println("Error sending lobby ID to client: ", err)
+	}
+}
+
+func sendPlayerId(conn net.Conn, playerID string) {
 	_, err := conn.Write([]byte(playerID))
 	if err != nil {
 		fmt.Println("Error sending player ID to client: ", err)

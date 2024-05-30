@@ -61,7 +61,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	client := Client{clientID: playerID, connection: conn, state: MainMenu, lobbyID: ""}
 
 	s.clients[playerID] = &client
-	sendId(conn, playerID)
+	sendPlayerId(conn, playerID)
 
 	for {
 		err := s.handleMessage(&client)
@@ -111,6 +111,8 @@ func (s *Server) createLobby(client *Client) {
 
 	if lobby == nil {
 		log.Println("Failed to create lobby")
+	} else {
+		sendLobbyId(client.connection, lobbyID)
 	}
 }
 

@@ -10,7 +10,7 @@ func showDrawingMenu(c *Client) {
 	for _, value := range c.game.Players {
 		players = append(players, value.Username)
 	}
-	view.DrawWaitingMenu(players)
+	view.DrawWaitingMenu(players, c.lobbyId)
 }
 
 func (w *WaitingMenuState) Handle(c *Client) {
