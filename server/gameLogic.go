@@ -6,8 +6,8 @@ import (
 	"fmt"
 )
 
-const speedIncrement = 0.1
-const baseSpeed = 0
+const SPEED_INCREMENT = 0.1
+const BASE_SPEED = 0
 
 type Direction struct {
     X, Y float32
@@ -35,11 +35,11 @@ func handlePlayerAction(msg utils.ClientMessage, game *model.Game) {
 
 func movePlayer(player *model.Player, direction string) {
 	if dir, ok := directionMap[direction]; ok {
-		player.Speed.X, player.Speed.Y = dir.X*speedIncrement, dir.Y*speedIncrement
-		player.Position.X, player.Position.Y = player.Position.X+dir.X*speedIncrement, player.Position.Y+dir.Y*speedIncrement 
+		player.Speed.X, player.Speed.Y = dir.X*SPEED_INCREMENT, dir.Y*SPEED_INCREMENT
+		player.Position.X, player.Position.Y = player.Position.X+dir.X*SPEED_INCREMENT, player.Position.Y+dir.Y*SPEED_INCREMENT 
 		player.Direction = direction
         
     } else {
-        player.Speed.X, player.Speed.Y = baseSpeed, baseSpeed
+        player.Speed.X, player.Speed.Y = BASE_SPEED, BASE_SPEED
     }
 }
