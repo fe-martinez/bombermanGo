@@ -2,6 +2,7 @@ package model
 
 const PLAYER_LIVES = 6
 const PLAYER_BOMBS = 1
+const START_DIRECTION = "up"
 
 type Player struct {
 	ID       string
@@ -26,7 +27,7 @@ func NewPlayer(id string, position *Position) *Player {
 		Bombs:     PLAYER_BOMBS,
 		PowerUps:  []PowerUp{},
 		Speed:	   Speed{X: 0.0, Y: 0.0},
-		Direction: "up",
+		Direction: START_DIRECTION,
 	}
 }
 
