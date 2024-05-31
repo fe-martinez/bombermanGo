@@ -24,10 +24,7 @@ func handlePlayerAction(msg utils.ClientMessage, game *model.Game) {
 	switch msg.Action {
 	case utils.ActionMove:
 		direction := msg.Data.(string)  
-		fmt.Println("Received: ", direction)
 		movePlayer(game.Players[msg.ID], direction)
-	case utils.ActionBomb:
-		fmt.Println("Received: ", msg.Action)
 	default:
 		fmt.Println("Action unknown")
 	}
