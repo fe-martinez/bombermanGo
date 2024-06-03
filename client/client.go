@@ -15,16 +15,6 @@ const SERVER_ADDRESS = "localhost:8080"
 
 var mu sync.Mutex
 
-// A type for game states in the client
-type ClientEnumState string
-
-// Constants for the different game states
-const (
-	MainMenu       ClientEnumState = "main-menu"
-	LobbySelection ClientEnumState = "lobby-selection"
-	Game           ClientEnumState = "game"
-)
-
 type Client struct {
 	connection net.Conn
 	playerID   string
@@ -71,6 +61,10 @@ func (c *Client) sendCreateGameMessage() {
 
 func (c *Client) sendJoinGameMessage(lobbyID string) {
 	SendJoinGameMessage(c.connection, c.playerID, lobbyID)
+}
+
+func (c *Client) sendStartGameMessage() {
+	SendStartGameMessage(c.connection, c.playerID)
 }
 
 func (c *Client) Start() {

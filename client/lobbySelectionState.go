@@ -13,6 +13,7 @@ func (l *LobbySelectionState) Handle(c *Client) {
 	if userInput != "none" && len(lobbyID) == 3 {
 		c.sendJoinGameMessage(lobbyID)
 		ack, err := readLobbyAcknowledgeMessage(c.connection)
+
 		if err != nil {
 			view.DrawLobbySelectionScreen("Error while joining lobby")
 			return
@@ -22,8 +23,9 @@ func (l *LobbySelectionState) Handle(c *Client) {
 			view.DrawLobbySelectionScreen(ack.Message)
 			return
 		} else {
-			c.gameState = &PlayingState{}
+			c.lobbyId = ack.LobbyID
 			go updateGame(c.connection, &c.game)
+			c.gameState = &WaitingMenuState{}
 		}
 	}
 	view.DrawLobbySelectionScreen(lobbyID)

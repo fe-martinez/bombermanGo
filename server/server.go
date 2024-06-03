@@ -84,7 +84,10 @@ func (s *Server) handleMessage(client *Client) error {
 		if message.Action == utils.ActionLeave {
 			s.disconnectClient(client.clientID)
 			return nil
+		} else if message.Action == utils.ActionStartGame {
+			lobby.startGame()
 		}
+
 		handlePlayerAction(message, lobby.game)
 	}
 
@@ -99,7 +102,7 @@ func (s *Server) handleMainMenuAction(msg utils.ClientMessage, client *Client) {
 		lobbyID := msg.Data.(string)
 		s.joinLobby(lobbyID, client)
 	default:
-		fmt.Println("Action unknown")
+		fmt.Println("This action unknown")
 	}
 }
 

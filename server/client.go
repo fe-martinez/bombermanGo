@@ -14,6 +14,7 @@ type Client struct {
 type ClientState string
 
 const (
-	MainMenu ClientState = "main-menu"
-	Game     ClientState = "game"
+	MainMenu    ClientState = "main-menu"
+	WaitingMenu ClientState = "waiting-menu"
+	Game        ClientState = "game"
 )

@@ -2,6 +2,7 @@ package server
 
 import (
 	"bombman/model"
+	"log"
 )
 
 type Lobby struct {
@@ -34,8 +35,15 @@ func (l *Lobby) RemoveClient(client *Client) {
 	l.game.RemovePlayer(client.clientID)
 }
 
+func (l *Lobby) startGame() {
+	if l.game.State == "not-started" {
+		l.game.Start()
+	}
+}
+
 func (l *Lobby) BroadcastGameState() {
 	for _, client := range l.clients {
-		sendMessageToClient(client.connection, l.game)
+		log.Println("Sending game message to client", client.clientID)
+		sendGameMessageToClient(client.connection, l.game)
 	}
 }

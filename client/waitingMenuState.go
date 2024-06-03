@@ -1,6 +1,8 @@
 package client
 
-import "bombman/view"
+import (
+	"bombman/view"
+)
 
 type WaitingMenuState struct{}
 
@@ -10,14 +12,19 @@ func showDrawingMenu(c *Client) {
 	for _, value := range c.game.Players {
 		players = append(players, value.Username)
 	}
+
 	view.DrawWaitingMenu(players, c.lobbyId)
 }
 
 func (w *WaitingMenuState) Handle(c *Client) {
 	showDrawingMenu(c)
 	input := handleWaitingMenuInput()
+
 	if input == "start" {
-		go updateGame(c.connection, &c.game)
+		c.sendStartGameMessage()
+	}
+
+	if c.game.State == "started" {
 		c.gameState = &PlayingState{}
 	}
 }
