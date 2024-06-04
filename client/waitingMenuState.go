@@ -2,6 +2,7 @@ package client
 
 import (
 	"bombman/view"
+	"slices"
 )
 
 type WaitingMenuState struct{}
@@ -12,6 +13,8 @@ func showDrawingMenu(c *Client) {
 	for _, value := range c.game.Players {
 		players = append(players, value.Username)
 	}
+
+	slices.Sort(players)
 
 	view.DrawWaitingMenu(players, c.lobbyId)
 }

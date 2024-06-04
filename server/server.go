@@ -88,7 +88,9 @@ func (s *Server) handleMessage(client *Client) error {
 			lobby.startGame()
 		}
 
-		handlePlayerAction(message, lobby.game)
+		if lobby.game.State == "started" {
+			handlePlayerAction(message, lobby.game)
+		}
 	}
 
 	return nil
@@ -143,9 +145,9 @@ func (s *Server) disconnectClient(clientID string) {
 }
 
 func (s *Server) createUniqueLobbyID() string {
-	randomValue := strconv.Itoa(rand.Intn(1000))
+	randomValue := strconv.Itoa(rand.Intn(900) + 100)
 	for s.lobbies[randomValue] != nil {
-		randomValue = strconv.Itoa(rand.Intn(1000))
+		randomValue = strconv.Itoa(rand.Intn(900) + 100)
 	}
 	return randomValue
 }
