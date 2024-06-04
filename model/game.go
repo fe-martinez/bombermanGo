@@ -7,6 +7,7 @@ import (
 const MAX_PLAYERS = 4
 
 type Game struct {
+	State   string
 	GameId  string
 	Level   int8
 	Players map[string]*Player
@@ -15,6 +16,7 @@ type Game struct {
 
 func NewGame(id string, GameMap *GameMap) *Game {
 	return &Game{
+		State:   "not-started",
 		GameId:  id,
 		Level:   1,
 		Players: make(map[string]*Player),
@@ -52,4 +54,8 @@ func (g *Game) AddPlayer(player *Player) {
 
 func (g *Game) RemovePlayer(playerID string) {
 	delete(g.Players, playerID)
+}
+
+func (g *Game) Start() {
+	g.State = "started"
 }

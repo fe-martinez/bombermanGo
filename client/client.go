@@ -15,26 +15,17 @@ const SERVER_ADDRESS = "localhost:8080"
 
 var mu sync.Mutex
 
-// A type for game states in the client
-type ClientEnumState string
-
-// Constants for the different game states
-const (
-	MainMenu       ClientEnumState = "main-menu"
-	LobbySelection ClientEnumState = "lobby-selection"
-	Game           ClientEnumState = "game"
-)
-
 type Client struct {
 	connection net.Conn
 	playerID   string
+	lobbyId    string
 	game       model.Game
 	gameState  ClientState
 }
 
 func NewClient() *Client {
 	connection := dial(SERVER_ADDRESS)
-	playerID, err := receiveId(connection)
+	playerID, err := receivePlayerID(connection)
 	if err != nil {
 		fmt.Println("Error while receiving player id")
 		return nil
@@ -46,6 +37,7 @@ func NewClient() *Client {
 	return &Client{
 		connection: connection,
 		playerID:   playerID,
+		lobbyId:    "",
 		game:       game,
 		gameState:  &MainMenuState{},
 	}
@@ -69,6 +61,10 @@ func (c *Client) sendCreateGameMessage() {
 
 func (c *Client) sendJoinGameMessage(lobbyID string) {
 	SendJoinGameMessage(c.connection, c.playerID, lobbyID)
+}
+
+func (c *Client) sendStartGameMessage() {
+	SendStartGameMessage(c.connection, c.playerID)
 }
 
 func (c *Client) Start() {
@@ -106,6 +102,17 @@ func receiveGameFromServer(conn net.Conn) (*model.Game, error) {
 	return decodedGame, nil
 }
 
+func (c *Client) receiveLobbyID() {
+	buffer := make([]byte, 37)
+	n, err := c.connection.Read(buffer)
+	if err != nil {
+		fmt.Println(err)
+	}
+	id := string(buffer[:n])
+	cleanId := strings.TrimSpace(id)
+	c.lobbyId = cleanId
+}
+
 func updateGame(conn net.Conn, game *model.Game) {
 	for {
 		updatedGame, err := receiveGameFromServer(conn)
@@ -117,7 +124,7 @@ func updateGame(conn net.Conn, game *model.Game) {
 	}
 }
 
-func receiveId(conn net.Conn) (string, error) {
+func receivePlayerID(conn net.Conn) (string, error) {
 	buffer := make([]byte, 37)
 	n, err := conn.Read(buffer)
 	if err != nil {

@@ -61,7 +61,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	client := Client{clientID: playerID, connection: conn, state: MainMenu, lobbyID: ""}
 
 	s.clients[playerID] = &client
-	sendId(conn, playerID)
+	sendPlayerId(conn, playerID)
 
 	for {
 		err := s.handleMessage(&client)
@@ -84,8 +84,13 @@ func (s *Server) handleMessage(client *Client) error {
 		if message.Action == utils.ActionLeave {
 			s.disconnectClient(client.clientID)
 			return nil
+		} else if message.Action == utils.ActionStartGame {
+			lobby.startGame()
 		}
-		handlePlayerAction(message, lobby.game)
+
+		if lobby.game.State == "started" {
+			handlePlayerAction(message, lobby.game)
+		}
 	}
 
 	return nil
@@ -99,7 +104,7 @@ func (s *Server) handleMainMenuAction(msg utils.ClientMessage, client *Client) {
 		lobbyID := msg.Data.(string)
 		s.joinLobby(lobbyID, client)
 	default:
-		fmt.Println("Action unknown")
+		fmt.Println("This action unknown")
 	}
 }
 
@@ -111,6 +116,8 @@ func (s *Server) createLobby(client *Client) {
 
 	if lobby == nil {
 		log.Println("Failed to create lobby")
+	} else {
+		sendLobbyId(client.connection, lobbyID)
 	}
 }
 
@@ -138,9 +145,9 @@ func (s *Server) disconnectClient(clientID string) {
 }
 
 func (s *Server) createUniqueLobbyID() string {
-	randomValue := strconv.Itoa(rand.Intn(1000))
+	randomValue := strconv.Itoa(rand.Intn(900) + 100)
 	for s.lobbies[randomValue] != nil {
-		randomValue = strconv.Itoa(rand.Intn(1000))
+		randomValue = strconv.Itoa(rand.Intn(900) + 100)
 	}
 	return randomValue
 }

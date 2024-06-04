@@ -19,6 +19,7 @@ const (
 	ActionLeave      MessageAction = "leave"
 	ActionJoinGame   MessageAction = "join"
 	ActionCreateGame MessageAction = "create-game"
+	ActionStartGame  MessageAction = "start-game"
 )
 
 func EncodeClientMessage(msg ClientMessage) ([]byte, error) {

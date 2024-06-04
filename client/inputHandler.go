@@ -62,3 +62,16 @@ func handleLobbySelectionInput() (string, string) {
 
 	return "none", userInput
 }
+
+func isMouseInStartGameButton() bool {
+	return rl.GetMouseX() > view.START_GAME_POS_X && rl.GetMouseX() < view.START_GAME_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.START_GAME_POS_Y && rl.GetMouseY() < view.START_GAME_POS_Y+view.BUTTON_HEIGHT
+}
+
+func handleWaitingMenuInput() string {
+	if rl.IsMouseButtonDown(0) {
+		if isMouseInStartGameButton() {
+			return "start"
+		}
+	}
+	return "none"
+}

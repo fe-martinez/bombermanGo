@@ -39,6 +39,16 @@ func SendJoinGameMessage(conn net.Conn, playerID string, lobbyID string) error {
 	return SendMessage(msg, conn)
 }
 
+func SendStartGameMessage(conn net.Conn, playerID string) error {
+	msg := utils.ClientMessage{
+		Action: utils.ActionStartGame,
+		Data:   nil,
+		ID:     playerID,
+	}
+
+	return SendMessage(msg, conn)
+}
+
 func SendMoveMessage(move string, conn net.Conn, playerID string) error {
 	msg := utils.ClientMessage{
 		Action: utils.ActionMove,

@@ -1,33 +1,40 @@
 package model
 
+import petname "github.com/dustinkirkland/golang-petname"
+
 const PLAYER_LIVES = 6
 const PLAYER_BOMBS = 1
 const START_DIRECTION = "up"
 
 type Player struct {
-	ID       string
-	Position *Position
-	Lives    int8
-	Bombs    int8
-	PowerUps []PowerUp
-	Speed 	 Speed
+	Username  string
+	ID        string
+	Position  *Position
+	Lives     int8
+	Bombs     int8
+	PowerUps  []PowerUp
+	Speed     Speed
 	Direction string
 }
 
 type Speed struct {
-	X 		float32
-	Y		float32
+	X float32
+	Y float32
+}
+
+func generateRandomUsername() string {
+	return petname.Generate(2, "-") // Genera un nombre con 2 palabras separadas por un guión
 }
 
 func NewPlayer(id string, position *Position) *Player {
 	return &Player{
+		Username:  generateRandomUsername(),
 		ID:        id,
 		Position:  position,
 		Lives:     PLAYER_LIVES,
 		Bombs:     PLAYER_BOMBS,
 		PowerUps:  []PowerUp{},
-		Speed:	   Speed{X: 0.0, Y: 0.0},
+		Speed:     Speed{X: 0.0, Y: 0.0},
 		Direction: START_DIRECTION,
 	}
 }
-
