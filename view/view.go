@@ -7,9 +7,11 @@ import (
 )
 
 const TILE_SIZE = 65
+const WIDTH = TILE_SIZE * 16
+const HEIGHT = TILE_SIZE * 10
 
 func InitWindow() {
-	rl.InitWindow(TILE_SIZE*16, TILE_SIZE*10, "Bomberman Go!")
+	rl.InitWindow(WIDTH, HEIGHT, "Bomberman Go!")
 	rl.SetTargetFPS(30)
 }
 
@@ -82,14 +84,14 @@ func DrawGame(game model.Game) {
 	rl.EndDrawing()
 }
 
-const LOBBY_TITLE_POS_X = 350
+const LOBBY_TITLE_POS_X = WIDTH/2 - 70
 const LOBBY_TITLE_POS_Y = 200
 
-const CREATE_GAME_POS_X = 250
-const CREATE_GAME_POS_Y = 350
+const CREATE_GAME_POS_X = WIDTH/2 - 170
+const CREATE_GAME_POS_Y = 300
 
-const JOIN_GAME_POS_X = 250
-const JOIN_GAME_POS_Y = 450
+const JOIN_GAME_POS_X = WIDTH/2 - 170
+const JOIN_GAME_POS_Y = 400
 
 const BUTTON_WIDTH = 350
 const BUTTON_HEIGHT = 50
