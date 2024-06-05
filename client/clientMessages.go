@@ -20,6 +20,35 @@ func SendMessage(msg utils.ClientMessage, conn net.Conn) error {
 	return nil
 }
 
+func SendCreateGameMessage(conn net.Conn, playerID string) error {
+	msg := utils.ClientMessage{
+		Action: utils.ActionCreateGame,
+		ID:     playerID,
+	}
+
+	return SendMessage(msg, conn)
+}
+
+func SendJoinGameMessage(conn net.Conn, playerID string, lobbyID string) error {
+	msg := utils.ClientMessage{
+		Action: utils.ActionJoinGame,
+		Data:   lobbyID,
+		ID:     playerID,
+	}
+
+	return SendMessage(msg, conn)
+}
+
+func SendStartGameMessage(conn net.Conn, playerID string) error {
+	msg := utils.ClientMessage{
+		Action: utils.ActionStartGame,
+		Data:   nil,
+		ID:     playerID,
+	}
+
+	return SendMessage(msg, conn)
+}
+
 func SendMoveMessage(move string, conn net.Conn, playerID string) error {
 	msg := utils.ClientMessage{
 		Action: utils.ActionMove,
@@ -33,15 +62,6 @@ func SendMoveMessage(move string, conn net.Conn, playerID string) error {
 func SendBombMessage(conn net.Conn, playerID string) error {
 	msg := utils.ClientMessage{
 		Action: utils.ActionBomb,
-		Data:   nil,
-		ID:     playerID,
-	}
-	return SendMessage(msg, conn)
-}
-
-func SendUpdateMessage(conn net.Conn, playerID string) error {
-	msg := utils.ClientMessage{
-		Action: utils.ActionUpdate,
 		Data:   nil,
 		ID:     playerID,
 	}

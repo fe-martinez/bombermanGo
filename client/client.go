@@ -18,12 +18,14 @@ var mu sync.Mutex
 type Client struct {
 	connection net.Conn
 	playerID   string
+	lobbyId    string
 	game       model.Game
+	gameState  ClientState
 }
 
 func NewClient() *Client {
 	connection := dial(SERVER_ADDRESS)
-	playerID, err := receiveId(connection)
+	playerID, err := receivePlayerID(connection)
 	if err != nil {
 		fmt.Println("Error while receiving player id")
 		return nil
@@ -31,24 +33,17 @@ func NewClient() *Client {
 	fmt.Println("Connected to server with ID:", playerID)
 
 	var game model.Game
-	//	loadGame(connection, &game)
 
 	return &Client{
 		connection: connection,
 		playerID:   playerID,
+		lobbyId:    "",
 		game:       game,
+		gameState:  &MainMenuState{},
 	}
 }
 
-func (c *Client) sendMessages(input string) {
-	if input != "none" {
-		c.sendInput(input)
-	} else {
-		SendUpdateMessage(c.connection, c.playerID)
-	}
-}
-
-func (c *Client) sendInput(input string) {
+func (c *Client) sendGameInput(input string) {
 	if input == "bomb" {
 		SendBombMessage(c.connection, c.playerID)
 	} else {
@@ -60,18 +55,24 @@ func (c *Client) sendLeaveMessage() {
 	SendLeaveMessage(c.connection, c.playerID)
 }
 
+func (c *Client) sendCreateGameMessage() {
+	SendCreateGameMessage(c.connection, c.playerID)
+}
+
+func (c *Client) sendJoinGameMessage(lobbyID string) {
+	SendJoinGameMessage(c.connection, c.playerID, lobbyID)
+}
+
+func (c *Client) sendStartGameMessage() {
+	SendStartGameMessage(c.connection, c.playerID)
+}
+
 func (c *Client) Start() {
 	defer c.connection.Close()
 	view.InitWindow()
-	go updateGame(c.connection, &c.game)
 
 	for !view.WindowShouldClose() {
-		view.DrawGame(c.game)
-		input := handleInput()
-		c.sendMessages(input)
-		if view.WindowShouldClose() {
-			c.sendLeaveMessage()
-		}
+		c.gameState.Handle(c)
 	}
 }
 
@@ -84,10 +85,9 @@ func dial(serverAddress string) net.Conn {
 	return connection
 }
 
-func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
-	buffer := make([]byte, 4096)
+func receiveGameFromServer(conn net.Conn) (*model.Game, error) {
+	buffer := make([]byte, 9000)
 	n, err := conn.Read(buffer)
-	fmt.Println(n)
 	if err != nil {
 		return nil, fmt.Errorf("error al leer del servidor: %s", err)
 	}
@@ -101,10 +101,20 @@ func receiveMessageFromServer(conn net.Conn) (*model.Game, error) {
 	return decodedGame, nil
 }
 
+func (c *Client) receiveLobbyID() {
+	buffer := make([]byte, 37)
+	n, err := c.connection.Read(buffer)
+	if err != nil {
+		fmt.Println(err)
+	}
+	id := string(buffer[:n])
+	cleanId := strings.TrimSpace(id)
+	c.lobbyId = cleanId
+}
+
 func updateGame(conn net.Conn, game *model.Game) {
 	for {
-		updatedGame, err := receiveMessageFromServer(conn)
-		fmt.Println(updatedGame)
+		updatedGame, err := receiveGameFromServer(conn)
 		if err != nil {
 			fmt.Println("Error al recibir el juego actualizado:", err)
 			return
@@ -113,7 +123,7 @@ func updateGame(conn net.Conn, game *model.Game) {
 	}
 }
 
-func receiveId(conn net.Conn) (string, error) {
+func receivePlayerID(conn net.Conn) (string, error) {
 	buffer := make([]byte, 37)
 	n, err := conn.Read(buffer)
 	if err != nil {
