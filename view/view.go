@@ -32,7 +32,6 @@ func getColorFromString(colorName string) rl.Color {
 	}
 }
 
-// Después se van a dibujar diferenciados, no todos iguales
 func drawPlayers(game model.Game) {
 	for _, player := range game.Players {
 		colorName := game.GetPlayerColor(player.ID)

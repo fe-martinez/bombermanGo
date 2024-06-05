@@ -38,9 +38,18 @@ func (l *Lobby) AddClient(client *Client) {
 	client.state = Game
 }
 
+func (l *Lobby) LeavingClientIsOwner(clientID string) bool {
+	return clientID == l.ownerID
+}
+
 func (l *Lobby) RemoveClient(client *Client) {
 	delete(l.clients, client.clientID)
 	l.game.RemovePlayer(client.clientID)
+	if l.LeavingClientIsOwner(client.clientID) {
+		if !l.game.IsEmpty() {
+			l.ownerID = l.game.GetAPlayerId()
+		}
+	}
 }
 
 func (l *Lobby) startGame() {

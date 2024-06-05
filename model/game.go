@@ -94,3 +94,14 @@ func (g *Game) passRound() {
 		g.State = "finished"
 	}
 }
+
+func (g *Game) IsEmpty() bool {
+	return len(g.Players) == 0
+}
+
+func (g *Game) GetAPlayerId() string {
+	for key := range g.Players {
+		return key
+	}
+	return ""
+}
