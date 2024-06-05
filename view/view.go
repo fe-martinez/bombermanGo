@@ -2,7 +2,6 @@ package view
 
 import (
 	"bombman/model"
-	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -18,16 +17,33 @@ func WindowShouldClose() bool {
 	return rl.WindowShouldClose()
 }
 
+func getColorFromString(colorName string) rl.Color {
+	switch colorName {
+	case "Orange":
+		return rl.Orange
+	case "Green":
+		return rl.Green
+	case "Blue":
+		return rl.Blue
+	case "Violet":
+		return rl.Violet
+	default:
+		return rl.Red
+	}
+}
+
 // Después se van a dibujar diferenciados, no todos iguales
 func drawPlayers(game model.Game) {
 	for _, player := range game.Players {
-		rl.DrawRectangle(int32(player.Position.X*TILE_SIZE), int32(player.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Red)
+		colorName := game.GetPlayerColor(player.ID)
+		color := getColorFromString(colorName)
+		rl.DrawRectangle(int32(player.Position.X*TILE_SIZE), int32(player.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, color)
 	}
 }
 
 func drawBombs(game model.Game) {
 	for _, bomb := range game.GameMap.Bombs {
-		rl.DrawRectangle(int32(bomb.Position.X*TILE_SIZE), int32(bomb.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Blue)
+		rl.DrawRectangle(int32(bomb.Position.X*TILE_SIZE), int32(bomb.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Maroon)
 	}
 }
 
@@ -52,8 +68,6 @@ func DrawGame(game model.Game) {
 	if len(game.Players) == 0 {
 		return
 	}
-
-	fmt.Println("Players in game:", len(game.Players))
 
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.RayWhite)

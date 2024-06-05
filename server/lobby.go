@@ -51,7 +51,6 @@ func (l *Lobby) startGame() {
 
 func (l *Lobby) BroadcastGameState() {
 	for _, client := range l.clients {
-		log.Println("Sending game message to client", client.clientID)
 		sendGameMessageToClient(client.connection, l.game)
 	}
 }

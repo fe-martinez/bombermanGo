@@ -7,29 +7,41 @@ import (
 const MAX_PLAYERS = 4
 const MAX_ROUNDS = 5
 
+var colors = NewQueue()
+
 type Game struct {
-	State   string
-	GameId  string
-	Round   int8
-	Players map[string]*Player
-	GameMap *GameMap
+	State        string
+	GameId       string
+	Round        int8
+	Players      map[string]*Player
+	PlayerColors map[string]string
+	GameMap      *GameMap
+}
+
+func initializeColors() {
+	colors.Enqueue("Orange")
+	colors.Enqueue("Green")
+	colors.Enqueue("Violet")
+	colors.Enqueue("Blue")
 }
 
 func NewGame(id string, GameMap *GameMap) *Game {
+	initializeColors()
 	return &Game{
-		State:   "not-started",
-		GameId:  id,
-		Round:   1,
-		Players: make(map[string]*Player),
-		GameMap: GameMap,
+		State:        "not-started",
+		GameId:       id,
+		Round:        1,
+		Players:      make(map[string]*Player),
+		PlayerColors: make(map[string]string),
+		GameMap:      GameMap,
 	}
 }
 
 func (g *Game) collidesWithWalls(position Position) bool {
-	playerRect := rl.NewRectangle(position.X*50, position.Y*50, 50, 50)
+	playerRect := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
 
 	for _, wall := range g.GameMap.Walls {
-		wallRect := rl.NewRectangle(wall.Position.X*50, wall.Position.Y*50, 45, 45)
+		wallRect := rl.NewRectangle(wall.Position.X*65, wall.Position.Y*65, 55, 55)
 		if rl.CheckCollisionRecs(playerRect, wallRect) {
 			return true
 		}
@@ -51,10 +63,24 @@ func (g *Game) IsFull() bool {
 
 func (g *Game) AddPlayer(player *Player) {
 	g.Players[player.ID] = player
+	color, ok := colors.Dequeue()
+	if ok {
+		g.PlayerColors[player.ID] = color
+	}
+}
+
+func (g *Game) GetPlayerColors() map[string]string {
+	return g.PlayerColors
+}
+
+func (g *Game) GetPlayerColor(id string) string {
+	return g.PlayerColors[id]
 }
 
 func (g *Game) RemovePlayer(playerID string) {
 	delete(g.Players, playerID)
+	color := g.GetPlayerColor(playerID)
+	colors.Enqueue(color)
 }
 
 func (g *Game) Start() {
