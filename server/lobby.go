@@ -5,6 +5,8 @@ import (
 	"log"
 )
 
+const firstMapPath = "data/round1map.txt"
+
 type Lobby struct {
 	ownerID string
 	id      string
@@ -13,16 +15,22 @@ type Lobby struct {
 }
 
 func NewLobby(ownerID string, id string) *Lobby {
+	gameMap, error := model.CreateMap(firstMapPath)
+	if error != nil {
+		log.Println("Error creating map")
+		return nil
+	}
+
 	return &Lobby{
 		ownerID: ownerID,
 		id:      id,
 		clients: make(map[string]*Client),
-		game:    model.NewGame(id, model.CreateMap(15, 16)),
+		game:    model.NewGame(id, gameMap),
 	}
 }
 
 func (l *Lobby) AddClient(client *Client) {
-	player := model.NewPlayer(client.clientID, l.game.GenerateValidPosition(l.game.GameMap.Size))
+	player := model.NewPlayer(client.clientID, l.game.GenerateValidPosition(l.game.GameMap.RowSize))
 	l.game.AddPlayer(player)
 	l.clients[client.clientID] = client
 
