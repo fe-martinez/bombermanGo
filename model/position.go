@@ -7,6 +7,6 @@ type Position struct {
 	Y float32
 }
 
-func getRandomPosition(mapSize int) *Position {
-	return &Position{float32(rand.Intn(mapSize)), float32(rand.Intn(mapSize))}
+func getRandomPosition(rowSize int, columnSize int) *Position {
+	return &Position{float32(rand.Intn(rowSize)), float32(rand.Intn(columnSize))}
 }

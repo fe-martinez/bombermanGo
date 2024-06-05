@@ -138,6 +138,7 @@ func (s *Server) disconnectClient(clientID string) {
 		lobby := s.lobbies[client.lobbyID]
 		lobby.RemoveClient(client)
 		if len(lobby.clients) == 0 {
+			lobby.game.Stop()
 			delete(s.lobbies, client.lobbyID)
 		}
 	}

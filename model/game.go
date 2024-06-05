@@ -1,13 +1,21 @@
 package model
 
 import (
+	"log"
+	"time"
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 const MAX_PLAYERS = 4
 const MAX_ROUNDS = 5
+const ROUND_DURATION = 2 //minutes
+const TICKER_REFRESH = 1 //second
+const MAX_POWER_UPS = 4
 
 var colors = NewQueue()
+
+var stopChan chan struct{}
 
 type Game struct {
 	State        string
@@ -38,23 +46,103 @@ func NewGame(id string, GameMap *GameMap) *Game {
 }
 
 func (g *Game) collidesWithWalls(position Position) bool {
-	playerRect := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
 
 	for _, wall := range g.GameMap.Walls {
 		wallRect := rl.NewRectangle(wall.Position.X*65, wall.Position.Y*65, 55, 55)
-		if rl.CheckCollisionRecs(playerRect, wallRect) {
+		if rl.CheckCollisionRecs(pos, wallRect) {
 			return true
 		}
 	}
 	return false
 }
 
-func (g *Game) GenerateValidPosition(mapSize int) *Position {
-	var ValidPosition = getRandomPosition(mapSize)
-	for g.collidesWithWalls(*ValidPosition) {
-		ValidPosition = getRandomPosition(mapSize)
+func (g *Game) collidesWithPlayers(position Position) bool {
+	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+
+	for _, player := range g.Players {
+		playerRect := rl.NewRectangle(player.Position.X*65, player.Position.Y*65, 55, 55)
+		if rl.CheckCollisionRecs(pos, playerRect) {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) collidesWithPowerUp(position Position) bool {
+	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+
+	for _, powerUp := range g.GameMap.PowerUps {
+		powerUpRect := rl.NewRectangle(powerUp.Position.X*65, powerUp.Position.Y*65, 55, 55)
+		if rl.CheckCollisionRecs(pos, powerUpRect) {
+			return true
+		}
+
+	}
+	return false
+}
+
+func (g *Game) collidesWithBomb(position Position) bool {
+	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+
+	for _, bomb := range g.GameMap.Bombs {
+		bombRect := rl.NewRectangle(bomb.Position.X*65, bomb.Position.Y*65, 55, 55)
+		if rl.CheckCollisionRecs(pos, bombRect) {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) IsValidPosition(ValidPosition Position) bool {
+	return !(g.collidesWithWalls(ValidPosition) || g.collidesWithPlayers(ValidPosition) || g.collidesWithPowerUp(ValidPosition) || g.collidesWithBomb(ValidPosition))
+}
+
+func (g *Game) GenerateValidPosition(rowSize int, columnSize int) *Position {
+	var ValidPosition = getRandomPosition(rowSize, columnSize)
+	for !g.IsValidPosition(*ValidPosition) {
+		ValidPosition = getRandomPosition(rowSize, columnSize)
 	}
 	return ValidPosition
+}
+
+func (g *Game) IsPowerUpPosition(position Position) bool {
+	for _, powerUp := range g.GameMap.PowerUps {
+		if powerUp.Position == position {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) IsBombPosition(position Position) bool {
+	for _, bomb := range g.GameMap.Bombs {
+		if bomb.Position == position {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) TransferPowerUpToPlayer(player *Player) {
+	powerUp := g.GameMap.RemovePowerUp(*player.Position)
+	player.AddPowerUp(*powerUp)
+}
+
+func (g *Game) GrabPowerUp() {
+	for _, player := range g.Players {
+		if g.IsPowerUpPosition(*player.Position) {
+			g.TransferPowerUpToPlayer(player)
+		}
+	}
+}
+
+func (g *Game) PowerUpSpawn() {
+	if len(g.GameMap.PowerUps) < MAX_POWER_UPS {
+		position := g.GenerateValidPosition(g.GameMap.ColumnSize, g.GameMap.RowSize)
+		g.GameMap.AddPowerUp(position)
+	}
+
 }
 
 func (g *Game) IsFull() bool {
@@ -85,6 +173,18 @@ func (g *Game) RemovePlayer(playerID string) {
 
 func (g *Game) Start() {
 	g.State = "started"
+	ticker := time.NewTicker(10 * time.Second)
+	stopChan = make(chan struct{})
+
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				log.Println("tick")
+				g.PowerUpSpawn()
+			}
+		}
+	}()
 }
 
 func (g *Game) passRound() {
@@ -104,4 +204,10 @@ func (g *Game) GetAPlayerId() string {
 		return key
 	}
 	return ""
+}
+
+func (g *Game) Stop() {
+	close(stopChan)
+	g.State = "stopped"
+	log.Println("Game stopped")
 }

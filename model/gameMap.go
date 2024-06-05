@@ -3,6 +3,7 @@ package model
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"os"
 )
 
@@ -67,4 +68,28 @@ func CreateMap(filepath string) (*GameMap, error) {
 		RowSize:    int(row),
 	}
 	return &gameMap, nil
+}
+
+func (m *GameMap) GetPowerUp(powerUpPosition Position) *PowerUp {
+	for _, powerUp := range m.PowerUps {
+		if powerUp.Position == powerUpPosition {
+			return &powerUp
+		}
+	}
+	return nil
+}
+
+func (m *GameMap) RemovePowerUp(powerUpPosition Position) *PowerUp {
+	powerUp := m.GetPowerUp(powerUpPosition)
+	for i, powerUp := range m.PowerUps {
+		if powerUp.Position == powerUpPosition {
+			m.PowerUps = append(m.PowerUps[:i], m.PowerUps[i+1:]...)
+		}
+	}
+	return powerUp
+}
+
+func (m *GameMap) AddPowerUp(powerUpPosition *Position) {
+	PowerUp := NewPowerUp(*powerUpPosition, PowerUpType(rand.Intn(5)))
+	m.PowerUps = append(m.PowerUps, PowerUp)
 }
