@@ -5,11 +5,12 @@ import (
 )
 
 const MAX_PLAYERS = 4
+const MAX_ROUNDS = 5
 
 type Game struct {
 	State   string
 	GameId  string
-	Level   int8
+	Round   int8
 	Players map[string]*Player
 	GameMap *GameMap
 }
@@ -18,7 +19,7 @@ func NewGame(id string, GameMap *GameMap) *Game {
 	return &Game{
 		State:   "not-started",
 		GameId:  id,
-		Level:   1,
+		Round:   1,
 		Players: make(map[string]*Player),
 		GameMap: GameMap,
 	}
@@ -58,4 +59,12 @@ func (g *Game) RemovePlayer(playerID string) {
 
 func (g *Game) Start() {
 	g.State = "started"
+}
+
+func (g *Game) passRound() {
+	if g.Round < MAX_ROUNDS {
+		g.Round++
+	} else {
+		g.State = "finished"
+	}
 }
