@@ -84,7 +84,7 @@ func (s *Server) handleMessage(client *Client) error {
 		if message.Action == utils.ActionLeave {
 			s.disconnectClient(client.clientID)
 			return nil
-		} else if message.Action == utils.ActionStartGame {
+		} else if message.Action == utils.ActionStartGame && client.clientID == lobby.ownerID {
 			lobby.startGame()
 		}
 

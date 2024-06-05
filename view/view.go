@@ -2,15 +2,16 @@ package view
 
 import (
 	"bombman/model"
-	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 const TILE_SIZE = 65
+const WIDTH = TILE_SIZE * 16
+const HEIGHT = TILE_SIZE * 10
 
 func InitWindow() {
-	rl.InitWindow(TILE_SIZE*16, TILE_SIZE*10, "Bomberman Go!")
+	rl.InitWindow(WIDTH, HEIGHT, "Bomberman Go!")
 	rl.SetTargetFPS(30)
 }
 
@@ -18,16 +19,32 @@ func WindowShouldClose() bool {
 	return rl.WindowShouldClose()
 }
 
-// Después se van a dibujar diferenciados, no todos iguales
+func getColorFromString(colorName string) rl.Color {
+	switch colorName {
+	case "Orange":
+		return rl.Orange
+	case "Green":
+		return rl.Green
+	case "Blue":
+		return rl.Blue
+	case "Violet":
+		return rl.Violet
+	default:
+		return rl.Red
+	}
+}
+
 func drawPlayers(game model.Game) {
 	for _, player := range game.Players {
-		rl.DrawRectangle(int32(player.Position.X*TILE_SIZE), int32(player.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Red)
+		colorName := game.GetPlayerColor(player.ID)
+		color := getColorFromString(colorName)
+		rl.DrawRectangle(int32(player.Position.X*TILE_SIZE), int32(player.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, color)
 	}
 }
 
 func drawBombs(game model.Game) {
 	for _, bomb := range game.GameMap.Bombs {
-		rl.DrawRectangle(int32(bomb.Position.X*TILE_SIZE), int32(bomb.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Blue)
+		rl.DrawRectangle(int32(bomb.Position.X*TILE_SIZE), int32(bomb.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Maroon)
 	}
 }
 
@@ -53,8 +70,6 @@ func DrawGame(game model.Game) {
 		return
 	}
 
-	fmt.Println("Players in game:", len(game.Players))
-
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.RayWhite)
 
@@ -69,14 +84,14 @@ func DrawGame(game model.Game) {
 	rl.EndDrawing()
 }
 
-const LOBBY_TITLE_POS_X = 350
+const LOBBY_TITLE_POS_X = WIDTH/2 - 70
 const LOBBY_TITLE_POS_Y = 200
 
-const CREATE_GAME_POS_X = 250
-const CREATE_GAME_POS_Y = 350
+const CREATE_GAME_POS_X = WIDTH/2 - 170
+const CREATE_GAME_POS_Y = 300
 
-const JOIN_GAME_POS_X = 250
-const JOIN_GAME_POS_Y = 450
+const JOIN_GAME_POS_X = WIDTH/2 - 170
+const JOIN_GAME_POS_Y = 400
 
 const BUTTON_WIDTH = 350
 const BUTTON_HEIGHT = 50
@@ -113,10 +128,10 @@ func DrawLobbySelectionScreen(lobbyID string) {
 }
 
 const (
-	START_TITLE_POS_X  = 350
+	START_TITLE_POS_X  = 400
 	START_TITLE_POS_Y  = 200
-	START_GAME_POS_X   = 250
-	START_GAME_POS_Y   = 450
+	START_GAME_POS_X   = 370
+	START_GAME_POS_Y   = 350
 	PLAYER_START_POS_X = 100
 	PLAYER_START_POS_Y = 150
 	PLAYER_GAP_Y       = 30

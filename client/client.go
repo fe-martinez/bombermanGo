@@ -88,7 +88,6 @@ func dial(serverAddress string) net.Conn {
 func receiveGameFromServer(conn net.Conn) (*model.Game, error) {
 	buffer := make([]byte, 9000)
 	n, err := conn.Read(buffer)
-	fmt.Println(n)
 	if err != nil {
 		return nil, fmt.Errorf("error al leer del servidor: %s", err)
 	}
