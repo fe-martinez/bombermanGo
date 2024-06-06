@@ -108,7 +108,7 @@ func (g *Game) collidesWithBomb(position Position) bool {
 }
 
 func (g *Game) IsValidPosition(ValidPosition Position) bool {
-	return !(g.collidesWithWalls(ValidPosition) || g.collidesWithPlayers(ValidPosition) || g.collidesWithPowerUp(ValidPosition) || g.collidesWithBomb(ValidPosition))
+	return !(g.collidesWithWalls(ValidPosition) || g.collidesWithPlayers(ValidPosition) || g.collidesWithPowerUp(ValidPosition) || g.collidesWithBomb(ValidPosition) || g.isOutOfBounds(ValidPosition))
 }
 
 func (g *Game) GenerateValidPosition(rowSize int, columnSize int) *Position {
