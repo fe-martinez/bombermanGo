@@ -2,6 +2,8 @@ package model
 
 import "time"
 
+const EXPLODE_TIME = 3
+
 type Bomb struct {
 	Position    Position
 	Alcance     int8
@@ -15,7 +17,7 @@ func NewBomb(x, y float32, alcance int8, owner Player) *Bomb {
 		Position:    Position{X: x, Y: y},
 		Alcance:     alcance,
 		PlantedTime: time.Now(),
-		ExplodeTime: 3 * time.Second,
+		ExplodeTime: EXPLODE_TIME * time.Second,
 		Owner:       &owner,
 	}
 }
