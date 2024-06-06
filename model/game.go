@@ -169,11 +169,10 @@ func (g *Game) ExplodeBomb(bomb *Bomb) {
 
 func (g *Game) TransferPowerUpToPlayer(player *Player, powerUpPosition Position) {
 	powerUp := g.GameMap.GetPowerUp(powerUpPosition)
-	log.Println("PowerUp: ", powerUp)
 
 	if powerUp != nil {
 		player.AddPowerUp(*powerUp)
-		g.GameMap.RemovePowerUp(*player.Position)
+		g.GameMap.RemovePowerUp(powerUpPosition)
 	}
 }
 
