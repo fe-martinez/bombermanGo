@@ -13,6 +13,20 @@ const ROUND_DURATION = 2 //minutes
 const TICKER_REFRESH = 1 //second
 const MAX_POWER_UPS = 4
 
+const SPEED_INCREMENT = 0.1
+const BASE_SPEED = 0
+
+type Direction struct {
+	X, Y float32
+}
+
+var directionMap = map[string]Direction{
+	"up":    {0, -1},
+	"right": {1, 0},
+	"down":  {0, 1},
+	"left":  {-1, 0},
+}
+
 var colors = NewQueue()
 
 var stopChan chan struct{}
@@ -46,15 +60,23 @@ func NewGame(id string, GameMap *GameMap) *Game {
 }
 
 func (g *Game) collidesWithWalls(position Position) bool {
-	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+	pos := rl.NewRectangle(position.X*65+5, position.Y*65+5, 55, 55)
 
 	for _, wall := range g.GameMap.Walls {
-		wallRect := rl.NewRectangle(wall.Position.X*65, wall.Position.Y*65, 55, 55)
+		wallRect := rl.NewRectangle(wall.Position.X*65, wall.Position.Y*65, 65, 65)
 		if rl.CheckCollisionRecs(pos, wallRect) {
 			return true
 		}
 	}
 	return false
+}
+
+func (g *Game) isOutOfBounds(position Position) bool {
+	return position.X < 0 || position.X >= float32(g.GameMap.ColumnSize) || position.Y < 0 || position.Y >= float32(g.GameMap.RowSize)
+}
+
+func (g *Game) CanMove(player *Player, newX float32, newY float32) bool {
+	return !g.collidesWithWalls(Position{newX, newY}) && !g.collidesWithBomb(Position{newX, newY}) && !g.isOutOfBounds(Position{newX, newY})
 }
 
 func (g *Game) collidesWithPlayers(position Position) bool {
