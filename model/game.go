@@ -66,7 +66,6 @@ func (g *Game) isOutOfBounds(position Position) bool {
 }
 
 func (g *Game) CanMove(player *Player, newX float32, newY float32) bool {
-	log.Println(player.Position.X, player.Position.Y)
 	return !g.collidesWithWalls(Position{newX, newY}) && !g.isOutOfBounds(Position{newX, newY})
 }
 
@@ -119,13 +118,24 @@ func (g *Game) GenerateValidPosition(rowSize int, columnSize int) *Position {
 	return ValidPosition
 }
 
-func (g *Game) IsPowerUpPosition(position Position) bool {
+// Se fija si se tocan no más, habría que arreglarlo para que sea cuando pase medianamente por encima
+func (g *Game) IsPowerUpPosition(position Position) *Position {
+	// for _, powerUp := range g.GameMap.PowerUps {
+	// 	if int(powerUp.Position.X) == int(position.X) && int(powerUp.Position.Y) == int(position.Y) {
+	// 		return true
+	// 	}
+	// }
+	// return false
+	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+
 	for _, powerUp := range g.GameMap.PowerUps {
-		if powerUp.Position == position {
-			return true
+		powerUpRect := rl.NewRectangle(powerUp.Position.X*65, powerUp.Position.Y*65, 55, 55)
+		if rl.CheckCollisionRecs(pos, powerUpRect) {
+			return &Position{powerUp.Position.X, powerUp.Position.Y}
 		}
+
 	}
-	return false
+	return nil
 }
 
 func (g *Game) IsBombPosition(position Position) bool {
@@ -157,15 +167,21 @@ func (g *Game) ExplodeBomb(bomb *Bomb) {
 	}
 }
 
-func (g *Game) TransferPowerUpToPlayer(player *Player) {
-	powerUp := g.GameMap.RemovePowerUp(*player.Position)
-	player.AddPowerUp(*powerUp)
+func (g *Game) TransferPowerUpToPlayer(player *Player, powerUpPosition Position) {
+	powerUp := g.GameMap.GetPowerUp(powerUpPosition)
+	log.Println("PowerUp: ", powerUp)
+
+	if powerUp != nil {
+		player.AddPowerUp(*powerUp)
+		g.GameMap.RemovePowerUp(*player.Position)
+	}
 }
 
 func (g *Game) GrabPowerUp(playerId string) {
 	player := g.Players[playerId]
-	if g.IsPowerUpPosition(*player.Position) {
-		g.TransferPowerUpToPlayer(player)
+	powerUpPosition := g.IsPowerUpPosition(*player.Position)
+	if powerUpPosition != nil {
+		g.TransferPowerUpToPlayer(player, *powerUpPosition)
 	}
 }
 

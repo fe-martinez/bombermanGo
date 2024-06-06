@@ -80,14 +80,12 @@ func (m *GameMap) GetPowerUp(powerUpPosition Position) *PowerUp {
 	return nil
 }
 
-func (m *GameMap) RemovePowerUp(powerUpPosition Position) *PowerUp {
-	powerUp := m.GetPowerUp(powerUpPosition)
+func (m *GameMap) RemovePowerUp(powerUpPosition Position) {
 	for i, powerUp := range m.PowerUps {
 		if powerUp.Position == powerUpPosition {
 			m.PowerUps = append(m.PowerUps[:i], m.PowerUps[i+1:]...)
 		}
 	}
-	return powerUp
 }
 
 func (m *GameMap) AddPowerUp(powerUpPosition *Position) {
