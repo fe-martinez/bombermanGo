@@ -9,14 +9,15 @@ const PLAYER_BOMBS = 1
 const START_DIRECTION = "up"
 
 type Player struct {
-	Username  string
-	ID        string
-	Position  *Position
-	Lives     int8
-	Bombs     int8
-	PowerUps  []PowerUp
-	Speed     Speed
-	Direction string
+	Username   string
+	ID         string
+	Position   *Position
+	Lives      int8
+	Invencible bool
+	Bombs      int8
+	PowerUps   []PowerUp
+	Speed      Speed
+	Direction  string
 }
 
 type Speed struct {
@@ -30,14 +31,15 @@ func generateRandomUsername() string {
 
 func NewPlayer(id string, position *Position) *Player {
 	return &Player{
-		Username:  generateRandomUsername(),
-		ID:        id,
-		Position:  position,
-		Lives:     PLAYER_LIVES,
-		Bombs:     PLAYER_BOMBS,
-		PowerUps:  []PowerUp{},
-		Speed:     Speed{X: 0.0, Y: 0.0},
-		Direction: START_DIRECTION,
+		Username:   generateRandomUsername(),
+		ID:         id,
+		Position:   position,
+		Lives:      PLAYER_LIVES,
+		Invencible: false,
+		Bombs:      PLAYER_BOMBS,
+		PowerUps:   []PowerUp{},
+		Speed:      Speed{X: 0.0, Y: 0.0},
+		Direction:  START_DIRECTION,
 	}
 }
 

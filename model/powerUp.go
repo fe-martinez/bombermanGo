@@ -3,6 +3,7 @@ package model
 import "time"
 
 const POWERUP_EXPIRTE_TIME = 10 //segundos
+const POWER_UPS_AMOUNT = 4
 
 type PowerUpType int8
 

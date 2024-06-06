@@ -89,7 +89,7 @@ func (m *GameMap) RemovePowerUp(powerUpPosition Position) {
 }
 
 func (m *GameMap) AddPowerUp(powerUpPosition *Position) {
-	PowerUp := NewPowerUp(*powerUpPosition, PowerUpType(rand.Intn(5)))
+	PowerUp := NewPowerUp(*powerUpPosition, PowerUpType(rand.Intn(POWER_UPS_AMOUNT)))
 	m.PowerUps = append(m.PowerUps, PowerUp)
 }
 

@@ -12,6 +12,10 @@ type Bomb struct {
 	Owner       *Player
 }
 
+func (b *Bomb) IsOwner(playerID string) bool {
+	return b.Owner.ID == playerID
+}
+
 func NewBomb(x, y float32, alcance int8, owner Player) *Bomb {
 	return &Bomb{
 		Position:    Position{X: x, Y: y},

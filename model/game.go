@@ -235,6 +235,42 @@ func (g *Game) Start() {
 	}()
 }
 
+func (g *Game) ApplyPowerUp(powerUp PowerUpType, playerID string) {
+	switch powerUp {
+	case Invencibilidad:
+		g.Players[playerID].Invencible = true
+	case CaminarSobreParedes:
+		log.Println("Caminar sobre paredes not yet implemented")
+	case MasBombasEnSimultaneo:
+		g.Players[playerID].Bombs = 2
+	case AlcanceMejorado:
+		for _, bomb := range g.GameMap.Bombs {
+			if bomb.IsOwner(playerID) {
+				bomb.Alcance = 3
+			}
+		}
+	default:
+	}
+}
+
+func (g *Game) RemovePowerUp(powerUp PowerUpType, playerID string) {
+	switch powerUp {
+	case Invencibilidad:
+		g.Players[playerID].Invencible = false
+	case CaminarSobreParedes:
+		log.Println("Caminar sobre paredes not yet implemented")
+	case MasBombasEnSimultaneo:
+		g.Players[playerID].Bombs = 1
+	case AlcanceMejorado:
+		for _, bomb := range g.GameMap.Bombs {
+			if bomb.IsOwner(playerID) {
+				bomb.Alcance = 1
+			}
+		}
+	default:
+	}
+}
+
 func (g *Game) passRound() {
 	if g.Round < MAX_ROUNDS {
 		g.Round++
@@ -277,6 +313,7 @@ func (g *Game) Update() {
 	for _, player := range g.Players {
 		for _, powerUp := range player.PowerUps {
 			if now.After(powerUp.StartTime.Add(powerUp.ExpireTime * time.Second)) {
+
 				player.RemovePowerUp(powerUp)
 			}
 		}
