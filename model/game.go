@@ -235,7 +235,7 @@ func (g *Game) Start() {
 	}()
 }
 
-func (g *Game) ApplyPowerUp(powerUp PowerUpType, playerID string) {
+func (g *Game) ApplyPowerUpBenefit(powerUp PowerUpType, playerID string) {
 	switch powerUp {
 	case Invencibilidad:
 		g.Players[playerID].Invencible = true
@@ -253,7 +253,7 @@ func (g *Game) ApplyPowerUp(powerUp PowerUpType, playerID string) {
 	}
 }
 
-func (g *Game) RemovePowerUp(powerUp PowerUpType, playerID string) {
+func (g *Game) RemovePowerUpBenefit(powerUp PowerUpType, playerID string) {
 	switch powerUp {
 	case Invencibilidad:
 		g.Players[playerID].Invencible = false
