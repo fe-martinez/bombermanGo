@@ -1,13 +1,26 @@
 package model
 
 import (
+	"log"
+	"math"
+	"time"
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 const MAX_PLAYERS = 4
 const MAX_ROUNDS = 5
+const ROUND_DURATION = 2 //minutes
+const TICKER_REFRESH = 1 //second
+const MAX_POWER_UPS = 4
+const POWERUP_SPAWN_TIME = 10 //seconds
+
+const SPEED_INCREMENT = 0.1
+const BASE_SPEED = 0
 
 var colors = NewQueue()
+
+var stopChan chan struct{}
 
 type Game struct {
 	State        string
@@ -38,23 +51,151 @@ func NewGame(id string, GameMap *GameMap) *Game {
 }
 
 func (g *Game) collidesWithWalls(position Position) bool {
-	playerRect := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+	pos := rl.NewRectangle(position.X*65+5, position.Y*65+5, 55, 55)
 
 	for _, wall := range g.GameMap.Walls {
-		wallRect := rl.NewRectangle(wall.Position.X*65, wall.Position.Y*65, 55, 55)
-		if rl.CheckCollisionRecs(playerRect, wallRect) {
+		wallRect := rl.NewRectangle(wall.Position.X*65, wall.Position.Y*65, 65, 65)
+		if rl.CheckCollisionRecs(pos, wallRect) {
 			return true
 		}
 	}
 	return false
 }
 
-func (g *Game) GenerateValidPosition(mapSize int) *Position {
-	var ValidPosition = getRandomPosition(mapSize)
-	for g.collidesWithWalls(*ValidPosition) {
-		ValidPosition = getRandomPosition(mapSize)
+func (g *Game) isOutOfBounds(position Position) bool {
+	return position.X < 0 || position.X >= float32(g.GameMap.ColumnSize) || position.Y < 0 || position.Y >= float32(g.GameMap.RowSize)
+}
+
+func (g *Game) CanMove(player *Player, newX float32, newY float32) bool {
+	return !g.collidesWithWalls(Position{newX, newY}) && !g.isOutOfBounds(Position{newX, newY})
+}
+
+func (g *Game) collidesWithPlayers(position Position) bool {
+	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+
+	for _, player := range g.Players {
+		playerRect := rl.NewRectangle(player.Position.X*65, player.Position.Y*65, 55, 55)
+		if rl.CheckCollisionRecs(pos, playerRect) {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) collidesWithPowerUp(position Position) bool {
+	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+
+	for _, powerUp := range g.GameMap.PowerUps {
+		powerUpRect := rl.NewRectangle(powerUp.Position.X*65, powerUp.Position.Y*65, 55, 55)
+		if rl.CheckCollisionRecs(pos, powerUpRect) {
+			return true
+		}
+
+	}
+	return false
+}
+
+func (g *Game) collidesWithBomb(position Position) bool {
+	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+
+	for _, bomb := range g.GameMap.Bombs {
+		bombRect := rl.NewRectangle(bomb.Position.X*65, bomb.Position.Y*65, 55, 55)
+		if rl.CheckCollisionRecs(pos, bombRect) {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) IsValidPosition(ValidPosition Position) bool {
+	return !(g.collidesWithWalls(ValidPosition) || g.collidesWithPlayers(ValidPosition) || g.collidesWithPowerUp(ValidPosition) || g.collidesWithBomb(ValidPosition))
+}
+
+func (g *Game) GenerateValidPosition(rowSize int, columnSize int) *Position {
+	var ValidPosition = getRandomPosition(rowSize, columnSize)
+	for !g.IsValidPosition(*ValidPosition) {
+		ValidPosition = getRandomPosition(rowSize, columnSize)
 	}
 	return ValidPosition
+}
+
+// Se fija si se tocan no más, habría que arreglarlo para que sea cuando pase medianamente por encima
+func (g *Game) IsPowerUpPosition(position Position) *Position {
+	// for _, powerUp := range g.GameMap.PowerUps {
+	// 	if int(powerUp.Position.X) == int(position.X) && int(powerUp.Position.Y) == int(position.Y) {
+	// 		return true
+	// 	}
+	// }
+	// return false
+	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+
+	for _, powerUp := range g.GameMap.PowerUps {
+		powerUpRect := rl.NewRectangle(powerUp.Position.X*65, powerUp.Position.Y*65, 15, 15)
+		if rl.CheckCollisionRecs(pos, powerUpRect) {
+			return &Position{powerUp.Position.X, powerUp.Position.Y}
+		}
+
+	}
+	return nil
+}
+
+func (g *Game) IsBombPosition(position Position) bool {
+	for _, bomb := range g.GameMap.Bombs {
+		if bomb.Position == position {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) PutBomb(player *Player) {
+	if player.CanPlantBomb() {
+		x := float32(math.Round(float64(player.Position.X)))
+		y := float32(math.Round(float64(player.Position.Y)))
+		bomb := NewBomb(x, y, 2, *player)
+		g.GameMap.PlaceBomb(bomb)
+		player.Bombs--
+	}
+}
+
+func (g *Game) ExplodeBomb(bomb *Bomb) {
+	g.GameMap.RemoveBomb(bomb)
+	explosion := NewExplosion(bomb.Position, int(bomb.Alcance), *g)
+	g.GameMap.Explosions = append(g.GameMap.Explosions, *explosion)
+
+	for _, player := range g.Players {
+		if player.ID == bomb.Owner.ID {
+			player.Bombs++
+		}
+	}
+}
+
+func (g *Game) TransferPowerUpToPlayer(player *Player, powerUpPosition Position) {
+	powerUp := g.GameMap.GetPowerUp(powerUpPosition)
+
+	if powerUp != nil {
+		powerUp.SetPowerUpStartTime()
+		log.Println("Power up start time is setted")
+		player.AddPowerUp(*powerUp)
+		g.ApplyPowerUpBenefit(powerUp.name, player.ID)
+		g.GameMap.RemovePowerUp(powerUpPosition)
+	}
+}
+
+func (g *Game) GrabPowerUp(playerId string) {
+	player := g.Players[playerId]
+	powerUpPosition := g.IsPowerUpPosition(*player.Position)
+	if powerUpPosition != nil {
+		g.TransferPowerUpToPlayer(player, *powerUpPosition)
+	}
+}
+
+func (g *Game) PowerUpSpawn() {
+	if len(g.GameMap.PowerUps) < MAX_POWER_UPS {
+		position := g.GenerateValidPosition(g.GameMap.ColumnSize, g.GameMap.RowSize)
+		g.GameMap.AddPowerUp(position)
+	}
+
 }
 
 func (g *Game) IsFull() bool {
@@ -85,6 +226,60 @@ func (g *Game) RemovePlayer(playerID string) {
 
 func (g *Game) Start() {
 	g.State = "started"
+	ticker := time.NewTicker(POWERUP_SPAWN_TIME * time.Second)
+	stopChan = make(chan struct{})
+
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				log.Println("tick")
+				g.PowerUpSpawn()
+			}
+		}
+	}()
+}
+
+func (g *Game) ApplyPowerUpBenefit(powerUp PowerUpType, playerID string) {
+	switch powerUp {
+	case Invencibilidad:
+		log.Println("Invencibilidad")
+		g.Players[playerID].Invencible = true
+	case CaminarSobreParedes:
+		log.Println("Caminar sobre paredes not yet implemented")
+	case MasBombasEnSimultaneo:
+		log.Println("Mas bombas en simultaneo")
+		g.Players[playerID].Bombs = 2
+	case AlcanceMejorado:
+		log.Println("Alcance mejorado")
+		for _, bomb := range g.GameMap.Bombs {
+			if bomb.IsOwner(playerID) {
+				bomb.Alcance = 3
+			}
+		}
+	default:
+	}
+}
+
+func (g *Game) RemovePowerUpBenefit(powerUp PowerUpType, playerID string) {
+	switch powerUp {
+	case Invencibilidad:
+		log.Println("Removiendo invencibilidad")
+		g.Players[playerID].Invencible = false
+	case CaminarSobreParedes:
+		log.Println("Caminar sobre paredes not yet implemented")
+	case MasBombasEnSimultaneo:
+		log.Println("Removiendo mas bombas en simultaneo")
+		g.Players[playerID].Bombs = 1
+	case AlcanceMejorado:
+		log.Println("Removiendo alcance mejorado")
+		for _, bomb := range g.GameMap.Bombs {
+			if bomb.IsOwner(playerID) {
+				bomb.Alcance = 1
+			}
+		}
+	default:
+	}
 }
 
 func (g *Game) passRound() {
@@ -104,4 +299,39 @@ func (g *Game) GetAPlayerId() string {
 		return key
 	}
 	return ""
+}
+
+func (g *Game) Stop() {
+	close(stopChan)
+	g.State = "stopped"
+	log.Println("Game stopped")
+}
+
+func (g *Game) Update() {
+	now := time.Now()
+	for _, bomb := range g.GameMap.Bombs {
+		if now.After(bomb.PlantedTime.Add(bomb.ExplodeTime)) {
+			g.ExplodeBomb(&bomb)
+		}
+	}
+
+	for _, explosion := range g.GameMap.Explosions {
+		if now.After(explosion.ExplosionTime.Add(1 * time.Second)) {
+			g.GameMap.RemoveExplosion(&explosion)
+		}
+	}
+
+	for _, player := range g.Players {
+		for _, powerUp := range player.PowerUps {
+			log.Println("power up start time: ", powerUp.StartTime, "power up expire time: ", powerUp.ExpireTime, "now: ", now)
+			if !powerUp.StartTime.IsZero() {
+				if now.After(powerUp.StartTime.Add(powerUp.ExpireTime * time.Second)) {
+					log.Println("PowerUp expired")
+					g.RemovePowerUpBenefit(powerUp.name, player.ID)
+					player.RemovePowerUp(powerUp)
+				}
+			}
+		}
+	}
+
 }

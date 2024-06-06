@@ -1,20 +1,25 @@
 package model
 
-import petname "github.com/dustinkirkland/golang-petname"
+import (
+	"log"
 
-const PLAYER_LIVES = 6
+	petname "github.com/dustinkirkland/golang-petname"
+)
+
+const PLAYER_LIVES = 2
 const PLAYER_BOMBS = 1
 const START_DIRECTION = "up"
 
 type Player struct {
-	Username  string
-	ID        string
-	Position  *Position
-	Lives     int8
-	Bombs     int8
-	PowerUps  []PowerUp
-	Speed     Speed
-	Direction string
+	Username   string
+	ID         string
+	Position   *Position
+	Lives      int8
+	Invencible bool
+	Bombs      int8
+	PowerUps   []PowerUp
+	Speed      Speed
+	Direction  string
 }
 
 type Speed struct {
@@ -28,13 +33,31 @@ func generateRandomUsername() string {
 
 func NewPlayer(id string, position *Position) *Player {
 	return &Player{
-		Username:  generateRandomUsername(),
-		ID:        id,
-		Position:  position,
-		Lives:     PLAYER_LIVES,
-		Bombs:     PLAYER_BOMBS,
-		PowerUps:  []PowerUp{},
-		Speed:     Speed{X: 0.0, Y: 0.0},
-		Direction: START_DIRECTION,
+		Username:   generateRandomUsername(),
+		ID:         id,
+		Position:   position,
+		Lives:      PLAYER_LIVES,
+		Invencible: false,
+		Bombs:      PLAYER_BOMBS,
+		PowerUps:   []PowerUp{},
+		Speed:      Speed{X: 0.0, Y: 0.0},
+		Direction:  START_DIRECTION,
+	}
+}
+
+func (p *Player) CanPlantBomb() bool {
+	return p.Bombs > 0
+}
+
+func (p *Player) AddPowerUp(powerUp PowerUp) {
+	log.Println("Adding power up to player", powerUp)
+	p.PowerUps = append(p.PowerUps, powerUp)
+}
+
+func (p *Player) RemovePowerUp(powerUp PowerUp) {
+	for i, power := range p.PowerUps {
+		if powerUp == power {
+			p.PowerUps = append(p.PowerUps[:i], p.PowerUps[i+1:]...)
+		}
 	}
 }
