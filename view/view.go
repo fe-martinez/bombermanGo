@@ -65,6 +65,15 @@ func drawWalls(game model.Game) {
 	}
 }
 
+func drawExplosions(game model.Game) {
+	for _, explosion := range game.GameMap.Explosions {
+		rl.DrawRectangle(int32(explosion.Position.X*TILE_SIZE), int32(explosion.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Red)
+		for _, affectedTile := range explosion.AffectedTiles {
+			rl.DrawRectangle(int32(affectedTile.X*TILE_SIZE), int32(affectedTile.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Red)
+		}
+	}
+}
+
 func DrawGame(game model.Game) {
 	if len(game.Players) == 0 {
 		return
@@ -78,6 +87,8 @@ func DrawGame(game model.Game) {
 	drawPlayers(game)
 
 	drawBombs(game)
+
+	drawExplosions(game)
 
 	drawPowerUps(game)
 

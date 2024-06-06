@@ -16,17 +16,6 @@ const MAX_POWER_UPS = 4
 const SPEED_INCREMENT = 0.1
 const BASE_SPEED = 0
 
-type Direction struct {
-	X, Y float32
-}
-
-var directionMap = map[string]Direction{
-	"up":    {0, -1},
-	"right": {1, 0},
-	"down":  {0, 1},
-	"left":  {-1, 0},
-}
-
 var colors = NewQueue()
 
 var stopChan chan struct{}
@@ -76,6 +65,7 @@ func (g *Game) isOutOfBounds(position Position) bool {
 }
 
 func (g *Game) CanMove(player *Player, newX float32, newY float32) bool {
+	log.Println(player.Position.X, player.Position.Y)
 	return !g.collidesWithWalls(Position{newX, newY}) && !g.isOutOfBounds(Position{newX, newY})
 }
 
@@ -156,6 +146,8 @@ func (g *Game) PutBomb(player *Player) {
 
 func (g *Game) ExplodeBomb(bomb *Bomb) {
 	g.GameMap.RemoveBomb(bomb)
+	explosion := NewExplosion(bomb.Position, int(bomb.Alcance), *g)
+	g.GameMap.Explosions = append(g.GameMap.Explosions, *explosion)
 
 	for _, player := range g.Players {
 		if player.ID == bomb.Owner.ID {
@@ -260,4 +252,9 @@ func (g *Game) Update() {
 		}
 	}
 
+	for _, explosion := range g.GameMap.Explosions {
+		if now.After(explosion.ExplosionTime.Add(1 * time.Second)) {
+			g.GameMap.RemoveExplosion(&explosion)
+		}
+	}
 }
