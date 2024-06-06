@@ -41,12 +41,12 @@ func CreateMap(filepath string) (*GameMap, error) {
 			case 'W':
 				walls = append(walls, Wall{
 					Position:       &Position{x, y},
-					Indestructible: false,
+					Indestructible: true,
 				})
 			case 'D':
 				walls = append(walls, Wall{
 					Position:       &Position{x, y},
-					Indestructible: true,
+					Indestructible: false,
 				})
 			case '-':
 			default:
@@ -123,9 +123,26 @@ func (m *GameMap) RemoveExplosion(explosion *Explosion) {
 
 func (m *GameMap) isUnbreakableWall(position Position) bool {
 	for _, wall := range m.Walls {
-		if wall.Position == &position && wall.Indestructible {
+		if *wall.Position == position && wall.Indestructible {
 			return true
 		}
 	}
 	return false
+}
+
+func (m *GameMap) isBreakableWall(position Position) bool {
+	for _, wall := range m.Walls {
+		if *wall.Position == position && !wall.Indestructible {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *GameMap) RemoveWall(position Position) {
+	for i, wall := range m.Walls {
+		if *wall.Position == position {
+			m.Walls = append(m.Walls[:i], m.Walls[i+1:]...)
+		}
+	}
 }

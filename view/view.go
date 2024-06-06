@@ -58,9 +58,9 @@ func drawPowerUps(game model.Game) {
 func drawWalls(game model.Game) {
 	for _, wall := range game.GameMap.Walls {
 		if wall.Indestructible {
-			rl.DrawRectangle(int32(wall.Position.X*TILE_SIZE), int32(wall.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.LightGray)
-		} else {
 			rl.DrawRectangle(int32(wall.Position.X*TILE_SIZE), int32(wall.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.DarkGray)
+		} else {
+			rl.DrawRectangle(int32(wall.Position.X*TILE_SIZE), int32(wall.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.LightGray)
 		}
 	}
 }
