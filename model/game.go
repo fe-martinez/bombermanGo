@@ -12,7 +12,7 @@ const MAX_ROUNDS = 5
 const ROUND_DURATION = 2 //minutes
 const TICKER_REFRESH = 1 //second
 const MAX_POWER_UPS = 3
-const POWERUP_SPAWN_TIME = 15 //seconds
+const POWERUP_SPAWN_TIME = 10 //seconds
 
 const SPEED_INCREMENT = 0.1
 const BASE_SPEED = 0
@@ -162,11 +162,10 @@ func (g *Game) TransferPowerUpToPlayer(player *Player) {
 	player.AddPowerUp(*powerUp)
 }
 
-func (g *Game) GrabPowerUp() {
-	for _, player := range g.Players {
-		if g.IsPowerUpPosition(*player.Position) {
-			g.TransferPowerUpToPlayer(player)
-		}
+func (g *Game) GrabPowerUp(playerId string) {
+	player := g.Players[playerId]
+	if g.IsPowerUpPosition(*player.Position) {
+		g.TransferPowerUpToPlayer(player)
 	}
 }
 
@@ -258,4 +257,5 @@ func (g *Game) Update() {
 			g.GameMap.RemoveExplosion(&explosion)
 		}
 	}
+
 }

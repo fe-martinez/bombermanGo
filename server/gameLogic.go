@@ -25,6 +25,7 @@ func handlePlayerAction(msg utils.ClientMessage, game *model.Game) {
 	case utils.ActionMove:
 		direction := msg.Data.([]string)
 		movePlayer(game.Players[msg.ID], direction, game)
+		game.GrabPowerUp(msg.ID)
 	case utils.ActionBomb:
 		game.PutBomb(game.Players[msg.ID])
 	default:
