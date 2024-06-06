@@ -11,7 +11,7 @@ const MAX_PLAYERS = 4
 const MAX_ROUNDS = 5
 const ROUND_DURATION = 2 //minutes
 const TICKER_REFRESH = 1 //second
-const MAX_POWER_UPS = 3
+const MAX_POWER_UPS = 4
 const POWERUP_SPAWN_TIME = 10 //seconds
 
 const SPEED_INCREMENT = 0.1
@@ -129,7 +129,7 @@ func (g *Game) IsPowerUpPosition(position Position) *Position {
 	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
 
 	for _, powerUp := range g.GameMap.PowerUps {
-		powerUpRect := rl.NewRectangle(powerUp.Position.X*65, powerUp.Position.Y*65, 55, 55)
+		powerUpRect := rl.NewRectangle(powerUp.Position.X*65, powerUp.Position.Y*65, 15, 15)
 		if rl.CheckCollisionRecs(pos, powerUpRect) {
 			return &Position{powerUp.Position.X, powerUp.Position.Y}
 		}
