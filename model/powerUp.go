@@ -1,6 +1,6 @@
 package model
 
-const POWERUP_DURATION = 20 //segundos
+const POWERUP_DURATION = 10 //segundos
 
 type PowerUpType int8
 

@@ -11,8 +11,8 @@ const MAX_PLAYERS = 4
 const MAX_ROUNDS = 5
 const ROUND_DURATION = 2 //minutes
 const TICKER_REFRESH = 1 //second
-const MAX_POWER_UPS = 4
-
+const MAX_POWER_UPS = 3
+const POWERUP_SPAWN_TIME = 15 //seconds
 var colors = NewQueue()
 
 var stopChan chan struct{}
@@ -173,7 +173,7 @@ func (g *Game) RemovePlayer(playerID string) {
 
 func (g *Game) Start() {
 	g.State = "started"
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(POWERUP_SPAWN_TIME * time.Second)
 	stopChan = make(chan struct{})
 
 	go func() {
