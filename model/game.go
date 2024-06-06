@@ -2,6 +2,7 @@ package model
 
 import (
 	"log"
+	"math"
 	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -138,7 +139,9 @@ func (g *Game) IsBombPosition(position Position) bool {
 
 func (g *Game) PutBomb(player *Player) {
 	if player.CanPlantBomb() {
-		bomb := NewBomb(player.Position.X, player.Position.Y, 2, *player)
+		x := float32(math.Round(float64(player.Position.X)))
+		y := float32(math.Round(float64(player.Position.Y)))
+		bomb := NewBomb(x, y, 2, *player)
 		g.GameMap.PlaceBomb(bomb)
 		player.Bombs--
 	}
