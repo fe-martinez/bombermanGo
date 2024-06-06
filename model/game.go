@@ -13,6 +13,10 @@ const ROUND_DURATION = 2 //minutes
 const TICKER_REFRESH = 1 //second
 const MAX_POWER_UPS = 3
 const POWERUP_SPAWN_TIME = 15 //seconds
+
+const SPEED_INCREMENT = 0.1
+const BASE_SPEED = 0
+
 var colors = NewQueue()
 
 var stopChan chan struct{}
@@ -46,15 +50,24 @@ func NewGame(id string, GameMap *GameMap) *Game {
 }
 
 func (g *Game) collidesWithWalls(position Position) bool {
-	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+	pos := rl.NewRectangle(position.X*65+5, position.Y*65+5, 55, 55)
 
 	for _, wall := range g.GameMap.Walls {
-		wallRect := rl.NewRectangle(wall.Position.X*65, wall.Position.Y*65, 55, 55)
+		wallRect := rl.NewRectangle(wall.Position.X*65, wall.Position.Y*65, 65, 65)
 		if rl.CheckCollisionRecs(pos, wallRect) {
 			return true
 		}
 	}
 	return false
+}
+
+func (g *Game) isOutOfBounds(position Position) bool {
+	return position.X < 0 || position.X >= float32(g.GameMap.ColumnSize) || position.Y < 0 || position.Y >= float32(g.GameMap.RowSize)
+}
+
+func (g *Game) CanMove(player *Player, newX float32, newY float32) bool {
+	log.Println(player.Position.X, player.Position.Y)
+	return !g.collidesWithWalls(Position{newX, newY}) && !g.isOutOfBounds(Position{newX, newY})
 }
 
 func (g *Game) collidesWithPlayers(position Position) bool {
@@ -122,6 +135,26 @@ func (g *Game) IsBombPosition(position Position) bool {
 		}
 	}
 	return false
+}
+
+func (g *Game) PutBomb(player *Player) {
+	if player.CanPlantBomb() {
+		bomb := NewBomb(player.Position.X, player.Position.Y, 2, *player)
+		g.GameMap.PlaceBomb(bomb)
+		player.Bombs--
+	}
+}
+
+func (g *Game) ExplodeBomb(bomb *Bomb) {
+	g.GameMap.RemoveBomb(bomb)
+	explosion := NewExplosion(bomb.Position, int(bomb.Alcance), *g)
+	g.GameMap.Explosions = append(g.GameMap.Explosions, *explosion)
+
+	for _, player := range g.Players {
+		if player.ID == bomb.Owner.ID {
+			player.Bombs++
+		}
+	}
 }
 
 func (g *Game) TransferPowerUpToPlayer(player *Player) {
@@ -210,4 +243,19 @@ func (g *Game) Stop() {
 	close(stopChan)
 	g.State = "stopped"
 	log.Println("Game stopped")
+}
+
+func (g *Game) Update() {
+	now := time.Now()
+	for _, bomb := range g.GameMap.Bombs {
+		if now.After(bomb.PlantedTime.Add(bomb.ExplodeTime)) {
+			g.ExplodeBomb(&bomb)
+		}
+	}
+
+	for _, explosion := range g.GameMap.Explosions {
+		if now.After(explosion.ExplosionTime.Add(1 * time.Second)) {
+			g.GameMap.RemoveExplosion(&explosion)
+		}
+	}
 }

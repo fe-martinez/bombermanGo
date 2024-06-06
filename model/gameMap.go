@@ -11,6 +11,7 @@ type GameMap struct {
 	Walls      []Wall
 	PowerUps   []PowerUp
 	Bombs      []Bomb
+	Explosions []Explosion
 	RowSize    int
 	ColumnSize int
 }
@@ -92,4 +93,41 @@ func (m *GameMap) RemovePowerUp(powerUpPosition Position) *PowerUp {
 func (m *GameMap) AddPowerUp(powerUpPosition *Position) {
 	PowerUp := NewPowerUp(*powerUpPosition, PowerUpType(rand.Intn(5)))
 	m.PowerUps = append(m.PowerUps, PowerUp)
+}
+
+func (m *GameMap) PlaceBomb(bomb *Bomb) {
+	m.Bombs = append(m.Bombs, *bomb)
+}
+
+func (m *GameMap) RemoveBomb(explodedBomb *Bomb) {
+	for i, bomb := range m.Bombs {
+		if explodedBomb.Position == bomb.Position {
+			if len(m.Bombs) == 1 {
+				m.Bombs = []Bomb{}
+			} else {
+				m.Bombs = append(m.Bombs[:i], m.Bombs[i+1:]...)
+			}
+		}
+	}
+}
+
+func (m *GameMap) RemoveExplosion(explosion *Explosion) {
+	for i, exp := range m.Explosions {
+		if exp.Position == explosion.Position {
+			if len(m.Explosions) == 1 {
+				m.Explosions = []Explosion{}
+			} else {
+				m.Explosions = append(m.Explosions[:i], m.Explosions[i+1:]...)
+			}
+		}
+	}
+}
+
+func (m *GameMap) isUnbreakableWall(position Position) bool {
+	for _, wall := range m.Walls {
+		if wall.Position == &position && wall.Indestructible {
+			return true
+		}
+	}
+	return false
 }

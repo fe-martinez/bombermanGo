@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"slices"
 	"strings"
 	"sync"
 )
@@ -43,8 +44,8 @@ func NewClient() *Client {
 	}
 }
 
-func (c *Client) sendGameInput(input string) {
-	if input == "bomb" {
+func (c *Client) sendGameInput(input []string) {
+	if slices.Contains(input, "bomb") {
 		SendBombMessage(c.connection, c.playerID)
 	} else {
 		SendMoveMessage(input, c.connection, c.playerID)

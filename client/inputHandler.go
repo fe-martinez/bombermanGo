@@ -6,24 +6,26 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func handleInput() string {
+func handleInput() []string {
+	var inputs []string
+
 	if rl.IsKeyDown(rl.KeyW) {
-		return "up"
+		inputs = append(inputs, "up")
 	}
 	if rl.IsKeyDown(rl.KeyS) {
-		return "down"
+		inputs = append(inputs, "down")
 	}
 	if rl.IsKeyDown(rl.KeyA) {
-		return "left"
+		inputs = append(inputs, "left")
 	}
 	if rl.IsKeyDown(rl.KeyD) {
-		return "right"
+		inputs = append(inputs, "right")
 	}
 	if rl.IsKeyDown(rl.KeyB) {
-		return "bomb"
+		inputs = append(inputs, "bomb")
 	}
 
-	return "none"
+	return inputs
 }
 
 func isMouseInJoinButton() bool {

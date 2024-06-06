@@ -41,6 +41,10 @@ func NewPlayer(id string, position *Position) *Player {
 	}
 }
 
+func (p *Player) CanPlantBomb() bool {
+	return p.Bombs > 0
+}
+
 func (p *Player) AddPowerUp(powerUp PowerUp) {
 	p.PowerUps = append(p.PowerUps, powerUp)
 }
