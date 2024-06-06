@@ -7,9 +7,7 @@ type PowerUpType int8
 const (
 	Invencibilidad PowerUpType = iota
 	CaminarSobreParedes
-	//BombasRodantes
 	AlcanceMejorado
-	PotenciaMejorada
 	MasBombasEnSimultaneo
 )
 
@@ -26,5 +24,3 @@ func NewPowerUp(position Position, name PowerUpType) PowerUp {
 		duration: POWERUP_DURATION,
 	}
 }
-
-

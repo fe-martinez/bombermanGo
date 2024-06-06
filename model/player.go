@@ -4,7 +4,7 @@ import (
 	petname "github.com/dustinkirkland/golang-petname"
 )
 
-const PLAYER_LIVES = 6
+const PLAYER_LIVES = 2
 const PLAYER_BOMBS = 1
 const START_DIRECTION = "up"
 
