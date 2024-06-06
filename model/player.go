@@ -1,6 +1,8 @@
 package model
 
-import petname "github.com/dustinkirkland/golang-petname"
+import (
+	petname "github.com/dustinkirkland/golang-petname"
+)
 
 const PLAYER_LIVES = 6
 const PLAYER_BOMBS = 1
@@ -37,4 +39,8 @@ func NewPlayer(id string, position *Position) *Player {
 		Speed:     Speed{X: 0.0, Y: 0.0},
 		Direction: START_DIRECTION,
 	}
+}
+
+func (p *Player) AddPowerUp(powerUp PowerUp) {
+	p.PowerUps = append(p.PowerUps, powerUp)
 }

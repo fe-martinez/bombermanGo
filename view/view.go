@@ -51,16 +51,16 @@ func drawBombs(game model.Game) {
 // Después va a tener que dibujar los distintos powerups según el tipo
 func drawPowerUps(game model.Game) {
 	for _, powerUp := range game.GameMap.PowerUps {
-		rl.DrawRectangle(int32(powerUp.Position.X*TILE_SIZE), int32(powerUp.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Brown)
+		rl.DrawRectangle(int32(powerUp.Position.X*TILE_SIZE), int32(powerUp.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Magenta)
 	}
 }
 
 func drawWalls(game model.Game) {
 	for _, wall := range game.GameMap.Walls {
 		if wall.Indestructible {
-			rl.DrawRectangle(int32(wall.Position.X*TILE_SIZE), int32(wall.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.DarkGray)
+			rl.DrawRectangle(int32(wall.Position.X*TILE_SIZE), int32(wall.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.LightGray)
 		} else {
-			rl.DrawRectangle(int32(wall.Position.X*TILE_SIZE), int32(wall.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Gray)
+			rl.DrawRectangle(int32(wall.Position.X*TILE_SIZE), int32(wall.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.DarkGray)
 		}
 	}
 }
@@ -108,8 +108,8 @@ func DrawMainMenuScreen() {
 }
 
 const (
-	INPUT_BOX_POS_X  = 250
-	INPUT_BOX_POS_Y  = 450
+	INPUT_BOX_POS_X  = WIDTH/2 - 100
+	INPUT_BOX_POS_Y  = HEIGHT/2 - 25
 	INPUT_BOX_WIDTH  = 350
 	INPUT_BOX_HEIGHT = 50
 )
@@ -120,9 +120,9 @@ func DrawLobbySelectionScreen(lobbyID string) {
 	rl.ClearBackground(rl.Beige)
 
 	rl.DrawText("Enter Game ID", INPUT_BOX_POS_X, INPUT_BOX_POS_Y-40, 20, rl.Maroon)
-	rl.DrawRectangleLines(INPUT_BOX_POS_X, INPUT_BOX_POS_Y, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT, rl.DarkPurple)
+	rl.DrawRectangleLines(INPUT_BOX_POS_X-95, INPUT_BOX_POS_Y, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT, rl.DarkPurple)
 
-	rl.DrawText(lobbyID, INPUT_BOX_POS_X+10, INPUT_BOX_POS_Y+15, 20, rl.Maroon)
+	rl.DrawText(lobbyID, INPUT_BOX_POS_X-90, INPUT_BOX_POS_Y+15, 20, rl.Maroon)
 
 	rl.EndDrawing()
 }

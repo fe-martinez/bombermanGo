@@ -1,11 +1,13 @@
 package model
 
+const POWERUP_DURATION = 20 //segundos
+
 type PowerUpType int8
 
 const (
 	Invencibilidad PowerUpType = iota
 	CaminarSobreParedes
-	BombasRodantes
+	//BombasRodantes
 	AlcanceMejorado
 	PotenciaMejorada
 	MasBombasEnSimultaneo
@@ -14,5 +16,15 @@ const (
 type PowerUp struct {
 	Position Position
 	name     PowerUpType
-	timer    float32
+	duration float32
 }
+
+func NewPowerUp(position Position, name PowerUpType) PowerUp {
+	return PowerUp{
+		Position: position,
+		name:     name,
+		duration: POWERUP_DURATION,
+	}
+}
+
+
