@@ -48,3 +48,11 @@ func (p *Player) CanPlantBomb() bool {
 func (p *Player) AddPowerUp(powerUp PowerUp) {
 	p.PowerUps = append(p.PowerUps, powerUp)
 }
+
+func (p *Player) RemovePowerUp(powerUp PowerUp) {
+	for i, power := range p.PowerUps {
+		if powerUp == power {
+			p.PowerUps = append(p.PowerUps[:i], p.PowerUps[i+1:]...)
+		}
+	}
+}

@@ -1,6 +1,8 @@
 package model
 
-const POWERUP_DURATION = 10 //segundos
+import "time"
+
+const POWERUP_EXPIRTE_TIME = 10 //segundos
 
 type PowerUpType int8
 
@@ -12,15 +14,21 @@ const (
 )
 
 type PowerUp struct {
-	Position Position
-	name     PowerUpType
-	duration float32
+	Position   Position
+	name       PowerUpType
+	StartTime  time.Time
+	ExpireTime time.Duration
 }
 
 func NewPowerUp(position Position, name PowerUpType) PowerUp {
 	return PowerUp{
-		Position: position,
-		name:     name,
-		duration: POWERUP_DURATION,
+		Position:   position,
+		name:       name,
+		StartTime:  time.Time{},
+		ExpireTime: POWERUP_EXPIRTE_TIME * time.Second,
 	}
+}
+
+func (p *PowerUp) SetPowerUpStartTime() {
+	p.StartTime = time.Now()
 }

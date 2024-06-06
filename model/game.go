@@ -171,6 +171,7 @@ func (g *Game) TransferPowerUpToPlayer(player *Player, powerUpPosition Position)
 	powerUp := g.GameMap.GetPowerUp(powerUpPosition)
 
 	if powerUp != nil {
+		powerUp.SetPowerUpStartTime()
 		player.AddPowerUp(*powerUp)
 		g.GameMap.RemovePowerUp(powerUpPosition)
 	}
@@ -270,6 +271,14 @@ func (g *Game) Update() {
 	for _, explosion := range g.GameMap.Explosions {
 		if now.After(explosion.ExplosionTime.Add(1 * time.Second)) {
 			g.GameMap.RemoveExplosion(&explosion)
+		}
+	}
+
+	for _, player := range g.Players {
+		for _, powerUp := range player.PowerUps {
+			if now.After(powerUp.StartTime.Add(powerUp.ExpireTime * time.Second)) {
+				player.RemovePowerUp(powerUp)
+			}
 		}
 	}
 
