@@ -79,6 +79,7 @@ func (l *Lobby) startGame() {
 }
 
 func (l *Lobby) BroadcastGameState() {
+	l.game.Update()
 	for _, client := range l.clients {
 		sendGameMessageToClient(client.connection, l.game)
 	}

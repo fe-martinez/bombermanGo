@@ -4,7 +4,7 @@ import (
 	petname "github.com/dustinkirkland/golang-petname"
 )
 
-const PLAYER_LIVES = 6
+const PLAYER_LIVES = 2
 const PLAYER_BOMBS = 1
 const START_DIRECTION = "up"
 
@@ -39,6 +39,10 @@ func NewPlayer(id string, position *Position) *Player {
 		Speed:     Speed{X: 0.0, Y: 0.0},
 		Direction: START_DIRECTION,
 	}
+}
+
+func (p *Player) CanPlantBomb() bool {
+	return p.Bombs > 0
 }
 
 func (p *Player) AddPowerUp(powerUp PowerUp) {

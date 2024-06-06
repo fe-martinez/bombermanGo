@@ -93,3 +93,19 @@ func (m *GameMap) AddPowerUp(powerUpPosition *Position) {
 	PowerUp := NewPowerUp(*powerUpPosition, PowerUpType(rand.Intn(5)))
 	m.PowerUps = append(m.PowerUps, PowerUp)
 }
+
+func (m *GameMap) PlaceBomb(bomb *Bomb) {
+	m.Bombs = append(m.Bombs, *bomb)
+}
+
+func (m *GameMap) RemoveBomb(explodedBomb *Bomb) {
+	for _, bomb := range m.Bombs {
+		if explodedBomb.Position == bomb.Position {
+			if len(m.Bombs) == 1 {
+				m.Bombs = []Bomb{}
+			} else {
+				//m.Bombs = append(m.Bombs[:i], m.Bombs[i+1:]...)
+			}
+		}
+	}
+}

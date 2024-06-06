@@ -76,7 +76,7 @@ func (g *Game) isOutOfBounds(position Position) bool {
 }
 
 func (g *Game) CanMove(player *Player, newX float32, newY float32) bool {
-	return !g.collidesWithWalls(Position{newX, newY}) && !g.collidesWithBomb(Position{newX, newY}) && !g.isOutOfBounds(Position{newX, newY})
+	return !g.collidesWithWalls(Position{newX, newY}) && !g.isOutOfBounds(Position{newX, newY})
 }
 
 func (g *Game) collidesWithPlayers(position Position) bool {
@@ -144,6 +144,24 @@ func (g *Game) IsBombPosition(position Position) bool {
 		}
 	}
 	return false
+}
+
+func (g *Game) PutBomb(player *Player) {
+	if player.CanPlantBomb() {
+		bomb := NewBomb(player.Position.X, player.Position.Y, 2, *player)
+		g.GameMap.PlaceBomb(bomb)
+		player.Bombs--
+	}
+}
+
+func (g *Game) ExplodeBomb(bomb *Bomb) {
+	g.GameMap.RemoveBomb(bomb)
+
+	for _, player := range g.Players {
+		if player.ID == bomb.Owner.ID {
+			player.Bombs++
+		}
+	}
 }
 
 func (g *Game) TransferPowerUpToPlayer(player *Player) {
@@ -232,4 +250,14 @@ func (g *Game) Stop() {
 	close(stopChan)
 	g.State = "stopped"
 	log.Println("Game stopped")
+}
+
+func (g *Game) Update() {
+	now := time.Now()
+	for _, bomb := range g.GameMap.Bombs {
+		if now.After(bomb.PlantedTime.Add(bomb.ExplodeTime)) {
+			g.ExplodeBomb(&bomb)
+		}
+	}
+
 }
