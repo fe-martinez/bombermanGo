@@ -49,7 +49,7 @@ func SendStartGameMessage(conn net.Conn, playerID string) error {
 	return SendMessage(msg, conn)
 }
 
-func SendMoveMessage(move string, conn net.Conn, playerID string) error {
+func SendMoveMessage(move []string, conn net.Conn, playerID string) error {
 	msg := utils.ClientMessage{
 		Action: utils.ActionMove,
 		Data:   move,

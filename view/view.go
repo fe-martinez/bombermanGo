@@ -58,9 +58,18 @@ func drawPowerUps(game model.Game) {
 func drawWalls(game model.Game) {
 	for _, wall := range game.GameMap.Walls {
 		if wall.Indestructible {
-			rl.DrawRectangle(int32(wall.Position.X*TILE_SIZE), int32(wall.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.LightGray)
-		} else {
 			rl.DrawRectangle(int32(wall.Position.X*TILE_SIZE), int32(wall.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.DarkGray)
+		} else {
+			rl.DrawRectangle(int32(wall.Position.X*TILE_SIZE), int32(wall.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.LightGray)
+		}
+	}
+}
+
+func drawExplosions(game model.Game) {
+	for _, explosion := range game.GameMap.Explosions {
+		rl.DrawRectangle(int32(explosion.Position.X*TILE_SIZE), int32(explosion.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Red)
+		for _, affectedTile := range explosion.AffectedTiles {
+			rl.DrawRectangle(int32(affectedTile.X*TILE_SIZE), int32(affectedTile.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Red)
 		}
 	}
 }
@@ -78,6 +87,8 @@ func DrawGame(game model.Game) {
 	drawPlayers(game)
 
 	drawBombs(game)
+
+	drawExplosions(game)
 
 	drawPowerUps(game)
 
