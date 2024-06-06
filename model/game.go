@@ -172,6 +172,7 @@ func (g *Game) TransferPowerUpToPlayer(player *Player, powerUpPosition Position)
 
 	if powerUp != nil {
 		powerUp.SetPowerUpStartTime()
+		log.Println("Power up start time is setted")
 		player.AddPowerUp(*powerUp)
 		g.ApplyPowerUpBenefit(powerUp.name, player.ID)
 		g.GameMap.RemovePowerUp(powerUpPosition)
@@ -239,12 +240,15 @@ func (g *Game) Start() {
 func (g *Game) ApplyPowerUpBenefit(powerUp PowerUpType, playerID string) {
 	switch powerUp {
 	case Invencibilidad:
+		log.Println("Invencibilidad")
 		g.Players[playerID].Invencible = true
 	case CaminarSobreParedes:
 		log.Println("Caminar sobre paredes not yet implemented")
 	case MasBombasEnSimultaneo:
+		log.Println("Mas bombas en simultaneo")
 		g.Players[playerID].Bombs = 2
 	case AlcanceMejorado:
+		log.Println("Alcance mejorado")
 		for _, bomb := range g.GameMap.Bombs {
 			if bomb.IsOwner(playerID) {
 				bomb.Alcance = 3
@@ -257,12 +261,15 @@ func (g *Game) ApplyPowerUpBenefit(powerUp PowerUpType, playerID string) {
 func (g *Game) RemovePowerUpBenefit(powerUp PowerUpType, playerID string) {
 	switch powerUp {
 	case Invencibilidad:
+		log.Println("Removiendo invencibilidad")
 		g.Players[playerID].Invencible = false
 	case CaminarSobreParedes:
 		log.Println("Caminar sobre paredes not yet implemented")
 	case MasBombasEnSimultaneo:
+		log.Println("Removiendo mas bombas en simultaneo")
 		g.Players[playerID].Bombs = 1
 	case AlcanceMejorado:
+		log.Println("Removiendo alcance mejorado")
 		for _, bomb := range g.GameMap.Bombs {
 			if bomb.IsOwner(playerID) {
 				bomb.Alcance = 1
@@ -313,9 +320,13 @@ func (g *Game) Update() {
 
 	for _, player := range g.Players {
 		for _, powerUp := range player.PowerUps {
-			if now.After(powerUp.StartTime.Add(powerUp.ExpireTime * time.Second)) {
-				g.RemovePowerUpBenefit(powerUp.name, player.ID)
-				player.RemovePowerUp(powerUp)
+			log.Println("power up start time: ", powerUp.StartTime, "power up expire time: ", powerUp.ExpireTime, "now: ", now)
+			if !powerUp.StartTime.IsZero() {
+				if now.After(powerUp.StartTime.Add(powerUp.ExpireTime * time.Second)) {
+					log.Println("PowerUp expired")
+					g.RemovePowerUpBenefit(powerUp.name, player.ID)
+					player.RemovePowerUp(powerUp)
+				}
 			}
 		}
 	}

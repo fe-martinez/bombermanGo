@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"log"
+	"time"
+)
 
 const POWERUP_EXPIRTE_TIME = 10 //segundos
 const POWER_UPS_AMOUNT = 4
@@ -32,4 +35,5 @@ func NewPowerUp(position Position, name PowerUpType) PowerUp {
 
 func (p *PowerUp) SetPowerUpStartTime() {
 	p.StartTime = time.Now()
+	log.Println("PowerUp Start Time: ", p.StartTime)
 }

@@ -1,6 +1,8 @@
 package model
 
 import (
+	"log"
+
 	petname "github.com/dustinkirkland/golang-petname"
 )
 
@@ -48,6 +50,7 @@ func (p *Player) CanPlantBomb() bool {
 }
 
 func (p *Player) AddPowerUp(powerUp PowerUp) {
+	log.Println("Adding power up to player", powerUp)
 	p.PowerUps = append(p.PowerUps, powerUp)
 }
 
