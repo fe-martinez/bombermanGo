@@ -309,6 +309,7 @@ func (g *Game) Stop() {
 
 func (g *Game) Update() {
 	now := time.Now()
+	
 	for _, bomb := range g.GameMap.Bombs {
 		if now.After(bomb.PlantedTime.Add(bomb.ExplodeTime)) {
 			g.ExplodeBomb(&bomb)
@@ -323,9 +324,9 @@ func (g *Game) Update() {
 
 	for _, player := range g.Players {
 		for _, powerUp := range player.PowerUps {
-			log.Println("power up start time: ", powerUp.StartTime, "power up expire time: ", powerUp.ExpireTime, "now: ", now)
+			
 			if !powerUp.StartTime.IsZero() {
-				if now.After(powerUp.StartTime.Add(powerUp.ExpireTime * time.Second)) {
+				if now.After(powerUp.ExpireTime) {
 					log.Println("PowerUp expired")
 					g.RemovePowerUpBenefit(powerUp.name, player.ID)
 					player.RemovePowerUp(powerUp)
