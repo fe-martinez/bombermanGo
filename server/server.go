@@ -67,6 +67,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 		err := s.handleMessage(&client)
 		if err != nil {
 			log.Printf("Error handling client message: %v\n", err)
+			s.disconnectClient(playerID)
+			return
 		}
 	}
 }

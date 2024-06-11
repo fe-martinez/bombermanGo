@@ -20,8 +20,6 @@ const BASE_SPEED = 0
 
 var colors = NewQueue()
 
-var stopChan chan struct{}
-
 type GameState string
 
 const (
@@ -127,10 +125,6 @@ func (g *Game) collidesWithBomb(position Position) bool {
 }
 
 func (g *Game) IsValidPosition(ValidPosition Position) bool {
-	if g.GameMap.isUnbreakableWall(ValidPosition) || g.GameMap.isBreakableWall(ValidPosition) {
-		return false
-	}
-
 	return !(g.collidesWithWalls(ValidPosition) || g.collidesWithPlayers(ValidPosition) || g.collidesWithPowerUp(ValidPosition) || g.collidesWithBomb(ValidPosition))
 }
 
@@ -211,11 +205,10 @@ func (g *Game) PowerUpSpawn() {
 		position := g.GenerateValidPosition(g.GameMap.ColumnSize, g.GameMap.RowSize)
 		g.GameMap.AddPowerUp(position)
 	}
-
 }
 
 func (g *Game) IsFull() bool {
-	return len(g.Players) == MAX_PLAYERS
+	return len(g.Players) >= MAX_PLAYERS
 }
 
 func (g *Game) AddPlayer(player *Player) {
@@ -243,15 +236,11 @@ func (g *Game) RemovePlayer(playerID string) {
 func (g *Game) Start() {
 	g.State = "started"
 	ticker := time.NewTicker(POWERUP_SPAWN_TIME * time.Second)
-	stopChan = make(chan struct{})
 
 	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				log.Println("tick")
-				g.PowerUpSpawn()
-			}
+		for range ticker.C {
+			log.Println("tick")
+			g.PowerUpSpawn()
 		}
 	}()
 }
@@ -364,7 +353,7 @@ func (g *Game) findNearestFreeSpace(start Position) *Position {
 			return &current
 		}
 
-		for _, neighbor := range g.getNeighbors(current) {
+		for _, neighbor := range g.getTileNeighbors(current) {
 			if _, ok := visited[neighbor]; !ok {
 				queue = append(queue, neighbor)
 				visited[neighbor] = true
@@ -375,7 +364,7 @@ func (g *Game) findNearestFreeSpace(start Position) *Position {
 	return nil
 }
 
-func (g *Game) getNeighbors(position Position) []Position {
+func (g *Game) getTileNeighbors(position Position) []Position {
 	neighbors := []Position{}
 	if position.X-1 >= 0 {
 		neighbors = append(neighbors, Position{X: position.X - 1, Y: position.Y})
@@ -393,7 +382,6 @@ func (g *Game) getNeighbors(position Position) []Position {
 }
 
 func (g *Game) Stop() {
-	close(stopChan)
 	g.State = "stopped"
 	log.Println("Game stopped")
 }
