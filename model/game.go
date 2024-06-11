@@ -315,10 +315,28 @@ func (g *Game) Update() {
 		}
 	}
 
-	for _, explosion := range g.GameMap.Explosions {
-		if now.After(explosion.ExplosionTime.Add(1 * time.Second)) {
-			g.GameMap.RemoveExplosion(&explosion)
+	for i := range g.GameMap.Explosions {
+		explosion := &g.GameMap.Explosions[i]
+		if explosion.IsExpired() {
+			g.GameMap.RemoveExplosion(explosion)
 		}
+
+		for _, player := range g.Players {
+			if explosion.IsTileInRange(*player.Position) && !player.Invencible && !explosion.IsPlayerAlreadyAffected(player.ID) {
+				explosion.AddAffectedPlayer(player.ID)
+				player.LoseHealth()
+				if player.Lives == 0 {
+					delete(g.Players, player.ID)
+					color := g.GetPlayerColor(player.ID)
+					colors.Enqueue(color)
+				}
+				// 	if len(g.Players) == 0 {
+				// 		g.passRound()
+				// 	}
+				// }
+			}
+		}
+
 	}
 
 	for _, player := range g.Players {

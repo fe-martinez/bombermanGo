@@ -45,7 +45,6 @@ func (l *Lobby) GetPlayerPosition() *model.Position {
 }
 
 func (l *Lobby) AddClient(client *Client) {
-	//player := model.NewPlayer(client.clientID, l.game.GenerateValidPosition(l.game.GameMap.ColumnSize, l.game.GameMap.RowSize))
 	player := model.NewPlayer(client.clientID, l.GetPlayerPosition())
 	l.game.AddPlayer(player)
 	l.clients[client.clientID] = client
