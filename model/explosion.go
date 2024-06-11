@@ -1,7 +1,6 @@
 package model
 
 import (
-	"log"
 	"time"
 )
 
@@ -70,12 +69,8 @@ func (e *Explosion) AddAffectedPlayer(playerID string) {
 }
 
 func (e *Explosion) IsPlayerAlreadyAffected(playerID string) bool {
-	log.Println("Checking if player is already affected")
-	log.Println("Affected players", e.AffectedPlayers)
 	for _, pID := range e.AffectedPlayers {
-		log.Println("Checking player", pID, "against", playerID)
 		if pID == playerID {
-			log.Println("Player already affected")
 			return true
 		}
 	}

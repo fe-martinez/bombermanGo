@@ -22,6 +22,15 @@ var colors = NewQueue()
 
 var stopChan chan struct{}
 
+type GameState string
+
+const (
+	NotStarted    GameState = "not-started"
+	Started       GameState = "started"
+	Finished      GameState = "finished"
+	BetweenRounds GameState = "between-rounds"
+)
+
 type Game struct {
 	State        string
 	GameId       string
@@ -63,11 +72,21 @@ func (g *Game) collidesWithWalls(position Position) bool {
 }
 
 func (g *Game) isOutOfBounds(position Position) bool {
-	return position.X < 0 || position.X >= float32(g.GameMap.ColumnSize) || position.Y < 0 || position.Y >= float32(g.GameMap.RowSize)
+	return position.X < 0.0 || position.X >= float32(g.GameMap.ColumnSize) || position.Y < 0.0 || position.Y >= float32(g.GameMap.RowSize)
 }
 
 func (g *Game) CanMove(player *Player, newX float32, newY float32) bool {
 	return !g.collidesWithWalls(Position{newX, newY}) && !g.isOutOfBounds(Position{newX, newY})
+}
+
+func (g *Game) MovePlayer(player *Player, newX float32, newY float32) {
+	if g.CanMove(player, newX, newY) {
+		player.Position.X = newX
+		player.Position.Y = newY
+	} else {
+		player.Speed.X, player.Speed.Y = BASE_SPEED, BASE_SPEED
+	}
+	g.GrabPowerUp(player.ID)
 }
 
 func (g *Game) collidesWithPlayers(position Position) bool {
@@ -108,6 +127,10 @@ func (g *Game) collidesWithBomb(position Position) bool {
 }
 
 func (g *Game) IsValidPosition(ValidPosition Position) bool {
+	if g.GameMap.isUnbreakableWall(ValidPosition) || g.GameMap.isBreakableWall(ValidPosition) {
+		return false
+	}
+
 	return !(g.collidesWithWalls(ValidPosition) || g.collidesWithPlayers(ValidPosition) || g.collidesWithPowerUp(ValidPosition) || g.collidesWithBomb(ValidPosition))
 }
 
@@ -119,14 +142,7 @@ func (g *Game) GenerateValidPosition(rowSize int, columnSize int) *Position {
 	return ValidPosition
 }
 
-// Se fija si se tocan no más, habría que arreglarlo para que sea cuando pase medianamente por encima
 func (g *Game) IsPowerUpPosition(position Position) *Position {
-	// for _, powerUp := range g.GameMap.PowerUps {
-	// 	if int(powerUp.Position.X) == int(position.X) && int(powerUp.Position.Y) == int(position.Y) {
-	// 		return true
-	// 	}
-	// }
-	// return false
 	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
 
 	for _, powerUp := range g.GameMap.PowerUps {
@@ -282,12 +298,30 @@ func (g *Game) RemovePowerUpBenefit(powerUp PowerUpType, playerID string) {
 	}
 }
 
-func (g *Game) passRound() {
+func (g *Game) endRound() {
 	if g.Round < MAX_ROUNDS {
+		g.State = "between-rounds"
 		g.Round++
+		g.startRound()
 	} else {
 		g.State = "finished"
 	}
+}
+
+func (g *Game) startRound() {
+	g.GameMap = GetRoundGameMap(g.Round)
+	count := 0
+	for _, player := range g.Players {
+		player.Lives = 2
+		player.Position = g.GetPlayerPosition(count)
+		player.Invencible = false
+		player.Bombs = 1
+		player.PowerUps = []PowerUp{}
+		player.Speed = Speed{X: 0.0, Y: 0.0}
+		count++
+	}
+
+	g.State = "started"
 }
 
 func (g *Game) IsEmpty() bool {
@@ -299,6 +333,63 @@ func (g *Game) GetAPlayerId() string {
 		return key
 	}
 	return ""
+}
+
+func (g *Game) GetPlayerPosition(playerIndex int) *Position {
+	corners := []Position{
+		{X: 0, Y: 0},
+		{X: float32(g.GameMap.ColumnSize - 1), Y: 0},
+		{X: 0, Y: float32(g.GameMap.RowSize - 1)},
+		{X: float32(g.GameMap.ColumnSize - 1), Y: float32(g.GameMap.RowSize - 1)},
+	}
+
+	if playerIndex < 0 || playerIndex >= len(corners) {
+		return nil
+	}
+
+	start := corners[playerIndex]
+	return g.findNearestFreeSpace(start)
+}
+
+func (g *Game) findNearestFreeSpace(start Position) *Position {
+	queue := []Position{start}
+	visited := make(map[Position]bool)
+
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+
+		if g.IsValidPosition(current) {
+			log.Println(current)
+			return &current
+		}
+
+		for _, neighbor := range g.getNeighbors(current) {
+			if _, ok := visited[neighbor]; !ok {
+				queue = append(queue, neighbor)
+				visited[neighbor] = true
+			}
+		}
+	}
+
+	return nil
+}
+
+func (g *Game) getNeighbors(position Position) []Position {
+	neighbors := []Position{}
+	if position.X-1 >= 0 {
+		neighbors = append(neighbors, Position{X: position.X - 1, Y: position.Y})
+	}
+	if position.X+1 < float32(g.GameMap.ColumnSize) {
+		neighbors = append(neighbors, Position{X: position.X + 1, Y: position.Y})
+	}
+	if position.Y-1 >= 0 {
+		neighbors = append(neighbors, Position{X: position.X, Y: position.Y - 1})
+	}
+	if position.Y+1 < float32(g.GameMap.RowSize) {
+		neighbors = append(neighbors, Position{X: position.X, Y: position.Y + 1})
+	}
+	return neighbors
 }
 
 func (g *Game) Stop() {
@@ -323,20 +414,11 @@ func (g *Game) Update() {
 
 		for _, player := range g.Players {
 			if explosion.IsTileInRange(*player.Position) && !player.Invencible && !explosion.IsPlayerAlreadyAffected(player.ID) {
+				log.Println("Player affected by explosion")
 				explosion.AddAffectedPlayer(player.ID)
 				player.LoseHealth()
-				if player.Lives == 0 {
-					delete(g.Players, player.ID)
-					color := g.GetPlayerColor(player.ID)
-					colors.Enqueue(color)
-				}
-				// 	if len(g.Players) == 0 {
-				// 		g.passRound()
-				// 	}
-				// }
 			}
 		}
-
 	}
 
 	for _, player := range g.Players {
@@ -349,6 +431,18 @@ func (g *Game) Update() {
 					player.RemovePowerUp(powerUp)
 				}
 			}
+		}
+	}
+
+	// Check if there is a winner
+	deadPlayers := 0
+	for _, player := range g.Players {
+		if player.Lives == 0 {
+			deadPlayers++
+		}
+
+		if deadPlayers == len(g.Players) {
+			g.endRound()
 		}
 	}
 

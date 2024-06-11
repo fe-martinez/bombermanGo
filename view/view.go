@@ -36,6 +36,9 @@ func getColorFromString(colorName string) rl.Color {
 
 func drawPlayers(game model.Game) {
 	for _, player := range game.Players {
+		if player.Lives == 0 {
+			continue
+		}
 		colorName := game.GetPlayerColor(player.ID)
 		color := getColorFromString(colorName)
 		rl.DrawRectangle(int32(player.Position.X*TILE_SIZE), int32(player.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, color)

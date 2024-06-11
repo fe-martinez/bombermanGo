@@ -71,6 +71,15 @@ func CreateMap(filepath string) (*GameMap, error) {
 	return &gameMap, nil
 }
 
+func GetRoundGameMap(roundNumber int8) *GameMap {
+	filepath := fmt.Sprintf("data/round%dmap.txt", roundNumber)
+	gameMap, err := CreateMap(filepath)
+	if err != nil {
+		panic(err)
+	}
+	return gameMap
+}
+
 func (m *GameMap) GetPowerUp(powerUpPosition Position) *PowerUp {
 	for _, powerUp := range m.PowerUps {
 		if powerUp.Position == powerUpPosition {
