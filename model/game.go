@@ -416,15 +416,24 @@ func (g *Game) Update() {
 		}
 
 		for _, player := range g.Players {
+			if player.Lives == 0 {
+				continue
+			}
 			if explosion.IsTileInRange(*player.Position) && !player.Invencible && !explosion.IsPlayerAlreadyAffected(player.ID) {
 				log.Println("Player affected by explosion")
 				explosion.AddAffectedPlayer(player.ID)
-				player.LoseHealth()
+				lives_left := player.LoseHealth()
+				if lives_left == 0 {
+					g.EliminationOrder = append(g.EliminationOrder, player.ID)
+				}
 			}
 		}
 	}
 
 	for _, player := range g.Players {
+		if player.Lives == 0 {
+			continue
+		}
 		for _, powerUp := range player.PowerUps {
 			log.Println("power up start time: ", powerUp.StartTime, "power up expire time: ", powerUp.ExpireTime, "now: ", now)
 			if !powerUp.StartTime.IsZero() {
@@ -437,16 +446,7 @@ func (g *Game) Update() {
 		}
 	}
 
-	// Check if there is a winner
-	deadPlayers := 0
-	for _, player := range g.Players {
-		if player.Lives == 0 {
-			deadPlayers++
-			g.EliminationOrder = append(g.EliminationOrder, player.ID)
-		}
-	}
-
-	if deadPlayers == len(g.Players) {
+	if len(g.EliminationOrder) == len(g.Players) {
 		g.endRound()
 	}
 }
