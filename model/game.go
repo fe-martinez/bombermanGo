@@ -149,12 +149,15 @@ func (g *Game) IsBombPosition(position Position) bool {
 }
 
 func (g *Game) PutBomb(player *Player) {
-	if player.CanPlantBomb() {
-		x := float32(math.Round(float64(player.Position.X)))
-		y := float32(math.Round(float64(player.Position.Y)))
+	x := float32(math.Round(float64(player.Position.X)))
+	y := float32(math.Round(float64(player.Position.Y)))
+	if (player.CanPlantBomb() && !g.IsBombPosition(Position{x, y}) ) {
+		log.Println(x,y)
+		log.Println(player.Bombs)
 		bomb := NewBomb(x, y, 2, *player)
 		g.GameMap.PlaceBomb(bomb)
 		player.Bombs--
+	
 	}
 }
 
@@ -249,7 +252,7 @@ func (g *Game) ApplyPowerUpBenefit(powerUp PowerUpType, playerID string) {
 		log.Println("Caminar sobre paredes not yet implemented")
 	case MasBombasEnSimultaneo:
 		log.Println("Mas bombas en simultaneo")
-		g.Players[playerID].Bombs = 2
+		g.Players[playerID].Bombs = 5
 	case AlcanceMejorado:
 		log.Println("Alcance mejorado")
 		for _, bomb := range g.GameMap.Bombs {
