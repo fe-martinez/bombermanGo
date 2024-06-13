@@ -8,6 +8,7 @@ import (
 
 const PLAYER_LIVES = 2
 const PLAYER_BOMBS = 1
+const PLAYER_BOMB_REACH_BASE = 2
 const START_DIRECTION = "up"
 
 type Player struct {
@@ -20,6 +21,7 @@ type Player struct {
 	PowerUps   []PowerUp
 	Speed      Speed
 	Direction  string
+	BombReach  int
 }
 
 type Speed struct {
@@ -42,6 +44,7 @@ func NewPlayer(id string, position *Position) *Player {
 		PowerUps:   []PowerUp{},
 		Speed:      Speed{X: 0.0, Y: 0.0},
 		Direction:  START_DIRECTION,
+		BombReach:	PLAYER_BOMB_REACH_BASE,
 	}
 }
 

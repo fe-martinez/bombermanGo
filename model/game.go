@@ -14,6 +14,7 @@ const ROUND_DURATION = 2 //minutes
 const TICKER_REFRESH = 1 //second
 const MAX_POWER_UPS = 4
 const POWERUP_SPAWN_TIME = 10 //seconds
+const PLAYER_BOMB_REACH_MODIFED = 5
 
 const SPEED_INCREMENT = 0.1
 const BASE_SPEED = 0
@@ -152,9 +153,7 @@ func (g *Game) PutBomb(player *Player) {
 	x := float32(math.Round(float64(player.Position.X)))
 	y := float32(math.Round(float64(player.Position.Y)))
 	if (player.CanPlantBomb() && !g.IsBombPosition(Position{x, y}) ) {
-		log.Println(x,y)
-		log.Println(player.Bombs)
-		bomb := NewBomb(x, y, 2, *player)
+		bomb := NewBomb(x, y, player.BombReach, *player)
 		g.GameMap.PlaceBomb(bomb)
 		player.Bombs--
 	
@@ -167,7 +166,7 @@ func (g *Game) ExplodeBomb(bomb *Bomb) {
 	g.GameMap.Explosions = append(g.GameMap.Explosions, *explosion)
 
 	for _, player := range g.Players {
-		if player.ID == bomb.Owner.ID {
+		if (player.ID == bomb.Owner.ID && player.Bombs == 0) {
 			player.Bombs++
 		}
 	}
@@ -178,7 +177,7 @@ func (g *Game) TransferPowerUpToPlayer(player *Player, powerUpPosition Position)
 
 	if powerUp != nil {
 		powerUp.SetPowerUpStartTime()
-		log.Println("Power up start time is setted")
+		//log.Println("Power up start time is setted")
 		player.AddPowerUp(*powerUp)
 		g.ApplyPowerUpBenefit(powerUp.name, player.ID)
 		g.GameMap.RemovePowerUp(powerUpPosition)
@@ -255,11 +254,7 @@ func (g *Game) ApplyPowerUpBenefit(powerUp PowerUpType, playerID string) {
 		g.Players[playerID].Bombs = 5
 	case AlcanceMejorado:
 		log.Println("Alcance mejorado")
-		for _, bomb := range g.GameMap.Bombs {
-			if bomb.IsOwner(playerID) {
-				bomb.Alcance = 3
-			}
-		}
+		g.Players[playerID].BombReach = PLAYER_BOMB_REACH_MODIFED
 	default:
 	}
 }
@@ -276,11 +271,7 @@ func (g *Game) RemovePowerUpBenefit(powerUp PowerUpType, playerID string) {
 		g.Players[playerID].Bombs = 1
 	case AlcanceMejorado:
 		log.Println("Removiendo alcance mejorado")
-		for _, bomb := range g.GameMap.Bombs {
-			if bomb.IsOwner(playerID) {
-				bomb.Alcance = 1
-			}
-		}
+		g.Players[playerID].BombReach = PLAYER_BOMB_REACH_BASE
 	default:
 	}
 }
