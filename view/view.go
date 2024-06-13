@@ -2,6 +2,7 @@ package view
 
 import (
 	"bombman/model"
+	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -173,5 +174,19 @@ func DrawWaitingMenu(players []string, lobbyId string) {
 	// Draw Start Game button
 	rl.DrawRectangle(START_GAME_POS_X, START_GAME_POS_Y, BUTTON_WIDTH, BUTTON_HEIGHT, rl.DarkPurple)
 	rl.DrawText("Start Game", START_GAME_POS_X+10, START_GAME_POS_Y+15, 20, rl.White)
+	rl.EndDrawing()
+}
+
+func DrawGameOverScreen(game model.Game) {
+	rl.BeginDrawing()
+	rl.ClearBackground(rl.Beige)
+	rl.DrawText("Game Over", WIDTH/2-75, 50, 30, rl.Maroon)
+	index := 0
+	for _, player := range game.Players {
+		color := getColorFromString(game.GetPlayerColor(player.ID))
+		playerName := fmt.Sprintf("%s - Points: %d", player.Username, game.PlayerScores[player.ID])
+		rl.DrawText(playerName, WIDTH/2-rl.MeasureText(playerName, 30)/2, HEIGHT/2-15+int32(index)*30, 30, color)
+		index++
+	}
 	rl.EndDrawing()
 }

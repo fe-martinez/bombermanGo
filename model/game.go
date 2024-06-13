@@ -9,7 +9,7 @@ import (
 )
 
 const MAX_PLAYERS = 4
-const MAX_ROUNDS = 5
+const MAX_ROUNDS = 3
 const ROUND_DURATION = 2 //minutes
 const TICKER_REFRESH = 1 //second
 const MAX_POWER_UPS = 4
@@ -30,12 +30,14 @@ const (
 )
 
 type Game struct {
-	State        string
-	GameId       string
-	Round        int8
-	Players      map[string]*Player
-	PlayerColors map[string]string
-	GameMap      *GameMap
+	State            string
+	GameId           string
+	Round            int8
+	Players          map[string]*Player
+	PlayerColors     map[string]string
+	GameMap          *GameMap
+	EliminationOrder []string
+	PlayerScores     map[string]int
 }
 
 func initializeColors() {
@@ -48,12 +50,14 @@ func initializeColors() {
 func NewGame(id string, GameMap *GameMap) *Game {
 	initializeColors()
 	return &Game{
-		State:        "not-started",
-		GameId:       id,
-		Round:        1,
-		Players:      make(map[string]*Player),
-		PlayerColors: make(map[string]string),
-		GameMap:      GameMap,
+		State:            "not-started",
+		GameId:           id,
+		Round:            1,
+		Players:          make(map[string]*Player),
+		PlayerColors:     make(map[string]string),
+		GameMap:          GameMap,
+		PlayerScores:     make(map[string]int),
+		EliminationOrder: []string{},
 	}
 }
 
@@ -287,8 +291,19 @@ func (g *Game) RemovePowerUpBenefit(powerUp PowerUpType, playerID string) {
 	}
 }
 
+func (g *Game) assignScores() {
+	score := 12
+	for _, player := range g.Players {
+		g.PlayerScores[player.ID] = score
+		score -= 3
+	}
+
+	g.EliminationOrder = []string{}
+}
+
 func (g *Game) endRound() {
 	if g.Round < MAX_ROUNDS {
+		g.assignScores()
 		g.State = "between-rounds"
 		g.Round++
 		g.startRound()
@@ -427,11 +442,11 @@ func (g *Game) Update() {
 	for _, player := range g.Players {
 		if player.Lives == 0 {
 			deadPlayers++
-		}
-
-		if deadPlayers == len(g.Players) {
-			g.endRound()
+			g.EliminationOrder = append(g.EliminationOrder, player.ID)
 		}
 	}
 
+	if deadPlayers == len(g.Players) {
+		g.endRound()
+	}
 }
