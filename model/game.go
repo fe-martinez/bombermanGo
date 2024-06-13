@@ -293,8 +293,9 @@ func (g *Game) RemovePowerUpBenefit(powerUp PowerUpType, playerID string) {
 
 func (g *Game) assignScores() {
 	score := 12
-	for _, player := range g.Players {
-		g.PlayerScores[player.ID] = score
+	for i := len(g.EliminationOrder) - 1; i >= 0; i-- {
+		playerID := g.EliminationOrder[i]
+		g.PlayerScores[playerID] = score + g.PlayerScores[playerID]
 		score -= 3
 	}
 
@@ -308,6 +309,7 @@ func (g *Game) endRound() {
 		g.Round++
 		g.startRound()
 	} else {
+		g.assignScores()
 		g.State = "finished"
 	}
 }
