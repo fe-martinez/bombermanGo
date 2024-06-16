@@ -448,7 +448,7 @@ func (g *Game) Update() {
 		}
 	}
 
-	if len(g.EliminationOrder) == len(g.Players) {
+	if len(g.EliminationOrder) == (len(g.Players)-1) && g.State != "not-started" {
 		g.endRound()
 	}
 }
