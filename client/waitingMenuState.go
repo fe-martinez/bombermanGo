@@ -23,7 +23,7 @@ func (w *WaitingMenuState) Handle(c *Client) {
 	showDrawingMenu(c)
 	input := handleWaitingMenuInput()
 
-	if input == "start" {
+	if input == "start" && len(c.game.Players) > 1 {
 		c.sendStartGameMessage()
 	}
 
