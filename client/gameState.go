@@ -13,4 +13,8 @@ func (p *PlayingState) Handle(c *Client) {
 	if view.WindowShouldClose() {
 		c.sendLeaveMessage()
 	}
+
+	if c.game.State == "finished" {
+		c.gameState = &GameOverState{}
+	}
 }

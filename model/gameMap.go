@@ -71,6 +71,15 @@ func CreateMap(filepath string) (*GameMap, error) {
 	return &gameMap, nil
 }
 
+func GetRoundGameMap(roundNumber int8) *GameMap {
+	filepath := fmt.Sprintf("data/round%dmap.txt", roundNumber)
+	gameMap, err := CreateMap(filepath)
+	if err != nil {
+		panic(err)
+	}
+	return gameMap
+}
+
 func (m *GameMap) GetPowerUp(powerUpPosition Position) *PowerUp {
 	for _, powerUp := range m.PowerUps {
 		if powerUp.Position == powerUpPosition {
@@ -85,6 +94,18 @@ func (m *GameMap) RemovePowerUp(powerUpPosition Position) {
 		if powerUp.Position == powerUpPosition {
 			m.PowerUps = append(m.PowerUps[:i], m.PowerUps[i+1:]...)
 		}
+	}
+}
+
+func GetPowerUpType() PowerUpType {
+	number := rand.Intn(100)
+	switch {
+	case number < 20:
+		return Invencibilidad
+	case number < 55:
+		return AlcanceMejorado
+	default:
+		return MasBombasEnSimultaneo
 	}
 }
 

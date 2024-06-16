@@ -5,9 +5,10 @@ import (
 )
 
 type Explosion struct {
-	Position      Position
-	AffectedTiles []Position
-	ExplosionTime time.Time
+	Position        Position
+	AffectedTiles   []Position
+	AffectedPlayers []string
+	ExplosionTime   time.Time
 }
 
 func NewExplosion(position Position, radius int, game Game) *Explosion {
@@ -48,4 +49,30 @@ func getAffectedTiles(position Position, radius int, game Game) []Position {
 	}
 
 	return affectedTiles
+}
+
+func (e *Explosion) IsExpired() bool {
+	return time.Since(e.ExplosionTime) > 500*time.Millisecond
+}
+
+func (e *Explosion) IsTileInRange(position Position) bool {
+	for _, tile := range e.AffectedTiles {
+		if int(position.X) == int(tile.X) && int(position.Y) == int(tile.Y) {
+			return true
+		}
+	}
+	return false
+}
+
+func (e *Explosion) AddAffectedPlayer(playerID string) {
+	e.AffectedPlayers = append(e.AffectedPlayers, playerID)
+}
+
+func (e *Explosion) IsPlayerAlreadyAffected(playerID string) bool {
+	for _, pID := range e.AffectedPlayers {
+		if pID == playerID {
+			return true
+		}
+	}
+	return false
 }

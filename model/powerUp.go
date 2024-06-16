@@ -6,13 +6,12 @@ import (
 )
 
 const POWERUP_EXPIRTE_TIME = 10 //segundos
-const POWER_UPS_AMOUNT = 4
+const POWER_UPS_AMOUNT = 3
 
 type PowerUpType int8
 
 const (
 	Invencibilidad PowerUpType = iota
-	CaminarSobreParedes
 	AlcanceMejorado
 	MasBombasEnSimultaneo
 )

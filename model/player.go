@@ -61,3 +61,12 @@ func (p *Player) RemovePowerUp(powerUp PowerUp) {
 		}
 	}
 }
+
+func (p *Player) IsInvencible() bool {
+	return p.Invencible
+}
+
+func (p *Player) LoseHealth() int8 {
+	p.Lives--
+	return p.Lives
+}
