@@ -14,3 +14,25 @@ func TestNewGameMap(t *testing.T) {
 		t.Error("Wall position or type is not correct")
 	}
 }
+
+func TestNewGameMapError(t *testing.T) {
+	_, err := CreateMap("notfound.txt")
+	if err == nil {
+		t.Error("Error was expected")
+	}
+}
+
+func TestNewGameMapInvalidCharacter(t *testing.T) {
+	_, err := CreateMap("test_resources/invalid_map.txt")
+	if err == nil {
+		t.Error("Error was expected")
+	}
+}
+
+func TestAddPowerUp(t *testing.T) {
+	gameMap, _ := CreateMap(MAP_PATH)
+	gameMap.AddPowerUp(&Position{X: 1, Y: 1})
+	if len(gameMap.PowerUps) != 1 {
+		t.Error("PowerUp was not added correctly")
+	}
+}
