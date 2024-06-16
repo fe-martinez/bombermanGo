@@ -314,8 +314,7 @@ func (g *Game) endRound() {
 	}
 }
 
-func (g *Game) startRound() {
-	g.GameMap = GetRoundGameMap(g.Round)
+func (g *Game) initializePlayersForRound() {
 	count := 0
 	for _, player := range g.Players {
 		player.Lives = 2
@@ -326,7 +325,11 @@ func (g *Game) startRound() {
 		player.Speed = Speed{X: 0.0, Y: 0.0}
 		count++
 	}
+}
 
+func (g *Game) startRound() {
+	g.GameMap = GetRoundGameMap(g.Round)
+	g.initializePlayersForRound()
 	g.State = "started"
 }
 
