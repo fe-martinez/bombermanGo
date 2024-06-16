@@ -97,6 +97,18 @@ func (m *GameMap) RemovePowerUp(powerUpPosition Position) {
 	}
 }
 
+func GetPowerUpType() PowerUpType {
+	number := rand.Intn(100)
+	switch {
+	case number < 20:
+		return Invencibilidad
+	case number < 55:
+		return AlcanceMejorado
+	default:
+		return MasBombasEnSimultaneo
+	}
+}
+
 func (m *GameMap) AddPowerUp(powerUpPosition *Position) {
 	PowerUp := NewPowerUp(*powerUpPosition, PowerUpType(rand.Intn(POWER_UPS_AMOUNT)))
 	m.PowerUps = append(m.PowerUps, PowerUp)

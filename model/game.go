@@ -254,8 +254,6 @@ func (g *Game) ApplyPowerUpBenefit(powerUp PowerUpType, playerID string) {
 	case Invencibilidad:
 		log.Println("Invencibilidad")
 		g.Players[playerID].Invencible = true
-	case CaminarSobreParedes:
-		log.Println("Caminar sobre paredes not yet implemented")
 	case MasBombasEnSimultaneo:
 		log.Println("Mas bombas en simultaneo")
 		g.Players[playerID].Bombs = 2
@@ -275,8 +273,6 @@ func (g *Game) RemovePowerUpBenefit(powerUp PowerUpType, playerID string) {
 	case Invencibilidad:
 		log.Println("Removiendo invencibilidad")
 		g.Players[playerID].Invencible = false
-	case CaminarSobreParedes:
-		log.Println("Caminar sobre paredes not yet implemented")
 	case MasBombasEnSimultaneo:
 		log.Println("Removiendo mas bombas en simultaneo")
 		g.Players[playerID].Bombs = 1
