@@ -113,3 +113,35 @@ func TestRemoveIndestructibleWall(t *testing.T) {
 		t.Error("Wall was removed when it shouldn't")
 	}
 }
+
+func TestExistingPowerUpInPosition_CasePositive(t *testing.T) {
+	gameMap, _ := CreateMap(MAP_PATH)
+	gameMap.AddPowerUp(&Position{X: 1, Y: 1})
+	if gameMap.existingPowerUpInPosition(Position{X: 1, Y: 1}) != true {
+		t.Error("PowerUp was not found")
+	}
+}
+
+func TestExistingPowerUpInPosition_CaseNegative(t *testing.T) {
+	gameMap, _ := CreateMap(MAP_PATH)
+	gameMap.AddPowerUp(&Position{X: 0, Y: 1})
+	if gameMap.existingPowerUpInPosition(Position{X: 1, Y: 1}) != false {
+		t.Error("PowerUp was not found")
+	}
+}
+
+func TestGetNonExistingPowerUp(t *testing.T) {
+	gameMap, _ := CreateMap(MAP_PATH)
+	gameMap.AddPowerUp(&Position{X: 0, Y: 1})
+	if gameMap.GetPowerUp(Position{X: 1, Y: 1}) != nil {
+		t.Error("PowerUp was found")
+	}
+}
+
+func TestGetExistingPowerUp(t *testing.T) {
+	gameMap, _ := CreateMap(MAP_PATH)
+	gameMap.AddPowerUp(&Position{X: 1, Y: 1})
+	if gameMap.GetPowerUp(Position{X: 1, Y: 1}) == nil {
+		t.Error("PowerUp was not found")
+	}
+}
