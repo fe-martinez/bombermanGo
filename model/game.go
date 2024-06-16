@@ -403,35 +403,42 @@ func (g *Game) Stop() {
 	log.Println("Game stopped")
 }
 
-func (g *Game) Update() {
-	now := time.Now()
+func (g *Game) verifyExplodingBombs(now time.Time) {
 	for _, bomb := range g.GameMap.Bombs {
 		if now.After(bomb.PlantedTime.Add(bomb.ExplodeTime)) {
 			g.ExplodeBomb(&bomb)
 		}
 	}
+}
 
+func (g *Game) handleExplosion(explosion *Explosion) {
+	for _, player := range g.Players {
+		if player.Lives == 0 {
+			continue
+		}
+		if explosion.IsTileInRange(*player.Position) && !player.Invencible && !explosion.IsPlayerAlreadyAffected(player.ID) {
+			explosion.AddAffectedPlayer(player.ID)
+			lives_left := player.LoseHealth()
+			if lives_left == 0 {
+				g.EliminationOrder = append(g.EliminationOrder, player.ID)
+			}
+		}
+	}
+}
+
+func (g *Game) verifyExplosions() {
 	for i := range g.GameMap.Explosions {
 		explosion := &g.GameMap.Explosions[i]
 		if explosion.IsExpired() {
 			g.GameMap.RemoveExplosion(explosion)
 		}
 
-		for _, player := range g.Players {
-			if player.Lives == 0 {
-				continue
-			}
-			if explosion.IsTileInRange(*player.Position) && !player.Invencible && !explosion.IsPlayerAlreadyAffected(player.ID) {
-				log.Println("Player affected by explosion")
-				explosion.AddAffectedPlayer(player.ID)
-				lives_left := player.LoseHealth()
-				if lives_left == 0 {
-					g.EliminationOrder = append(g.EliminationOrder, player.ID)
-				}
-			}
-		}
-	}
+		g.handleExplosion(explosion)
 
+	}
+}
+
+func (g *Game) updatePowerUps(now time.Time) {
 	for _, player := range g.Players {
 		if player.Lives == 0 {
 			continue
@@ -447,8 +454,22 @@ func (g *Game) Update() {
 			}
 		}
 	}
+}
 
-	if len(g.EliminationOrder) == (len(g.Players)-1) && g.State != "not-started" {
+func (g *Game) shouldEndRound() bool {
+	return len(g.EliminationOrder) == (len(g.Players)-1) && g.State != "not-started"
+}
+
+func (g *Game) Update() {
+	now := time.Now()
+
+	g.verifyExplodingBombs(now)
+
+	g.verifyExplosions()
+
+	g.updatePowerUps(now)
+
+	if g.shouldEndRound() {
 		g.endRound()
 	}
 }
