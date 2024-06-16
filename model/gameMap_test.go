@@ -87,4 +87,29 @@ func TestIsUnbreakableWall_NegativeCase(t *testing.T) {
 	}
 }
 
+func TestRemoveDestructibleWall(t *testing.T) {
+	gameMap, _ := CreateMap(MAP_PATH)
+	walls := len(gameMap.Walls)
+	gameMap.RemoveWall(Position{X: 0, Y: 1})
+	if len(gameMap.Walls) != walls-1 {
+		t.Error("Wall was not removed correctly")
+	}
+}
 
+func TestRemoveNonExistingWall(t *testing.T) {
+	gameMap, _ := CreateMap(MAP_PATH)
+	walls := len(gameMap.Walls)
+	gameMap.RemoveWall(Position{X: 1, Y: 1})
+	if len(gameMap.Walls) != walls {
+		t.Error("Wall was removed when it shouldn't")
+	}
+}
+
+func TestRemoveIndestructibleWall(t *testing.T) {
+	gameMap, _ := CreateMap(MAP_PATH)
+	walls := len(gameMap.Walls)
+	gameMap.RemoveWall(Position{X: 0, Y: 0})
+	if len(gameMap.Walls) != walls {
+		t.Error("Wall was removed when it shouldn't")
+	}
+}
