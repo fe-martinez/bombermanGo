@@ -280,7 +280,7 @@ func (g *Game) RemovePowerUpBenefit(powerUp PowerUpType, playerID string) {
 		log.Println("Removiendo alcance mejorado")
 		for _, bomb := range g.GameMap.Bombs {
 			if bomb.IsOwner(playerID) {
-				bomb.Alcance = 1
+				bomb.Alcance = 2
 			}
 		}
 	default:
