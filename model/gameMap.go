@@ -163,15 +163,6 @@ func (m *GameMap) isUnbreakableWall(position Position) bool {
 	return false
 }
 
-func (m *GameMap) isBreakableWall(position Position) bool {
-	for _, wall := range m.Walls {
-		if *wall.Position == position && !wall.Indestructible {
-			return true
-		}
-	}
-	return false
-}
-
 func (m *GameMap) RemoveWall(position Position) {
 	for i, wall := range m.Walls {
 		if *wall.Position == position {

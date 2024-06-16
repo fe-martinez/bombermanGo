@@ -42,7 +42,7 @@ func getAffectedTiles(position Position, radius int, game Game) []Position {
 	}
 
 	for i, tile := range affectedTiles {
-		if game.GameMap.isBreakableWall(tile) {
+		if !game.GameMap.isUnbreakableWall(tile) {
 			game.GameMap.RemoveWall(tile)
 			affectedTiles[i] = Position{X: tile.X, Y: tile.Y}
 		}

@@ -36,3 +36,55 @@ func TestAddPowerUp(t *testing.T) {
 		t.Error("PowerUp was not added correctly")
 	}
 }
+
+func TestAddPowerUpInExistingPositionFails(t *testing.T) {
+	gameMap, _ := CreateMap(MAP_PATH)
+	gameMap.AddPowerUp(&Position{X: 1, Y: 1})
+	if len(gameMap.PowerUps) != 1 {
+		t.Error("PowerUp was not added correctly")
+	}
+	gameMap.AddPowerUp(&Position{X: 1, Y: 1})
+	if len(gameMap.PowerUps) == 2 {
+		t.Error("PowerUp was added when it shouldn't be")
+	}
+}
+
+func TestRemovePowerUp(t *testing.T) {
+	gameMap, _ := CreateMap(MAP_PATH)
+	gameMap.AddPowerUp(&Position{X: 1, Y: 1})
+	if len(gameMap.PowerUps) != 1 {
+		t.Error("PowerUp was not added correctly")
+	}
+	gameMap.RemovePowerUp(Position{X: 1, Y: 1})
+	if len(gameMap.PowerUps) != 0 {
+		t.Error("PowerUp was not removed correctly")
+	}
+}
+
+func TestRemoveNonExistingPowerUp(t *testing.T) {
+	gameMap, _ := CreateMap(MAP_PATH)
+	gameMap.AddPowerUp(&Position{X: 1, Y: 1})
+	if len(gameMap.PowerUps) != 1 {
+		t.Error("PowerUp was not added correctly")
+	}
+	gameMap.RemovePowerUp(Position{X: 0, Y: 0})
+	if len(gameMap.PowerUps) != 1 {
+		t.Error("PowerUp was not removed correctly")
+	}
+}
+
+func TestIsUnbreakableWall_PositiveCase(t *testing.T) {
+	gameMap, _ := CreateMap(MAP_PATH)
+	if gameMap.isUnbreakableWall(Position{X: 0, Y: 0}) != true {
+		t.Error("Wall is not unbreakable")
+	}
+}
+
+func TestIsUnbreakableWall_NegativeCase(t *testing.T) {
+	gameMap, _ := CreateMap(MAP_PATH)
+	if gameMap.isUnbreakableWall(Position{X: 0, Y: 1}) != false {
+		t.Error("Wall is not unbreakable")
+	}
+}
+
+
