@@ -7,6 +7,10 @@ import (
 
 type WaitingMenuState struct{}
 
+func (c *Client) gameShouldStart(input string) bool {
+	return input == "start" && len(c.game.Players) > 1
+}
+
 func showDrawingMenu(c *Client) {
 	var players []string
 
@@ -23,7 +27,7 @@ func (w *WaitingMenuState) Handle(c *Client) {
 	showDrawingMenu(c)
 	input := handleWaitingMenuInput()
 
-	if input == "start" && len(c.game.Players) > 1 {
+	if c.gameShouldStart(input) {
 		c.sendStartGameMessage()
 	}
 
