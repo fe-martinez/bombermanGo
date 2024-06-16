@@ -111,6 +111,11 @@ func GetPowerUpType() PowerUpType {
 
 func (m *GameMap) AddPowerUp(powerUpPosition *Position) {
 	PowerUp := NewPowerUp(*powerUpPosition, GetPowerUpType())
+	for _, powerUp := range m.PowerUps {
+		if powerUp.Position == *powerUpPosition {
+			return
+		}
+	}
 	m.PowerUps = append(m.PowerUps, PowerUp)
 }
 
