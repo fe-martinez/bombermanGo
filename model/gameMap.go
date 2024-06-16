@@ -165,7 +165,7 @@ func (m *GameMap) isUnbreakableWall(position Position) bool {
 
 func (m *GameMap) RemoveWall(position Position) {
 	for i, wall := range m.Walls {
-		if *wall.Position == position {
+		if *wall.Position == position && !wall.Indestructible {
 			m.Walls = append(m.Walls[:i], m.Walls[i+1:]...)
 		}
 	}
