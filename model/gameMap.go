@@ -109,8 +109,20 @@ func GetPowerUpType() PowerUpType {
 	}
 }
 
+func (m *GameMap) existingPowerUpInPosition(position Position) bool {
+	for _, powerUp := range m.PowerUps {
+		if powerUp.Position == position {
+			return true
+		}
+	}
+	return false
+}
+
 func (m *GameMap) AddPowerUp(powerUpPosition *Position) {
 	PowerUp := NewPowerUp(*powerUpPosition, GetPowerUpType())
+	if m.existingPowerUpInPosition(*powerUpPosition) {
+		return
+	}
 	m.PowerUps = append(m.PowerUps, PowerUp)
 }
 
