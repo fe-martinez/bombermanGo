@@ -256,7 +256,7 @@ func (g *Game) ApplyPowerUpBenefit(powerUp PowerUpType, playerID string) {
 		g.Players[playerID].Invencible = true
 	case MasBombasEnSimultaneo:
 		log.Println("Mas bombas en simultaneo")
-		g.Players[playerID].Bombs = 2
+		g.Players[playerID].Bombs += 1
 	case AlcanceMejorado:
 		log.Println("Alcance mejorado")
 		for _, bomb := range g.GameMap.Bombs {

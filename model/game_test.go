@@ -174,7 +174,21 @@ func TestExplodeBomb(t *testing.T) {
 }
 
 func TestTransferPowerUpToPlayer(t *testing.T) {
-
+	player := NewPlayer("106835", &Position{1, 1})
+	gameMap, err := CreateMap(MAP_PATH)
+	if err != nil {
+		t.Error("Error creating game map")
+	}
+	gameMap.AddPowerUp(&Position{1, 1})
+	game := NewGame("1", gameMap)
+	game.AddPlayer(player)
+	game.TransferPowerUpToPlayer(player, Position{1, 1})
+	if len(game.Players[player.ID].PowerUps) != 1 {
+		t.Error("Power up was not transferred to player")
+	}
+	if len(game.GameMap.PowerUps) != 0 {
+		t.Error("Power up was not removed from the map")
+	}
 }
 
 func TestGrabPowerUp(t *testing.T) {
@@ -195,18 +209,75 @@ func TestGrabPowerUp(t *testing.T) {
 	}
 }
 
-func TestPowerUpSpawn(t *testing.T) {
+func TestPowerUpSpawn_MoreThanExpected(t *testing.T) {
 	gameMap, err := CreateMap(MAP_PATH)
 	if err != nil {
 		t.Error("Error creating game map")
 	}
 	game := NewGame("1", gameMap)
-	game.PowerUpSpawn()
-	game.PowerUpSpawn()
-	game.PowerUpSpawn()
-	game.PowerUpSpawn()
-	game.PowerUpSpawn()
+	for i := 0; i < 5; i++ {
+		game.PowerUpSpawn()
+	}
+
 	if len(game.GameMap.PowerUps) != 4 {
 		t.Error("Power ups were not spawned correctly")
+	}
+}
+
+func TestPowerUpSpawn_SameAsExpected(t *testing.T) {
+	gameMap, err := CreateMap(MAP_PATH)
+	if err != nil {
+		t.Error("Error creating game map")
+	}
+	game := NewGame("1", gameMap)
+	for i := 0; i < 3; i++ {
+		game.PowerUpSpawn()
+	}
+
+	if len(game.GameMap.PowerUps) != 3 {
+		t.Error("Power ups were not spawned correctly")
+	}
+}
+
+func TestGetPlayerColors(t *testing.T) {
+	gameMap, err := CreateMap(MAP_PATH)
+	if err != nil {
+		t.Error("Error creating game map")
+	}
+	game := NewGame("1", gameMap)
+	game.AddPlayer(NewPlayer("2", &Position{1, 1}))
+	color1 := game.GetPlayerColor("1")
+	color2 := game.GetPlayerColor("2")
+	if color1 == color2 {
+		t.Error("Colors should be different")
+	}
+}
+
+func TestApplyPowerUpBenefit_Invencibilidad(t *testing.T) {
+	player := NewPlayer("106835", &Position{1, 1})
+	gameMap, err := CreateMap(MAP_PATH)
+	if err != nil {
+		t.Error("Error creating game map")
+	}
+	game := NewGame("1", gameMap)
+	game.AddPlayer(player)
+	game.ApplyPowerUpBenefit(Invencibilidad, "106835")
+	if player.Invencible == false {
+		t.Error("Player should be invencible")
+	}
+}
+
+func TestApplyPowerUpBenefit_MasBombasEnSimultaneo(t *testing.T) {
+	player := NewPlayer("106835", &Position{1, 1})
+	gameMap, err := CreateMap(MAP_PATH)
+	if err != nil {
+		t.Error("Error creating game map")
+	}
+	game := NewGame("1", gameMap)
+	game.AddPlayer(player)
+	bombs := player.Bombs
+	game.ApplyPowerUpBenefit(MasBombasEnSimultaneo, "106835")
+	if player.Bombs == bombs {
+		t.Error("Player should have more bombs")
 	}
 }
