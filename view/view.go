@@ -4,13 +4,15 @@ import (
 	"bombman/model"
 	"fmt"
 	"sort"
+	"strconv"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 const TILE_SIZE = 65
 const WIDTH = TILE_SIZE * 16
-const HEIGHT = TILE_SIZE * 10
+const HEIGHT = TILE_SIZE*10 + OFFSET
+const OFFSET = 30
 
 func InitWindow() {
 	rl.InitWindow(WIDTH, HEIGHT, "Bomberman Go!")
@@ -79,6 +81,38 @@ func drawExplosions(game model.Game) {
 	}
 }
 
+func DrawPlayerLives(game model.Game) {
+	// Crear una lista de jugadores a partir del mapa
+	var players []*model.Player
+	for _, player := range game.Players {
+		players = append(players, player)
+	}
+
+	// Ordenar los jugadores por nombre
+	sort.Slice(players, func(i, j int) bool {
+		return players[i].Username < players[j].Username
+	})
+
+	rl.BeginDrawing()
+	defer rl.EndDrawing()
+
+	var offset int32 = 158
+	for _, player := range players {
+		playerColor := game.GetPlayerColor(player.ID)
+		color := getColorFromString(playerColor)
+		lives := strconv.Itoa(int(player.Lives))
+		rl.DrawText(fmt.Sprintf("%s: %s lives", player.Username, lives), offset, HEIGHT-OFFSET+5, 22, color)
+		offset += 248
+	}
+}
+
+func DrawGameID(gameID string) {
+	rl.BeginDrawing()
+	rl.DrawRectangle(0, HEIGHT-OFFSET, WIDTH, OFFSET, rl.Black)
+	rl.DrawText("Game ID: "+gameID, 3, HEIGHT-OFFSET+5, 22, rl.Red)
+	rl.EndDrawing()
+}
+
 func DrawGame(game model.Game) {
 	if len(game.Players) == 0 {
 		return
@@ -96,6 +130,10 @@ func DrawGame(game model.Game) {
 	drawExplosions(game)
 
 	drawPowerUps(game)
+
+	DrawGameID(game.GameId)
+
+	//DrawPlayerLives(game)
 
 	rl.EndDrawing()
 }
