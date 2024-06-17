@@ -19,10 +19,7 @@ func NewExplosion(position Position, radius int, game Game) *Explosion {
 	}
 }
 
-func getAffectedTiles(position Position, radius int, game Game) []Position {
-	var affectedTiles []Position
-	affectedTiles = append(affectedTiles, position)
-
+func lookForAffectedTiles(game Game, position Position, radius int, affectedTiles []Position) {
 	directions := []Position{
 		{X: -1, Y: 0},
 		{X: 1, Y: 0},
@@ -40,13 +37,24 @@ func getAffectedTiles(position Position, radius int, game Game) []Position {
 			}
 		}
 	}
+}
 
+func removeWalls(affectedTiles []Position, game Game) {
 	for i, tile := range affectedTiles {
 		if !game.GameMap.isUnbreakableWall(tile) {
 			game.GameMap.RemoveWall(tile)
 			affectedTiles[i] = Position{X: tile.X, Y: tile.Y}
 		}
 	}
+}
+
+func getAffectedTiles(position Position, radius int, game Game) []Position {
+	var affectedTiles []Position
+	affectedTiles = append(affectedTiles, position)
+
+	lookForAffectedTiles(game, position, radius, affectedTiles)
+
+	removeWalls(affectedTiles, game)
 
 	return affectedTiles
 }
