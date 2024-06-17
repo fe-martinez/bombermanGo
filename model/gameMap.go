@@ -71,6 +71,15 @@ func CreateMap(filepath string) (*GameMap, error) {
 	return &gameMap, nil
 }
 
+func GetRoundGameMap(roundNumber int8) *GameMap {
+	filepath := fmt.Sprintf("data/round%dmap.txt", roundNumber)
+	gameMap, err := CreateMap(filepath)
+	if err != nil {
+		panic(err)
+	}
+	return gameMap
+}
+
 func (m *GameMap) GetPowerUp(powerUpPosition Position) *PowerUp {
 	for _, powerUp := range m.PowerUps {
 		if powerUp.Position == powerUpPosition {
@@ -88,8 +97,32 @@ func (m *GameMap) RemovePowerUp(powerUpPosition Position) {
 	}
 }
 
+func GetPowerUpType() PowerUpType {
+	number := rand.Intn(100)
+	switch {
+	case number < 20:
+		return Invencibilidad
+	case number < 55:
+		return AlcanceMejorado
+	default:
+		return MasBombasEnSimultaneo
+	}
+}
+
+func (m *GameMap) existingPowerUpInPosition(position Position) bool {
+	for _, powerUp := range m.PowerUps {
+		if powerUp.Position == position {
+			return true
+		}
+	}
+	return false
+}
+
 func (m *GameMap) AddPowerUp(powerUpPosition *Position) {
-	PowerUp := NewPowerUp(*powerUpPosition, PowerUpType(rand.Intn(POWER_UPS_AMOUNT)))
+	PowerUp := NewPowerUp(*powerUpPosition, GetPowerUpType())
+	if m.existingPowerUpInPosition(*powerUpPosition) {
+		return
+	}
 	m.PowerUps = append(m.PowerUps, PowerUp)
 }
 
@@ -130,18 +163,9 @@ func (m *GameMap) isUnbreakableWall(position Position) bool {
 	return false
 }
 
-func (m *GameMap) isBreakableWall(position Position) bool {
-	for _, wall := range m.Walls {
-		if *wall.Position == position && !wall.Indestructible {
-			return true
-		}
-	}
-	return false
-}
-
 func (m *GameMap) RemoveWall(position Position) {
 	for i, wall := range m.Walls {
-		if *wall.Position == position {
+		if *wall.Position == position && !wall.Indestructible {
 			m.Walls = append(m.Walls[:i], m.Walls[i+1:]...)
 		}
 	}

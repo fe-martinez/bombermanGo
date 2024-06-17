@@ -67,6 +67,8 @@ func (s *Server) handleConnection(conn net.Conn) {
 		err := s.handleMessage(&client)
 		if err != nil {
 			log.Printf("Error handling client message: %v\n", err)
+			s.disconnectClient(playerID)
+			return
 		}
 	}
 }
@@ -133,9 +135,17 @@ func (s *Server) joinLobby(lobbyID string, client *Client) {
 }
 
 func (s *Server) disconnectClient(clientID string) {
-	client := s.clients[clientID]
+	client, exists := s.clients[clientID]
+	if !exists || client == nil {
+		return
+	}
+
 	if client.state == Game {
-		lobby := s.lobbies[client.lobbyID]
+		lobby, exists := s.lobbies[client.lobbyID]
+		if !exists || lobby == nil {
+			return
+		}
+
 		lobby.RemoveClient(client)
 		if len(lobby.clients) == 0 {
 			lobby.game.Stop()

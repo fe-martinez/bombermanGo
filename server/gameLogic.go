@@ -21,11 +21,14 @@ var directionMap = map[string]Direction{
 }
 
 func handlePlayerAction(msg utils.ClientMessage, game *model.Game) {
+	if game.Players[msg.ID].Lives == 0 {
+		return
+	}
+
 	switch msg.Action {
 	case utils.ActionMove:
 		direction := msg.Data.([]string)
 		movePlayer(game.Players[msg.ID], direction, game)
-		game.GrabPowerUp(msg.ID)
 	case utils.ActionBomb:
 		game.PutBomb(game.Players[msg.ID])
 	default:
@@ -38,12 +41,7 @@ func movePlayer(player *model.Player, directions []string, game *model.Game) {
 		if dir, ok := directionMap[direction]; ok {
 			newX := player.Position.X + dir.X*SPEED_INCREMENT
 			newY := player.Position.Y + dir.Y*SPEED_INCREMENT
-			if game.CanMove(player, newX, newY) {
-				player.Position.X = newX
-				player.Position.Y = newY
-			} else {
-				player.Speed.X, player.Speed.Y = BASE_SPEED, BASE_SPEED
-			}
+			game.MovePlayer(player, newX, newY)
 		} else {
 			player.Speed.X, player.Speed.Y = BASE_SPEED, BASE_SPEED
 		}

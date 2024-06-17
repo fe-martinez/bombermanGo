@@ -6,6 +6,8 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+var userInput string
+
 func handleInput() []string {
 	var inputs []string
 
@@ -46,8 +48,6 @@ func handleMainMenuInput() string {
 	}
 	return "none"
 }
-
-var userInput string
 
 func handleLobbySelectionInput() (string, string) {
 	key := rl.GetCharPressed()

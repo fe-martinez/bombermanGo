@@ -29,24 +29,8 @@ func NewLobby(ownerID string, id string) *Lobby {
 	}
 }
 
-// Esto está full croto, hay que arreglarlo
-func (l *Lobby) GetPlayerPosition() *model.Position {
-	var position = model.Position{X: 0, Y: 0}
-	if !(l.game.IsValidPosition(position)) {
-		position = model.Position{X: 15, Y: 0}
-		if !(l.game.IsValidPosition(position)) {
-			position = model.Position{X: 0, Y: 8}
-			if !(l.game.IsValidPosition(position)) {
-				position = model.Position{X: 15, Y: 8}
-			}
-		}
-	}
-	return &position
-}
-
 func (l *Lobby) AddClient(client *Client) {
-	//player := model.NewPlayer(client.clientID, l.game.GenerateValidPosition(l.game.GameMap.ColumnSize, l.game.GameMap.RowSize))
-	player := model.NewPlayer(client.clientID, l.GetPlayerPosition())
+	player := model.NewPlayer(client.clientID, l.game.GetPlayerPosition(len(l.game.Players)))
 	l.game.AddPlayer(player)
 	l.clients[client.clientID] = client
 
