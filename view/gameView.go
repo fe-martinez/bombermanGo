@@ -11,8 +11,9 @@ import (
 
 var d_wall = rl.LoadImage("view/resources/d_wall.png")
 var i_wall = rl.LoadImage("view/resources/i_wall.png")
-var d_wall_texture = rl.LoadTextureFromImage(d_wall)
-var i_wall_texture = rl.LoadTextureFromImage(i_wall)
+
+// var d_wall_texture = rl.LoadTextureFromImage(d_wall)
+// var i_wall_texture = rl.LoadTextureFromImage(i_wall)
 
 const TILE_SIZE = 65
 const WIDTH = TILE_SIZE * 16
