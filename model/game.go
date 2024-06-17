@@ -298,15 +298,23 @@ func (g *Game) assignScores() {
 	g.EliminationOrder = []string{}
 }
 
+func (g *Game) passRound() {
+	g.assignScores()
+	g.State = "between-rounds"
+	g.Round++
+	g.startRound()
+}
+
+func (g *Game) endGame() {
+	g.assignScores()
+	g.State = "finished"
+}
+
 func (g *Game) endRound() {
 	if g.Round < MAX_ROUNDS {
-		g.assignScores()
-		g.State = "between-rounds"
-		g.Round++
-		g.startRound()
+		g.passRound()
 	} else {
-		g.assignScores()
-		g.State = "finished"
+		g.endGame()
 	}
 }
 
@@ -417,7 +425,9 @@ func (g *Game) handleExplosion(explosion *Explosion) {
 		}
 		if explosion.IsTileInRange(*player.Position) && !player.Invencible && !explosion.IsPlayerAlreadyAffected(player.ID) {
 			explosion.AddAffectedPlayer(player.ID)
+			log.Println("Player ", player.ID, " has {", player.Lives, "} lives left")
 			lives_left := player.LoseHealth()
+			log.Println("Now player ", player.ID, " has {", player.Lives, "} lives left")
 			if lives_left == 0 {
 				g.EliminationOrder = append(g.EliminationOrder, player.ID)
 			}
@@ -468,7 +478,9 @@ func (g *Game) Update() {
 
 	g.updatePowerUps(now)
 
-	if g.shouldEndRound() {
+	if len(g.Players) == 1 && g.State != "not-started" {
+		g.endGame()
+	} else if g.shouldEndRound() {
 		g.endRound()
 	}
 }
