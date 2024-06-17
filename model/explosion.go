@@ -1,6 +1,7 @@
 package model
 
 import (
+	"log"
 	"time"
 )
 
@@ -19,7 +20,11 @@ func NewExplosion(position Position, radius int, game Game) *Explosion {
 	}
 }
 
-func lookForAffectedTiles(game Game, position Position, radius int, affectedTiles []Position) {
+func lookForAffectedTiles(game Game, position Position, radius int) []Position {
+	var affectedTiles []Position
+	affectedTiles = append(affectedTiles, position)
+	log.Println("Looking for affected tiles: ", affectedTiles)
+
 	directions := []Position{
 		{X: -1, Y: 0},
 		{X: 1, Y: 0},
@@ -37,6 +42,7 @@ func lookForAffectedTiles(game Game, position Position, radius int, affectedTile
 			}
 		}
 	}
+	return affectedTiles
 }
 
 func removeWalls(affectedTiles []Position, game Game) {
@@ -49,10 +55,9 @@ func removeWalls(affectedTiles []Position, game Game) {
 }
 
 func getAffectedTiles(position Position, radius int, game Game) []Position {
-	var affectedTiles []Position
-	affectedTiles = append(affectedTiles, position)
+	affectedTiles := lookForAffectedTiles(game, position, radius)
 
-	lookForAffectedTiles(game, position, radius, affectedTiles)
+	log.Println("Affected tiles after look: ", affectedTiles)
 
 	removeWalls(affectedTiles, game)
 
