@@ -9,6 +9,11 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+var d_wall = rl.LoadImage("view/resources/d_wall.png")
+var i_wall = rl.LoadImage("view/resources/i_wall.png")
+var d_wall_texture = rl.LoadTextureFromImage(d_wall)
+var i_wall_texture = rl.LoadTextureFromImage(i_wall)
+
 const TILE_SIZE = 65
 const WIDTH = TILE_SIZE * 16
 const HEIGHT = TILE_SIZE*10 + OFFSET
