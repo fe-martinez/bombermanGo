@@ -17,7 +17,7 @@ const (
 
 type PowerUp struct {
 	Position   Position
-	name       PowerUpType
+	Name       PowerUpType
 	StartTime  time.Time
 	ExpireTime time.Time
 	Duration   time.Duration
@@ -26,7 +26,7 @@ type PowerUp struct {
 func NewPowerUp(position Position, name PowerUpType) PowerUp {
 	return PowerUp{
 		Position:   position,
-		name:       name,
+		Name:       name,
 		Duration: POWERUP_EXPIRE_TIME,
 	}
 }

@@ -163,12 +163,32 @@ func (g *Game) IsBombPosition(position Position) bool {
 }
 
 func (g *Game) PutBomb(player *Player) {
-	if player.CanPlantBomb() {
-		x := float32(math.Round(float64(player.Position.X)))
-		y := float32(math.Round(float64(player.Position.Y)))
+	x := float32(math.Round(float64(player.Position.X)))
+	y := float32(math.Round(float64(player.Position.Y)))
+	if (player.CanPlantBomb() && !g.IsBombPosition(Position{x, y})) {
 		bomb := NewBomb(x, y, 2, *player)
 		g.GameMap.PlaceBomb(bomb)
 		player.Bombs--
+	}
+}
+
+func (p *Player) GetFirstPowerUp() *PowerUp {
+	if len(p.PowerUps) > 0 {
+		return &p.PowerUps[0]
+	}
+	return nil
+}
+
+func (g *Game) AddBombToPlayer(player *Player) {
+	firstPowerUp := player.GetFirstPowerUp()
+	if (firstPowerUp != nil  && firstPowerUp.Name == MasBombasEnSimultaneo) {
+		log.Println("First PowerUp: %s\n", firstPowerUp.Name)
+		if(player.Bombs <= 4){
+			player.Bombs++
+		}
+	} else if (player.Bombs == 0){
+		log.Println("No PowerUps available")
+		player.Bombs++
 	}
 }
 
@@ -179,10 +199,15 @@ func (g *Game) ExplodeBomb(bomb *Bomb) {
 
 	for _, player := range g.Players {
 		if player.ID == bomb.Owner.ID {
-			player.Bombs++
+			//player.Bombs++
+			log.Println("Player has bombs: %i", player.Bombs)
+			g.AddBombToPlayer(player)
 		}
 	}
 }
+
+
+
 
 func (g *Game) TransferPowerUpToPlayer(player *Player, powerUpPosition Position) {
 	powerUp := g.GameMap.GetPowerUp(powerUpPosition)
@@ -191,7 +216,7 @@ func (g *Game) TransferPowerUpToPlayer(player *Player, powerUpPosition Position)
 		powerUp.SetPowerUpStartTime()
 		log.Println("Power up start time is setted")
 		player.AddPowerUp(*powerUp)
-		g.ApplyPowerUpBenefit(powerUp.name, player.ID)
+		g.ApplyPowerUpBenefit(powerUp.Name, player.ID)
 		g.GameMap.RemovePowerUp(powerUpPosition)
 	}
 }
@@ -456,7 +481,7 @@ func (g *Game) updatePowerUps(now time.Time) {
 			if !powerUp.StartTime.IsZero() {
 				if now.After(powerUp.ExpireTime) {
 					log.Println("PowerUp expired")
-					g.RemovePowerUpBenefit(powerUp.name, player.ID)
+					g.RemovePowerUpBenefit(powerUp.Name, player.ID)
 					player.RemovePowerUp(powerUp)
 				}
 			}
