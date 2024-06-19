@@ -182,12 +182,12 @@ func (p *Player) GetFirstPowerUp() *PowerUp {
 
 func (g *Game) AddBombToPlayer(player *Player) {
 	firstPowerUp := player.GetFirstPowerUp()
-	if (firstPowerUp != nil  && firstPowerUp.Name == MasBombasEnSimultaneo) {
+	if firstPowerUp != nil && firstPowerUp.Name == MasBombasEnSimultaneo {
 		log.Println("First PowerUp: %s\n", firstPowerUp.Name)
-		if(player.Bombs <= 4){
+		if player.Bombs <= 4 {
 			player.Bombs++
 		}
-	} else if (player.Bombs == 0){
+	} else if player.Bombs == 0 {
 		log.Println("No PowerUps available")
 		player.Bombs++
 	}
@@ -206,9 +206,6 @@ func (g *Game) ExplodeBomb(bomb *Bomb) {
 		}
 	}
 }
-
-
-
 
 func (g *Game) TransferPowerUpToPlayer(player *Player, powerUpPosition Position) {
 	powerUp := g.GameMap.GetPowerUp(powerUpPosition)
