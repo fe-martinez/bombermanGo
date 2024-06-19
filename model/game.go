@@ -14,6 +14,7 @@ const ROUND_DURATION = 2 //minutes
 const TICKER_REFRESH = 1 //second
 const MAX_POWER_UPS = 4
 const POWERUP_SPAWN_TIME = 10 //seconds
+const BOMB_REACH_MODIFED = 3
 
 const SPEED_INCREMENT = 0.1
 const BASE_SPEED = 0
@@ -166,9 +167,29 @@ func (g *Game) PutBomb(player *Player) {
 	if player.CanPlantBomb() {
 		x := float32(math.Round(float64(player.Position.X)))
 		y := float32(math.Round(float64(player.Position.Y)))
-		bomb := NewBomb(x, y, 2, *player)
+		bomb := NewBomb(x, y, player.BombReach, *player)
 		g.GameMap.PlaceBomb(bomb)
 		player.Bombs--
+	}
+}
+
+func (p *Player) GetFirstPowerUp() *PowerUp {
+	if len(p.PowerUps) > 0 {
+		return &p.PowerUps[0]
+	}
+	return nil
+}
+
+func (g *Game) AddBombToPlayer(player *Player) {
+	firstPowerUp := player.GetFirstPowerUp()
+	if firstPowerUp != nil && firstPowerUp.Name == MasBombasEnSimultaneo {
+		log.Println("First PowerUp: %s\n", firstPowerUp.Name)
+		if player.Bombs <= 4 {
+			player.Bombs++
+		}
+	} else if player.Bombs == 0 {
+		log.Println("No PowerUps available")
+		player.Bombs++
 	}
 }
 
@@ -179,7 +200,9 @@ func (g *Game) ExplodeBomb(bomb *Bomb) {
 
 	for _, player := range g.Players {
 		if player.ID == bomb.Owner.ID {
-			player.Bombs++
+			//player.Bombs++
+			log.Println("Player has bombs: %i", player.Bombs)
+			g.AddBombToPlayer(player)
 		}
 	}
 }
@@ -191,7 +214,7 @@ func (g *Game) TransferPowerUpToPlayer(player *Player, powerUpPosition Position)
 		powerUp.SetPowerUpStartTime()
 		log.Println("Power up start time is setted")
 		player.AddPowerUp(*powerUp)
-		g.ApplyPowerUpBenefit(powerUp.name, player.ID)
+		g.ApplyPowerUpBenefit(powerUp.Name, player.ID)
 		g.GameMap.RemovePowerUp(powerUpPosition)
 	}
 }
@@ -259,11 +282,7 @@ func (g *Game) ApplyPowerUpBenefit(powerUp PowerUpType, playerID string) {
 		g.Players[playerID].Bombs = 5
 	case AlcanceMejorado:
 		log.Println("Alcance mejorado")
-		for _, bomb := range g.GameMap.Bombs {
-			if bomb.IsOwner(playerID) {
-				bomb.Alcance = 5
-			}
-		}
+		g.Players[playerID].BombReach = BOMB_REACH_MODIFED
 	default:
 	}
 }
@@ -278,11 +297,7 @@ func (g *Game) RemovePowerUpBenefit(powerUp PowerUpType, playerID string) {
 		g.Players[playerID].Bombs = 1
 	case AlcanceMejorado:
 		log.Println("Removiendo alcance mejorado")
-		for _, bomb := range g.GameMap.Bombs {
-			if bomb.IsOwner(playerID) {
-				bomb.Alcance = 2
-			}
-		}
+		g.Players[playerID].BombReach = BOMB_REACH_BASE
 	default:
 	}
 }
@@ -453,11 +468,10 @@ func (g *Game) updatePowerUps(now time.Time) {
 			continue
 		}
 		for _, powerUp := range player.PowerUps {
-			log.Println("power up start time: ", powerUp.StartTime, "power up expire time: ", powerUp.ExpireTime, "now: ", now)
 			if !powerUp.StartTime.IsZero() {
-				if now.After(powerUp.StartTime.Add(powerUp.ExpireTime * time.Second)) {
+				if now.After(powerUp.ExpireTime) {
 					log.Println("PowerUp expired")
-					g.RemovePowerUpBenefit(powerUp.name, player.ID)
+					g.RemovePowerUpBenefit(powerUp.Name, player.ID)
 					player.RemovePowerUp(powerUp)
 				}
 			}
