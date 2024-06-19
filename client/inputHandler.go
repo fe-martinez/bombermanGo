@@ -38,12 +38,46 @@ func isMouseInCreateButton() bool {
 	return rl.GetMouseX() > view.CREATE_GAME_POS_X && rl.GetMouseX() < view.CREATE_GAME_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.CREATE_GAME_POS_Y && rl.GetMouseY() < view.CREATE_GAME_POS_Y+view.BUTTON_HEIGHT
 }
 
+func isMouseInRulesButton() bool {
+	return rl.GetMouseX() > view.RULES_POS_X && rl.GetMouseX() < view.RULES_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.RULES_POS_Y && rl.GetMouseY() < view.RULES_POS_Y+view.BUTTON_HEIGHT
+}
+
+func isMouseInControlsButton() bool {
+	return rl.GetMouseX() > view.CONTROLS_POS_X && rl.GetMouseX() < view.CONTROLS_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.CONTROLS_POS_Y && rl.GetMouseY() < view.CONTROLS_POS_Y+view.BUTTON_HEIGHT
+}
+
 func handleMainMenuInput() string {
 	if rl.IsMouseButtonDown(0) {
 		if isMouseInJoinButton() {
 			return "join"
 		} else if isMouseInCreateButton() {
 			return "create"
+		} else if isMouseInRulesButton() {
+			return "rules"
+		} else if isMouseInControlsButton() {
+			return "controls"
+		}
+	}
+	return "none"
+}
+
+func isMouseInBackButton() bool {
+	return rl.GetMouseX() > view.BACK_BUTTON_X && rl.GetMouseX() < view.BACK_BUTTON_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.BACK_BUTTON_Y && rl.GetMouseY() < view.BACK_BUTTON_Y+view.BUTTON_HEIGHT
+}
+
+func handleControlRulesInput() string {
+	if rl.IsMouseButtonDown(0) {
+		if isMouseInBackButton() {
+			return "back"
+		}
+	}
+	return "none"
+}
+
+func handleRulesInput() string {
+	if rl.IsMouseButtonDown(0) {
+		if isMouseInBackButton() {
+			return "back"
 		}
 	}
 	return "none"
