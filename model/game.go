@@ -453,9 +453,8 @@ func (g *Game) updatePowerUps(now time.Time) {
 			continue
 		}
 		for _, powerUp := range player.PowerUps {
-			log.Println("power up start time: ", powerUp.StartTime, "power up expire time: ", powerUp.ExpireTime, "now: ", now)
 			if !powerUp.StartTime.IsZero() {
-				if now.After(powerUp.StartTime.Add(powerUp.ExpireTime * time.Second)) {
+				if now.After(powerUp.ExpireTime) {
 					log.Println("PowerUp expired")
 					g.RemovePowerUpBenefit(powerUp.name, player.ID)
 					player.RemovePowerUp(powerUp)
