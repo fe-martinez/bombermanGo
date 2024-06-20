@@ -75,7 +75,7 @@ func (g *Game) collidesWithWalls(position Position) bool {
 }
 
 func (g *Game) isOutOfBounds(position Position) bool {
-	return position.X < 0 || position.X >= float32(g.GameMap.ColumnSize)-1 || position.Y < 0 || position.Y >= float32(g.GameMap.RowSize)-1
+	return position.X < 0 || position.X > float32(g.GameMap.ColumnSize)-1 || position.Y < 0 || position.Y > float32(g.GameMap.RowSize)-1
 }
 
 func (g *Game) handleOutOfBounds(position Position) Position {
