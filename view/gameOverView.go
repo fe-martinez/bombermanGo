@@ -24,7 +24,6 @@ func DrawGameOverScreen(game model.Game) {
 		return game.PlayerScores[players[i].ID] > game.PlayerScores[players[j].ID]
 	})
 
-	// Draw a white rectangle with a black border to put the players on
 	rl.DrawRectangle(WIDTH/2-250, HEIGHT/2-60, 500, 30*4, rl.White)
 	rl.DrawRectangleLines(WIDTH/2-250, HEIGHT/2-60, 500, 30*4, rl.Black)
 

@@ -9,12 +9,9 @@ import (
 	"os"
 	"slices"
 	"strings"
-	"sync"
 )
 
 const SERVER_ADDRESS = "localhost:8080"
-
-var mu sync.Mutex
 
 type Client struct {
 	connection net.Conn
@@ -92,9 +89,7 @@ func receiveGameFromServer(conn net.Conn) (*model.Game, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error al leer del servidor: %s", err)
 	}
-	mu.Lock()
 	decodedGame, err := utils.DecodeGame(buffer[:n])
-	mu.Unlock()
 	if err != nil {
 		return nil, fmt.Errorf("error al decodificar el juego del servidor: %s", err)
 	}

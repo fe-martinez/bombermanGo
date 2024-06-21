@@ -7,7 +7,7 @@ server_pid=$!
 echo "Server started with PID $server_pid"
 
 # Wait for server to start
-sleep 2
+sleep 0.5
 
 ./bombman client > client1.log 2>&1 &
 echo "Client 1 started with PID $!"
