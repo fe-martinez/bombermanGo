@@ -9,8 +9,8 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var d_wall = rl.LoadImage("view/resources/d_wall.png")
-var i_wall = rl.LoadImage("view/resources/i_wall.png")
+// var d_wall = rl.LoadImage("view/resources/d_wall.png")
+// var i_wall = rl.LoadImage("view/resources/i_wall.png")
 
 // var d_wall_texture = rl.LoadTextureFromImage(d_wall)
 // var i_wall_texture = rl.LoadTextureFromImage(i_wall)
@@ -114,15 +114,6 @@ func DrawGameID(gameID string) {
 	rl.DrawText("Game ID: "+gameID, 3, HEIGHT-OFFSET+5, 20, rl.Red)
 }
 
-func DrawDebug(game model.Game) {
-	idx := 0
-	for _, player := range game.Players {
-		text := fmt.Sprintf("Player X : %f, Player Y: %f", player.Position.X, player.Position.Y)
-		rl.DrawText(text, 5, int32(50+(idx*30)), 20, rl.Red)
-		idx += 1
-	}
-}
-
 func DrawGame(game model.Game) {
 	if len(game.Players) == 0 {
 		return
@@ -144,8 +135,6 @@ func DrawGame(game model.Game) {
 	DrawGameID(game.GameId)
 
 	DrawPlayersLives(game)
-
-	DrawDebug(game)
 
 	rl.EndDrawing()
 }
