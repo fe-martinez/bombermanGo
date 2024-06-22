@@ -19,6 +19,8 @@ const BOMB_REACH_MODIFED = 3
 const SPEED_INCREMENT = 0.1
 const BASE_SPEED = 0
 
+const FRAME_COUNT  = 3
+
 var colors = NewQueue()
 
 type GameState string
@@ -39,6 +41,9 @@ type Game struct {
 	GameMap          *GameMap
 	EliminationOrder []string
 	PlayerScores     map[string]int
+	CurrentFrame  	 int
+	FrameDuration 	 time.Duration
+	LastFrameTime 	 time.Time
 }
 
 func initializeColors() {
@@ -59,6 +64,9 @@ func NewGame(id string, GameMap *GameMap) *Game {
 		GameMap:          GameMap,
 		PlayerScores:     make(map[string]int),
 		EliminationOrder: []string{},
+		CurrentFrame:  	  0,
+		FrameDuration: 	  200 * time.Millisecond,
+		LastFrameTime: 	  time.Now(),
 	}
 }
 
@@ -487,6 +495,11 @@ func (g *Game) shouldEndRound() bool {
 }
 
 func (g *Game) Update() {
+	if time.Since(g.LastFrameTime) >= g.FrameDuration {
+		g.CurrentFrame = (g.CurrentFrame + 1) % FRAME_COUNT
+		g.LastFrameTime = time.Now()
+	}
+	
 	now := time.Now()
 
 	g.verifyExplodingBombs(now)

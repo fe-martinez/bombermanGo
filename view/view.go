@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"sync"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -14,6 +15,13 @@ const WIDTH = TILE_SIZE * 16
 const HEIGHT = TILE_SIZE*10 + OFFSET
 const OFFSET = 30
 
+var directionMap = map[string]int{
+	"down":  0,
+	"left":  1,
+	"right": 2,
+	"up":    3,
+}
+
 func InitWindow() {
 	rl.InitWindow(WIDTH, HEIGHT, "Bomberman Go!")
 	rl.SetTargetFPS(30)
@@ -22,6 +30,12 @@ func InitWindow() {
 func WindowShouldClose() bool {
 	return rl.WindowShouldClose()
 }
+
+var (
+	once        sync.Once
+	playerModel rl.Texture2D
+	counter = 0
+)
 
 func getColorFromString(colorName string) rl.Color {
 	switch colorName {
@@ -38,14 +52,43 @@ func getColorFromString(colorName string) rl.Color {
 	}
 }
 
+func loadPlayerModel() {
+	once.Do(func() {
+		playerModel = rl.LoadTexture("./4.png")
+	})
+}
+
+func getSourceRect(direction string, game model.Game) rl.Rectangle{
+	dirInt := directionMap[direction]
+	
+	sourceRect := rl.NewRectangle(
+		float32(game.CurrentFrame * 65),
+		float32(dirInt * 68),
+		float32(65),
+		float32(68),                              // Height of the frame
+	)
+
+	return sourceRect
+}
+ 
 func drawPlayers(game model.Game) {
+	loadPlayerModel()
 	for _, player := range game.Players {
 		if player.Lives == 0 {
 			continue
 		}
-		colorName := game.GetPlayerColor(player.ID)
-		color := getColorFromString(colorName)
-		rl.DrawRectangle(int32(player.Position.X*TILE_SIZE), int32(player.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, color)
+		
+		sourceRect := getSourceRect(player.Direction, game)
+		/*sourceRect := rl.NewRectangle(
+			//float32(65*counter),
+			//float32(68),
+			float32(game.CurrentFrame * 65),
+        	float32(game.CurrentFrame * 68),
+        	float32(65),
+        	float32(68),                              // Height of the frame
+		)*/
+		position := rl.NewVector2(player.Position.X*TILE_SIZE, player.Position.Y*TILE_SIZE)
+		rl.DrawTextureRec(playerModel, sourceRect, position, rl.White)
 	}
 }
 
@@ -197,7 +240,7 @@ func DrawWaitingMenu(players []string, lobbyId string) {
 	// Draw Game ID
 	rl.DrawText("Game ID:", GAME_ID_POS_X, GAME_ID_POS_Y, 20, rl.Black)
 	rl.DrawRectangle(GAME_ID_POS_X, GAME_ID_POS_Y+25, TEXTBOX_WIDTH, TEXTBOX_HEIGHT, rl.DarkGray)
-	rl.DrawText(lobbyId, GAME_ID_POS_X+5, GAME_ID_POS_Y+30, 20, rl.Black)
+	rl.DrawText(lobbyId, GAME_ID_POS_X+5, GAME_ID_POS_Y+30, 20, rl.White)
 	// Draw Connected players
 	rl.DrawText("Connected players:", PLAYER_START_POS_X, PLAYER_START_POS_Y-30, 20, rl.Black)
 	// Draw players
