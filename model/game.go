@@ -203,7 +203,7 @@ func (p *Player) GetFirstPowerUp() *PowerUp {
 func (g *Game) AddBombToPlayer(player *Player) {
 	firstPowerUp := player.GetFirstPowerUp()
 	if firstPowerUp != nil && firstPowerUp.Name == MasBombasEnSimultaneo {
-		log.Printf("First PowerUp: %s\n", firstPowerUp.Name)
+		log.Println("First PowerUp:", firstPowerUp.Name)
 		if player.Bombs <= 4 {
 			player.Bombs++
 		}

@@ -7,12 +7,10 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
-	"sync"
 	"time"
 )
 
 type Server struct {
-	sync.RWMutex
 	address  string
 	listener net.Listener
 	lobbies  map[string]*Lobby
@@ -108,10 +106,7 @@ func (s *Server) handleGameAction(message utils.ClientMessage, client *Client) e
 		s.disconnectClient(client.clientID)
 		return nil
 	}
-
-	s.RLock()
 	lobby, exists := s.lobbies[client.lobbyID]
-	s.RUnlock()
 
 	if !exists {
 		return fmt.Errorf("lobby not found: %s", client.lobbyID)
@@ -172,6 +167,7 @@ func (s *Server) disconnectClient(clientID string) {
 			lobby.game.Stop()
 			close(lobby.updates)
 			delete(s.lobbies, client.lobbyID)
+			log.Println("Lobby", client.lobbyID, "deleted succesfully")
 		}
 	}
 	delete(s.clients, clientID)
