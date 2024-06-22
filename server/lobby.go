@@ -2,7 +2,9 @@ package server
 
 import (
 	"bombman/model"
+	"bombman/utils"
 	"log"
+	"time"
 )
 
 const firstMapPath = "data/round1map.txt"
@@ -11,6 +13,7 @@ type Lobby struct {
 	ownerID string
 	id      string
 	clients map[string]*Client
+	updates chan utils.ClientMessage
 	game    *model.Game
 }
 
@@ -21,12 +24,15 @@ func NewLobby(ownerID string, id string) *Lobby {
 		return nil
 	}
 
-	return &Lobby{
+	lobby := &Lobby{
 		ownerID: ownerID,
 		id:      id,
 		clients: make(map[string]*Client),
+		updates: make(chan utils.ClientMessage),
 		game:    model.NewGame(id, gameMap),
 	}
+	go lobby.processInput()
+	return lobby
 }
 
 func (l *Lobby) AddClient(client *Client) {
@@ -62,8 +68,26 @@ func (l *Lobby) startGame() {
 	}
 }
 
+func (l *Lobby) handlePlayerInput(input utils.ClientMessage) {
+	handlePlayerAction(input, l.game)
+}
+
+func (l *Lobby) processInput() {
+	ticker := time.NewTicker(GAME_SPEED)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case input := <-l.updates:
+			l.handlePlayerInput(input)
+		case <-ticker.C:
+			l.game.Update()
+			l.BroadcastGameState()
+		}
+	}
+}
+
 func (l *Lobby) BroadcastGameState() {
-	l.game.Update()
 	for _, client := range l.clients {
 		sendGameMessageToClient(client.connection, l.game)
 	}

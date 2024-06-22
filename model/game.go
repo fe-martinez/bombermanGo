@@ -220,7 +220,6 @@ func (g *Game) ExplodeBomb(bomb *Bomb) {
 
 	for _, player := range g.Players {
 		if player.ID == bomb.Owner.ID {
-			//player.Bombs++
 			log.Println("Player has bombs: %i", player.Bombs)
 			g.AddBombToPlayer(player)
 		}
@@ -471,15 +470,18 @@ func (g *Game) handleExplosion(explosion *Explosion) {
 }
 
 func (g *Game) verifyExplosions() {
+	var expiredExplosions []int
+
 	for i := range g.GameMap.Explosions {
 		explosion := &g.GameMap.Explosions[i]
 		if explosion.IsExpired() {
-			g.GameMap.RemoveExplosion(explosion)
+			expiredExplosions = append(expiredExplosions, i)
+			continue
 		}
-
 		g.handleExplosion(explosion)
-
 	}
+
+	g.GameMap.RemoveExplosions(expiredExplosions)
 }
 
 func (g *Game) updatePowerUps(now time.Time) {
