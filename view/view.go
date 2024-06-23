@@ -12,7 +12,7 @@ import (
 
 const TILE_SIZE = 65
 const WIDTH = TILE_SIZE * 16
-const HEIGHT = TILE_SIZE*10 + OFFSET
+const HEIGHT = TILE_SIZE*10 + OFFSET + OFFSET
 const OFFSET = 30
 
 var directionMap = map[string]int{
@@ -126,7 +126,6 @@ func drawBombs(game model.Game) {
 	}
 }
 
-// Después va a tener que dibujar los distintos powerups según el tipo
 func drawPowerUps(game model.Game) {
 	for _, powerUp := range game.GameMap.PowerUps {
 		var powerUpModel rl.Texture2D
@@ -139,8 +138,6 @@ func drawPowerUps(game model.Game) {
 			powerUpModel = powerUpInvencibilidadModel
 		}
 		rl.DrawTexture(powerUpModel, int32(powerUp.Position.X*TILE_SIZE), int32(powerUp.Position.Y*TILE_SIZE), rl.White)
-
-		//rl.DrawRectangle(int32(powerUp.Position.X*TILE_SIZE), int32(powerUp.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Magenta)
 	}
 }
 
@@ -178,19 +175,24 @@ func DrawPlayersLives(game model.Game) {
 		return players[i].Username < players[j].Username
 	})
 
-	var offset int32 = 150
+	var offset int32 = 5
 	for _, player := range players {
 		playerColor := game.GetPlayerColor(player.ID)
 		color := getColorFromString(playerColor)
 		lives := strconv.Itoa(int(player.Lives))
-		rl.DrawText(fmt.Sprintf("%s: %s <3", player.Username, lives), offset, HEIGHT-OFFSET+5, 20, color)
-		offset += 225
+		rl.DrawText(fmt.Sprintf("%s: %s <3", player.Username, lives), offset, HEIGHT-OFFSET*2+5, 20, color)
+		offset += 230
 	}
 }
 
 func DrawGameID(gameID string) {
-	rl.DrawRectangle(0, HEIGHT-OFFSET, WIDTH, OFFSET, rl.Black)
-	rl.DrawText("Game ID: "+gameID, 3, HEIGHT-OFFSET+5, 20, rl.Red)
+	// Dibujar Game ID separado de los jugadores
+	rl.DrawRectangle(0, HEIGHT-OFFSET-OFFSET, WIDTH, OFFSET*2, rl.Black)
+	rl.DrawText("Game ID: "+gameID, 5, HEIGHT-OFFSET+5, 20, rl.Red)
+}
+
+func DrawGameRound(gameRound string) {
+	rl.DrawText("Round: "+gameRound, 150, HEIGHT-OFFSET+5, 20, rl.SkyBlue)
 }
 
 func DrawGame(game model.Game) {
@@ -212,6 +214,8 @@ func DrawGame(game model.Game) {
 	drawPowerUps(game)
 
 	DrawGameID(game.GameId)
+
+	DrawGameRound(strconv.Itoa(int(game.Round)))
 
 	DrawPlayersLives(game)
 
