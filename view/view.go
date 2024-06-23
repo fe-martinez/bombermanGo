@@ -32,9 +32,11 @@ func WindowShouldClose() bool {
 }
 
 var (
-	once        sync.Once
-	playerModel rl.Texture2D
-	counter = 0
+	once                    sync.Once
+	playerModel             rl.Texture2D
+	destructibleWallModel   rl.Texture2D
+	indestructibleWallModel rl.Texture2D
+	counter                 = 0
 )
 
 func getColorFromString(colorName string) rl.Color {
@@ -54,39 +56,41 @@ func getColorFromString(colorName string) rl.Color {
 
 func loadPlayerModel() {
 	once.Do(func() {
-		playerModel = rl.LoadTexture("./4.png")
+		playerModel = rl.LoadTexture("./view/resources/player.png")
+		destructibleWallModel = rl.LoadTexture("./view/resources/d_wall.png")
+		indestructibleWallModel = rl.LoadTexture("./view/resources/i_wall.png")
 	})
 }
 
-func getSourceRect(direction string, game model.Game) rl.Rectangle{
+func getSourceRect(direction string, game model.Game) rl.Rectangle {
 	dirInt := directionMap[direction]
-	
+
 	sourceRect := rl.NewRectangle(
-		float32(game.CurrentFrame * 65),
-		float32(dirInt * 68),
+		float32(game.CurrentFrame*65),
+		float32(dirInt*68),
 		float32(65),
-		float32(68),                              // Height of the frame
+		float32(68), // Height of the frame
 	)
 
 	return sourceRect
 }
- 
+
 func drawPlayers(game model.Game) {
 	loadPlayerModel()
 	for _, player := range game.Players {
 		if player.Lives == 0 {
 			continue
 		}
-		
+
 		sourceRect := getSourceRect(player.Direction, game)
 		/*sourceRect := rl.NewRectangle(
-			//float32(65*counter),
-			//float32(68),
-			float32(game.CurrentFrame * 65),
-        	float32(game.CurrentFrame * 68),
-        	float32(65),
-        	float32(68),                              // Height of the frame
-		)*/
+					//float32(65*counter),
+					//float32(68),
+					float32(game.CurrentFrame * 65),
+		        	float32(game.CurrentFrame * 68),
+		        	float32(65),
+		        	float32(68),                              // Height of the frame
+				)*/
 		position := rl.NewVector2(player.Position.X*TILE_SIZE, player.Position.Y*TILE_SIZE)
 		rl.DrawTextureRec(playerModel, sourceRect, position, rl.White)
 	}
@@ -107,10 +111,13 @@ func drawPowerUps(game model.Game) {
 
 func drawWalls(game model.Game) {
 	for _, wall := range game.GameMap.Walls {
+		x := int32(wall.Position.X * TILE_SIZE)
+		y := int32(wall.Position.Y * TILE_SIZE)
+
 		if wall.Indestructible {
-			rl.DrawRectangle(int32(wall.Position.X*TILE_SIZE), int32(wall.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.DarkGray)
+			rl.DrawTexture(indestructibleWallModel, x, y, rl.White)
 		} else {
-			rl.DrawRectangle(int32(wall.Position.X*TILE_SIZE), int32(wall.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.LightGray)
+			rl.DrawTexture(destructibleWallModel, x, y, rl.White)
 		}
 	}
 }
