@@ -33,7 +33,10 @@ func WindowShouldClose() bool {
 
 var (
 	once                    sync.Once
-	playerModel             rl.Texture2D
+	player1Model            rl.Texture2D
+	player2Model            rl.Texture2D
+	player3Model            rl.Texture2D
+	player4Model            rl.Texture2D
 	destructibleWallModel   rl.Texture2D
 	indestructibleWallModel rl.Texture2D
 	counter                 = 0
@@ -56,7 +59,10 @@ func getColorFromString(colorName string) rl.Color {
 
 func loadPlayerModel() {
 	once.Do(func() {
-		playerModel = rl.LoadTexture("./view/resources/player.png")
+		player1Model = rl.LoadTexture("./view/resources/player1.png")
+		player2Model = rl.LoadTexture("./view/resources/player2.png")
+		player3Model = rl.LoadTexture("./view/resources/player3.png")
+		player4Model = rl.LoadTexture("./view/resources/player4.png")
 		destructibleWallModel = rl.LoadTexture("./view/resources/d_wall.png")
 		indestructibleWallModel = rl.LoadTexture("./view/resources/i_wall.png")
 	})
@@ -91,6 +97,18 @@ func drawPlayers(game model.Game) {
 		        	float32(65),
 		        	float32(68),                              // Height of the frame
 				)*/
+		player_color := game.GetPlayerColor(player.ID)
+		var playerModel rl.Texture2D
+		switch player_color {
+		case "Orange":
+			playerModel = player1Model
+		case "Green":
+			playerModel = player2Model
+		case "Violet":
+			playerModel = player3Model
+		case "Blue":
+			playerModel = player4Model
+		}
 		position := rl.NewVector2(player.Position.X*TILE_SIZE, player.Position.Y*TILE_SIZE)
 		rl.DrawTextureRec(playerModel, sourceRect, position, rl.White)
 	}
