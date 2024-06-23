@@ -32,14 +32,17 @@ func WindowShouldClose() bool {
 }
 
 var (
-	once                    sync.Once
-	player1Model            rl.Texture2D
-	player2Model            rl.Texture2D
-	player3Model            rl.Texture2D
-	player4Model            rl.Texture2D
-	destructibleWallModel   rl.Texture2D
-	indestructibleWallModel rl.Texture2D
-	counter                 = 0
+	once                       sync.Once
+	player1Model               rl.Texture2D
+	player2Model               rl.Texture2D
+	player3Model               rl.Texture2D
+	player4Model               rl.Texture2D
+	destructibleWallModel      rl.Texture2D
+	indestructibleWallModel    rl.Texture2D
+	powerUpAlcanceModel        rl.Texture2D
+	powerUpMasBombasModel      rl.Texture2D
+	powerUpInvencibilidadModel rl.Texture2D
+	counter                    = 0
 )
 
 func getColorFromString(colorName string) rl.Color {
@@ -65,6 +68,9 @@ func loadPlayerModel() {
 		player4Model = rl.LoadTexture("./view/resources/player4.png")
 		destructibleWallModel = rl.LoadTexture("./view/resources/d_wall.png")
 		indestructibleWallModel = rl.LoadTexture("./view/resources/i_wall.png")
+		powerUpAlcanceModel = rl.LoadTexture("./view/resources/powerup_alcance.png")
+		powerUpMasBombasModel = rl.LoadTexture("./view/resources/powerup_masbombas.png")
+		powerUpInvencibilidadModel = rl.LoadTexture("./view/resources/powerup_invencibility.png")
 	})
 }
 
@@ -123,7 +129,18 @@ func drawBombs(game model.Game) {
 // Después va a tener que dibujar los distintos powerups según el tipo
 func drawPowerUps(game model.Game) {
 	for _, powerUp := range game.GameMap.PowerUps {
-		rl.DrawRectangle(int32(powerUp.Position.X*TILE_SIZE), int32(powerUp.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Magenta)
+		var powerUpModel rl.Texture2D
+		switch powerUp.Name {
+		case model.AlcanceMejorado:
+			powerUpModel = powerUpAlcanceModel
+		case model.MasBombasEnSimultaneo:
+			powerUpModel = powerUpMasBombasModel
+		case model.Invencibilidad:
+			powerUpModel = powerUpInvencibilidadModel
+		}
+		rl.DrawTexture(powerUpModel, int32(powerUp.Position.X*TILE_SIZE), int32(powerUp.Position.Y*TILE_SIZE), rl.White)
+
+		//rl.DrawRectangle(int32(powerUp.Position.X*TILE_SIZE), int32(powerUp.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Magenta)
 	}
 }
 
