@@ -15,5 +15,9 @@ func (m *MainMenuState) Handle(c *Client) {
 		c.gameState = &WaitingMenuState{}
 	} else if input == "join" {
 		c.gameState = &LobbySelectionState{}
+	} else if input == "rules" {
+		c.gameState = &RulesState{}
+	} else if input == "controls" {
+		c.gameState = &ControlRulesState{}
 	}
 }

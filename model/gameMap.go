@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"sort"
+	"sync"
 )
 
 type GameMap struct {
+	mu         sync.RWMutex
 	Walls      []Wall
 	PowerUps   []PowerUp
 	Bombs      []Bomb
@@ -127,7 +130,9 @@ func (m *GameMap) AddPowerUp(powerUpPosition *Position) {
 }
 
 func (m *GameMap) PlaceBomb(bomb *Bomb) {
+	m.mu.Lock()
 	m.Bombs = append(m.Bombs, *bomb)
+	m.mu.Unlock()
 }
 
 func (m *GameMap) RemoveBomb(explodedBomb *Bomb) {
@@ -142,14 +147,12 @@ func (m *GameMap) RemoveBomb(explodedBomb *Bomb) {
 	}
 }
 
-func (m *GameMap) RemoveExplosion(explosion *Explosion) {
-	for i, exp := range m.Explosions {
-		if exp.Position == explosion.Position {
-			if len(m.Explosions) == 1 {
-				m.Explosions = []Explosion{}
-			} else {
-				m.Explosions = append(m.Explosions[:i], m.Explosions[i+1:]...)
-			}
+func (m *GameMap) RemoveExplosions(expiredExplosions []int) {
+	sort.Sort(sort.Reverse(sort.IntSlice(expiredExplosions)))
+
+	for _, index := range expiredExplosions {
+		if index >= 0 && index < len(m.Explosions) {
+			m.Explosions = append(m.Explosions[:index], m.Explosions[index+1:]...)
 		}
 	}
 }

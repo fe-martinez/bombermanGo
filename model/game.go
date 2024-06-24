@@ -83,17 +83,37 @@ func (g *Game) collidesWithWalls(position Position) bool {
 }
 
 func (g *Game) isOutOfBounds(position Position) bool {
-	return position.X < 0.0 || position.X >= float32(g.GameMap.ColumnSize) || position.Y < 0.0 || position.Y >= float32(g.GameMap.RowSize)
+	return position.X < 0 || position.X > float32(g.GameMap.ColumnSize)-1 || position.Y < 0 || position.Y > float32(g.GameMap.RowSize)-1
+}
+
+func (g *Game) handleOutOfBounds(position Position) Position {
+	newPosition := position
+
+	if position.X < 0 {
+		newPosition.X = 0
+	}
+	if position.X >= float32(g.GameMap.ColumnSize)-1 {
+		newPosition.X = float32(g.GameMap.ColumnSize) - 1
+	}
+	if position.Y < 0 {
+		newPosition.Y = 0
+	}
+	if position.Y >= float32(g.GameMap.RowSize)-1 {
+		newPosition.Y = float32(g.GameMap.RowSize) - 1
+	}
+	return newPosition
 }
 
 func (g *Game) CanMove(player *Player, newX float32, newY float32) bool {
-	return !g.collidesWithWalls(Position{newX, newY}) && !g.isOutOfBounds(Position{newX, newY})
+	return !g.collidesWithWalls(Position{newX, newY})
 }
 
 func (g *Game) MovePlayer(player *Player, newX float32, newY float32) {
-	if g.CanMove(player, newX, newY) {
-		player.Position.X = newX
-		player.Position.Y = newY
+	newPosition := g.handleOutOfBounds(Position{newX, newY})
+
+	if g.CanMove(player, newPosition.X, newPosition.Y) {
+		player.Position.X = newPosition.X
+		player.Position.Y = newPosition.Y
 	} else {
 		player.Speed.X, player.Speed.Y = BASE_SPEED, BASE_SPEED
 	}
@@ -190,12 +210,12 @@ func (p *Player) GetFirstPowerUp() *PowerUp {
 
 func (g *Game) AddBombToPlayer(player *Player) {
 	firstPowerUp := player.GetFirstPowerUp()
-	if (firstPowerUp != nil  && firstPowerUp.Name == MasBombasEnSimultaneo) {
-		log.Println("First PowerUp: %s\n", firstPowerUp.Name)
-		if(player.Bombs <= 4){
+	if firstPowerUp != nil && firstPowerUp.Name == MasBombasEnSimultaneo {
+		log.Println("First PowerUp:", firstPowerUp.Name)
+		if player.Bombs <= 4 {
 			player.Bombs++
 		}
-	} else if (player.Bombs == 0){
+	} else if player.Bombs == 0 {
 		log.Println("No PowerUps available")
 		player.Bombs++
 	}
@@ -208,15 +228,11 @@ func (g *Game) ExplodeBomb(bomb *Bomb) {
 
 	for _, player := range g.Players {
 		if player.ID == bomb.Owner.ID {
-			//player.Bombs++
 			log.Println("Player has bombs: %i", player.Bombs)
 			g.AddBombToPlayer(player)
 		}
 	}
 }
-
-
-
 
 func (g *Game) TransferPowerUpToPlayer(player *Player, powerUpPosition Position) {
 	powerUp := g.GameMap.GetPowerUp(powerUpPosition)
@@ -462,15 +478,18 @@ func (g *Game) handleExplosion(explosion *Explosion) {
 }
 
 func (g *Game) verifyExplosions() {
+	var expiredExplosions []int
+
 	for i := range g.GameMap.Explosions {
 		explosion := &g.GameMap.Explosions[i]
 		if explosion.IsExpired() {
-			g.GameMap.RemoveExplosion(explosion)
+			expiredExplosions = append(expiredExplosions, i)
+			continue
 		}
-
 		g.handleExplosion(explosion)
-
 	}
+
+	g.GameMap.RemoveExplosions(expiredExplosions)
 }
 
 func (g *Game) updatePowerUps(now time.Time) {

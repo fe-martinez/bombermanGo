@@ -37,7 +37,6 @@ func NewServer(address string, maxPlayers int) (*Server, error) {
 func (s *Server) Start() {
 	log.Println("Starting game server at", SERVER_ADDRESS)
 	go s.handleConnections()
-	go s.broadcastLoop()
 	select {}
 }
 
@@ -79,26 +78,17 @@ func (s *Server) handleMessage(client *Client) error {
 		return err
 	}
 
-	if client.state == MainMenu {
-		s.handleMainMenuAction(message, client)
-	} else {
-		lobby := s.lobbies[client.lobbyID]
-		if message.Action == utils.ActionLeave {
-			s.disconnectClient(client.clientID)
-			return nil
-		} else if message.Action == utils.ActionStartGame && client.clientID == lobby.ownerID {
-			lobby.startGame()
-		}
-
-		if lobby.game.State == "started" {
-			handlePlayerAction(message, lobby.game)
-		}
+	switch client.state {
+	case MainMenu:
+		return s.handleMainMenuAction(message, client)
+	case WaitingMenu, Game, WaitingInGame:
+		return s.handleGameAction(message, client)
+	default:
+		return fmt.Errorf("unknown client state: %v", client.state)
 	}
-
-	return nil
 }
 
-func (s *Server) handleMainMenuAction(msg utils.ClientMessage, client *Client) {
+func (s *Server) handleMainMenuAction(msg utils.ClientMessage, client *Client) error {
 	switch msg.Action {
 	case utils.ActionCreateGame:
 		s.createLobby(client)
@@ -108,6 +98,32 @@ func (s *Server) handleMainMenuAction(msg utils.ClientMessage, client *Client) {
 	default:
 		fmt.Println("This action unknown")
 	}
+	return nil
+}
+
+func (s *Server) handleGameAction(message utils.ClientMessage, client *Client) error {
+	if message.Action == utils.ActionLeave {
+		s.disconnectClient(client.clientID)
+		return nil
+	}
+	lobby, exists := s.lobbies[client.lobbyID]
+
+	if !exists {
+		return fmt.Errorf("lobby not found: %s", client.lobbyID)
+	}
+
+	if message.Action == utils.ActionStartGame && client.clientID == lobby.ownerID {
+		lobby.startGame()
+		return nil
+	}
+
+	select {
+	case lobby.updates <- message:
+	default:
+		log.Printf("Input channel full for lobby %s", client.lobbyID)
+	}
+
+	return nil
 }
 
 func (s *Server) createLobby(client *Client) {
@@ -149,7 +165,9 @@ func (s *Server) disconnectClient(clientID string) {
 		lobby.RemoveClient(client)
 		if len(lobby.clients) == 0 {
 			lobby.game.Stop()
+			close(lobby.updates)
 			delete(s.lobbies, client.lobbyID)
+			log.Println("Lobby", client.lobbyID, "deleted succesfully")
 		}
 	}
 	delete(s.clients, clientID)
@@ -161,22 +179,6 @@ func (s *Server) createUniqueLobbyID() string {
 		randomValue = strconv.Itoa(rand.Intn(900) + 100)
 	}
 	return randomValue
-}
-
-func (s *Server) broadcastLoop() {
-	ticker := time.NewTicker(GAME_SPEED)
-	defer ticker.Stop()
-
-	for {
-		<-ticker.C
-		s.broadcastGameState()
-	}
-}
-
-func (s *Server) broadcastGameState() {
-	for _, lobby := range s.lobbies {
-		lobby.BroadcastGameState()
-	}
 }
 
 func listen(serverAddress string) (net.Listener, error) {
