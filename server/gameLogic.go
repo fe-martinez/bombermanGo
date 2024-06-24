@@ -42,6 +42,7 @@ func movePlayer(player *model.Player, directions []string, game *model.Game) {
 			newX := player.Position.X + dir.X*SPEED_INCREMENT
 			newY := player.Position.Y + dir.Y*SPEED_INCREMENT
 			game.MovePlayer(player, newX, newY)
+			player.Direction = directions[0]
 		} else {
 			player.Speed.X, player.Speed.Y = BASE_SPEED, BASE_SPEED
 		}

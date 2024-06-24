@@ -2,14 +2,14 @@ package model
 
 import (
 	"log"
-
 	petname "github.com/dustinkirkland/golang-petname"
+	
 )
 
 const PLAYER_LIVES = 2
 const PLAYER_BOMBS = 1
 const BOMB_REACH_BASE = 2
-const START_DIRECTION = "up"
+const START_DIRECTION = "down"
 
 type Player struct {
 	Username   string
