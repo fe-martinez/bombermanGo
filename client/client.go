@@ -12,7 +12,6 @@ import (
 	"os"
 	"slices"
 	"strings"
-	"time"
 )
 
 const SERVER_ADDRESS = "localhost:8080"
@@ -113,7 +112,7 @@ func receiveGameFromServer(conn net.Conn) (*model.Game, error) {
 
 func (c *Client) receiveLobbyID() error {
 	dec := gob.NewDecoder(c.connection)
-	c.connection.SetReadDeadline(time.Now().Add(15 * time.Second))
+	//c.connection.SetReadDeadline(time.Now().Add(15 * time.Second))
 
 	for {
 		var msg utils.ServerMessage
@@ -123,10 +122,10 @@ func (c *Client) receiveLobbyID() error {
 				log.Println("No more messages to read")
 				return err
 			}
-			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-				log.Println("Timeout waiting for lobbyID")
-				return err
-			}
+			// if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+			// 	log.Println("Timeout waiting for lobbyID")
+			// 	return err
+			// }
 
 			log.Println("Error decoding lobby id message", err)
 			continue
@@ -166,7 +165,7 @@ func updateGame(conn net.Conn, game *model.Game) {
 
 func receivePlayerID(conn net.Conn) (string, error) {
 	dec := gob.NewDecoder(conn)
-	conn.SetReadDeadline(time.Now().Add(15 * time.Second))
+	//conn.SetReadDeadline(time.Now().Add(15 * time.Second))
 
 	for {
 		var msg utils.ServerMessage
@@ -176,10 +175,10 @@ func receivePlayerID(conn net.Conn) (string, error) {
 			continue
 		}
 
-		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-			log.Println("Timeout waiting for lobbyID")
-			return "", netErr
-		}
+		// if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+		// 	log.Println("Timeout waiting for lobbyID")
+		// 	return "", netErr
+		// }
 
 		if msg.Action == utils.PlayerIDMessage {
 			playerID, ok := msg.Data.(string)

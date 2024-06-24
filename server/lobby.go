@@ -97,8 +97,6 @@ func (l *Lobby) processInput() {
 			}
 			l.game.Update()
 			l.BroadcastGameState()
-		default:
-			continue
 		}
 	}
 }
