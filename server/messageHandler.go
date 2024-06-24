@@ -69,14 +69,24 @@ func sendJoinLobbyFailure(conn net.Conn, lobbyID string) {
 }
 
 func sendLobbyId(conn net.Conn, lobbyID string) {
-	_, err := conn.Write([]byte(lobbyID))
+	var msg utils.ServerMessage
+	msg.Action = utils.LobbyIDMessage
+	msg.Data = lobbyID
+	enc := gob.NewEncoder(conn)
+	err := enc.Encode(msg)
+
 	if err != nil {
 		fmt.Println("Error sending lobby ID to client: ", err)
 	}
 }
 
 func sendPlayerId(conn net.Conn, playerID string) {
-	_, err := conn.Write([]byte(playerID))
+	var msg utils.ServerMessage
+	msg.Action = utils.PlayerIDMessage
+	msg.Data = playerID
+	enc := gob.NewEncoder(conn)
+	err := enc.Encode(msg)
+
 	if err != nil {
 		fmt.Println("Error sending player ID to client: ", err)
 	}

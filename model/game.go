@@ -33,7 +33,7 @@ const (
 )
 
 type Game struct {
-	State            string
+	State            GameState
 	GameId           string
 	Round            int8
 	Players          map[string]*Player
@@ -349,7 +349,7 @@ func (g *Game) passRound() {
 
 func (g *Game) endGame() {
 	g.assignScores()
-	g.State = "finished"
+	g.State = Finished
 }
 
 func (g *Game) endRound() {

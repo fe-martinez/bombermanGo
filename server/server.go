@@ -2,6 +2,7 @@ package server
 
 import (
 	"bombman/utils"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -89,6 +90,10 @@ func (s *Server) handleMessage(client *Client) error {
 }
 
 func (s *Server) handleMainMenuAction(msg utils.ClientMessage, client *Client) error {
+	if client.lobbyID != "" {
+		log.Println("Client is already in another lobby")
+	}
+
 	switch msg.Action {
 	case utils.ActionCreateGame:
 		s.createLobby(client)
@@ -98,6 +103,8 @@ func (s *Server) handleMainMenuAction(msg utils.ClientMessage, client *Client) e
 	default:
 		fmt.Println("This action unknown")
 	}
+
+	log.Println("Client joined lobby", client.lobbyID)
 	return nil
 }
 
@@ -142,6 +149,8 @@ func (s *Server) createLobby(client *Client) {
 	} else {
 		sendLobbyId(client.connection, lobbyID)
 	}
+
+	log.Println("Created lobby", lobbyID, "succesfully")
 }
 
 func (s *Server) joinLobby(lobbyID string, client *Client) {
@@ -178,15 +187,15 @@ func (s *Server) disconnectClient(clientID string) {
 	delete(s.clients, clientID)
 }
 
-func (s *Server) removeClientFromLobby(clientID string) {
+func (s *Server) removeClientFromLobby(clientID string) error {
 	client, exists := s.clients[clientID]
 	if !exists || client == nil {
-		return
+		return errors.New("Client " + clientID + " was not found")
 	}
 
 	lobby, exists := s.lobbies[client.lobbyID]
 	if !exists || lobby == nil {
-		return
+		return errors.New("Lobby " + client.lobbyID + " was not found")
 	}
 
 	lobby.RemoveClient(client)
@@ -195,12 +204,14 @@ func (s *Server) removeClientFromLobby(clientID string) {
 		lobby.Close()
 		delete(s.lobbies, client.lobbyID)
 		log.Println("Lobby", client.lobbyID, "deleted succesfully")
+		log.Println("Remaining lobbies:", len(s.lobbies))
 	}
 
 	client.state = MainMenu
 	client.lobbyID = ""
 
 	log.Println("Client", clientID, "returned to main menu")
+	return nil
 }
 
 func (s *Server) createUniqueLobbyID() string {

@@ -4,11 +4,15 @@ import (
 	"bombman/model"
 	"bombman/utils"
 	"bombman/view"
+	"encoding/gob"
 	"fmt"
+	"io"
+	"log"
 	"net"
 	"os"
 	"slices"
 	"strings"
+	"time"
 )
 
 const SERVER_ADDRESS = "localhost:8080"
@@ -54,11 +58,17 @@ func (c *Client) sendLeaveMessage() {
 }
 
 func (c *Client) sendCreateGameMessage() {
-	SendCreateGameMessage(c.connection, c.playerID)
+	err := SendCreateGameMessage(c.connection, c.playerID)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (c *Client) sendJoinGameMessage(lobbyID string) {
-	SendJoinGameMessage(c.connection, c.playerID, lobbyID)
+	err := SendJoinGameMessage(c.connection, c.playerID, lobbyID)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (c *Client) sendStartGameMessage() {
@@ -101,19 +111,50 @@ func receiveGameFromServer(conn net.Conn) (*model.Game, error) {
 	return decodedGame, nil
 }
 
-func (c *Client) receiveLobbyID() {
-	buffer := make([]byte, 37)
-	n, err := c.connection.Read(buffer)
-	if err != nil {
-		fmt.Println(err)
+func (c *Client) receiveLobbyID() error {
+	dec := gob.NewDecoder(c.connection)
+	c.connection.SetReadDeadline(time.Now().Add(15 * time.Second))
+
+	for {
+		var msg utils.ServerMessage
+		err := dec.Decode(&msg)
+		if err != nil {
+			if err == io.EOF {
+				log.Println("No more messages to read")
+				return err
+			}
+			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+				log.Println("Timeout waiting for lobbyID")
+				return err
+			}
+
+			log.Println("Error decoding lobby id message", err)
+			continue
+		}
+
+		if msg.Action == utils.LobbyIDMessage {
+			lobbyID, ok := msg.Data.(string)
+			if !ok {
+				log.Println("Lobby ID message is not a string")
+				continue
+			}
+			c.lobbyId = strings.TrimSpace(lobbyID)
+			log.Println("Received lobby ID:", c.lobbyId)
+			return err
+		}
+
+		fmt.Println("Received non-lobby ID message, action:", msg.Action)
 	}
-	id := string(buffer[:n])
-	cleanId := strings.TrimSpace(id)
-	c.lobbyId = cleanId
 }
 
 func updateGame(conn net.Conn, game *model.Game) {
+	log.Println("Starting to receive game updates")
 	for {
+		if game.State == model.Finished {
+			log.Println("Ending game updates")
+			return
+		}
+
 		updatedGame, err := receiveGameFromServer(conn)
 		if err != nil {
 			fmt.Println("Error al recibir el juego actualizado:", err)
@@ -124,11 +165,33 @@ func updateGame(conn net.Conn, game *model.Game) {
 }
 
 func receivePlayerID(conn net.Conn) (string, error) {
-	buffer := make([]byte, 37)
-	n, err := conn.Read(buffer)
-	if err != nil {
-		return "", err
+	dec := gob.NewDecoder(conn)
+	conn.SetReadDeadline(time.Now().Add(15 * time.Second))
+
+	for {
+		var msg utils.ServerMessage
+		err := dec.Decode(&msg)
+		if err != nil {
+			log.Println("Error decoding player id message", err)
+			continue
+		}
+
+		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+			log.Println("Timeout waiting for lobbyID")
+			return "", netErr
+		}
+
+		if msg.Action == utils.PlayerIDMessage {
+			playerID, ok := msg.Data.(string)
+			if !ok {
+				log.Println("Player ID message is not a string")
+				continue
+			}
+			playerIDString := strings.TrimSpace(playerID)
+			log.Println("Received lobby ID:", playerIDString)
+			return playerIDString, nil
+		}
+
+		fmt.Println("Received non-lobby ID message, action:", msg.Action)
 	}
-	id := string(buffer[:n])
-	return strings.TrimSpace(id), nil
 }

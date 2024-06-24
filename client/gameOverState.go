@@ -12,9 +12,9 @@ func (g *GameOverState) Handle(c *Client) {
 
 	if handleGameOverInput() == "return" {
 		c.sendMainMenuMessage()
-		c.gameState = &MainMenuState{}
-		c.lobbyId = ""
 		c.game = model.Game{}
+		c.lobbyId = ""
+		c.gameState = &MainMenuState{}
 	}
 
 }

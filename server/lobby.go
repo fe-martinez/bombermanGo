@@ -29,7 +29,7 @@ func NewLobby(ownerID string, id string) *Lobby {
 		ownerID: ownerID,
 		id:      id,
 		clients: make(map[string]*Client),
-		updates: make(chan utils.ClientMessage),
+		updates: make(chan utils.ClientMessage, 1000),
 		done:    make(chan struct{}),
 		game:    model.NewGame(id, gameMap),
 	}
@@ -65,9 +65,9 @@ func (l *Lobby) RemoveClient(client *Client) {
 }
 
 func (l *Lobby) Close() {
-	l.game = &model.Game{}
+	l.game = nil
 	close(l.done)
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(1 * time.Second)
 	close(l.updates)
 }
 
@@ -92,8 +92,13 @@ func (l *Lobby) processInput() {
 		case input := <-l.updates:
 			l.handlePlayerInput(input)
 		case <-ticker.C:
+			if l.game.State == model.Finished {
+				return
+			}
 			l.game.Update()
 			l.BroadcastGameState()
+		default:
+			continue
 		}
 	}
 }
