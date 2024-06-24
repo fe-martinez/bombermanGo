@@ -8,6 +8,9 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+const RETURN_MAIN_MENU_BUTTON_X = (WIDTH - BUTTON_WIDTH) / 2
+const RETURN_MAIN_MENU_BUTTON_Y = HEIGHT - 100
+
 func DrawGameOverScreen(game model.Game) {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.Beige)
@@ -33,5 +36,9 @@ func DrawGameOverScreen(game model.Game) {
 		rl.DrawText(playerName, WIDTH/2-rl.MeasureText(playerName, 30)/2, HEIGHT/2-15+int32(index)*30, 30, color)
 		index++
 	}
+
+	rl.DrawRectangle(RETURN_MAIN_MENU_BUTTON_X, RETURN_MAIN_MENU_BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT, rl.DarkPurple)
+	rl.DrawText("Return to main menu", RETURN_MAIN_MENU_BUTTON_X+10, RETURN_MAIN_MENU_BUTTON_Y+15, 20, rl.White)
+
 	rl.EndDrawing()
 }

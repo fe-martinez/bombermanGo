@@ -112,6 +112,11 @@ func (s *Server) handleGameAction(message utils.ClientMessage, client *Client) e
 		return fmt.Errorf("lobby not found: %s", client.lobbyID)
 	}
 
+	if message.Action == utils.ActionMainMenu {
+		s.removeClientFromLobby(client.clientID)
+		return nil
+	}
+
 	if message.Action == utils.ActionStartGame && client.clientID == lobby.ownerID {
 		lobby.startGame()
 		return nil
@@ -165,12 +170,37 @@ func (s *Server) disconnectClient(clientID string) {
 		lobby.RemoveClient(client)
 		if len(lobby.clients) == 0 {
 			lobby.game.Stop()
-			close(lobby.updates)
+			lobby.Close()
 			delete(s.lobbies, client.lobbyID)
 			log.Println("Lobby", client.lobbyID, "deleted succesfully")
 		}
 	}
 	delete(s.clients, clientID)
+}
+
+func (s *Server) removeClientFromLobby(clientID string) {
+	client, exists := s.clients[clientID]
+	if !exists || client == nil {
+		return
+	}
+
+	lobby, exists := s.lobbies[client.lobbyID]
+	if !exists || lobby == nil {
+		return
+	}
+
+	lobby.RemoveClient(client)
+	if len(lobby.clients) == 0 {
+		lobby.game.Stop()
+		lobby.Close()
+		delete(s.lobbies, client.lobbyID)
+		log.Println("Lobby", client.lobbyID, "deleted succesfully")
+	}
+
+	client.state = MainMenu
+	client.lobbyID = ""
+
+	log.Println("Client", clientID, "returned to main menu")
 }
 
 func (s *Server) createUniqueLobbyID() string {

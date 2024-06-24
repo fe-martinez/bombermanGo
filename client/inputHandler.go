@@ -111,3 +111,16 @@ func handleWaitingMenuInput() string {
 	}
 	return "none"
 }
+
+func isMouseInGameOverReturnButton() bool {
+	return rl.GetMouseX() > view.RETURN_MAIN_MENU_BUTTON_X && rl.GetMouseX() < view.RETURN_MAIN_MENU_BUTTON_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.RETURN_MAIN_MENU_BUTTON_Y && rl.GetMouseY() < view.RETURN_MAIN_MENU_BUTTON_Y+view.BUTTON_HEIGHT
+}
+
+func handleGameOverInput() string {
+	if rl.IsMouseButtonDown(0) {
+		if isMouseInGameOverReturnButton() {
+			return "return"
+		}
+	}
+	return "none"
+}

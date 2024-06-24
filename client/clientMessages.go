@@ -75,3 +75,12 @@ func SendLeaveMessage(conn net.Conn, playerID string) error {
 	}
 	return SendMessage(msg, conn)
 }
+
+func SendMainMenuMessage(conn net.Conn, playerID string) error {
+	msg := utils.ClientMessage{
+		Action: utils.ActionMainMenu,
+		ID:     playerID,
+	}
+
+	return SendMessage(msg, conn)
+}

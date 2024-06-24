@@ -65,6 +65,10 @@ func (c *Client) sendStartGameMessage() {
 	SendStartGameMessage(c.connection, c.playerID)
 }
 
+func (c *Client) sendMainMenuMessage() {
+	SendMainMenuMessage(c.connection, c.playerID)
+}
+
 func (c *Client) Start() {
 	defer c.connection.Close()
 	view.InitWindow()

@@ -18,4 +18,5 @@ const (
 	WaitingMenu   ClientState = "waiting-menu"
 	Game          ClientState = "game"
 	WaitingInGame ClientState = "waiting-in-game"
+	GameOver      ClientState = "game-over"
 )

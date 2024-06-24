@@ -20,6 +20,7 @@ const (
 	ActionJoinGame   MessageAction = 3
 	ActionCreateGame MessageAction = 4
 	ActionStartGame  MessageAction = 5
+	ActionMainMenu   MessageAction = 6
 )
 
 func EncodeClientMessage(msg ClientMessage) ([]byte, error) {
