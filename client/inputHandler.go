@@ -83,11 +83,19 @@ func handleRulesInput() string {
 	return "none"
 }
 
+func isMouseInBackLobbySelectionButton() bool {
+	return rl.GetMouseX() > view.LOBBY_SEL_BACK_BUTTON_X && rl.GetMouseX() < view.LOBBY_SEL_BACK_BUTTON_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.LOBBY_SEL_BACK_BUTTON_Y && rl.GetMouseY() < view.LOBBY_SEL_BACK_BUTTON_Y+view.BUTTON_HEIGHT
+}
+
 func handleLobbySelectionInput() (string, string) {
 	key := rl.GetCharPressed()
 
-	if key != 0 {
+	if key != 0 && len(userInput) < 6 {
 		userInput += string(key)
+	}
+
+	if rl.IsMouseButtonDown(0) && isMouseInBackLobbySelectionButton() {
+		return "back", ""
 	}
 
 	if rl.IsKeyDown(rl.KeyEnter) {

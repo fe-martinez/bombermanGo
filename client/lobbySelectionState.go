@@ -12,6 +12,10 @@ type LobbySelectionState struct{}
 
 func (l *LobbySelectionState) Handle(c *Client) {
 	userInput, lobbyID := handleLobbySelectionInput()
+	if userInput == "back" {
+		c.gameState = &MainMenuState{}
+	}
+
 	if userInput != "none" && len(lobbyID) == 3 {
 		c.sendJoinGameMessage(lobbyID)
 		ack, err := readLobbyAcknowledgeMessage(c.connection)
