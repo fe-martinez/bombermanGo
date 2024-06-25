@@ -25,8 +25,8 @@ type PowerUp struct {
 
 func NewPowerUp(position Position, name PowerUpType) PowerUp {
 	return PowerUp{
-		Position:   position,
-		Name:       name,
+		Position: position,
+		Name:     name,
 		Duration: POWERUP_EXPIRE_TIME,
 	}
 }

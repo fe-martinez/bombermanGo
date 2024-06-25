@@ -475,6 +475,12 @@ func (g *Game) handleExplosion(explosion *Explosion) {
 			}
 		}
 	}
+
+	for _, bomb := range g.GameMap.Bombs {
+		if explosion.IsTileInRange(bomb.Position) {
+			g.ExplodeBomb(&bomb)
+		}
+	}
 }
 
 func (g *Game) verifyExplosions() {
