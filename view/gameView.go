@@ -42,7 +42,6 @@ var (
 	powerUpAlcanceModel        rl.Texture2D
 	powerUpMasBombasModel      rl.Texture2D
 	powerUpInvencibilidadModel rl.Texture2D
-	counter                    = 0
 )
 
 func getColorFromString(colorName string) rl.Color {
@@ -87,6 +86,21 @@ func getSourceRect(direction string, game model.Game) rl.Rectangle {
 	return sourceRect
 }
 
+func getPlayerModel(playerColor string) rl.Texture2D {
+	switch playerColor {
+	case "Orange":
+		return player1Model
+	case "Green":
+		return player2Model
+	case "Violet":
+		return player3Model
+	case "Blue":
+		return player4Model
+	default:
+		return player1Model
+	}
+}
+
 func drawPlayers(game model.Game) {
 	loadPlayerModel()
 	for _, player := range game.Players {
@@ -95,26 +109,7 @@ func drawPlayers(game model.Game) {
 		}
 
 		sourceRect := getSourceRect(player.Direction, game)
-		/*sourceRect := rl.NewRectangle(
-					//float32(65*counter),
-					//float32(68),
-					float32(game.CurrentFrame * 65),
-		        	float32(game.CurrentFrame * 68),
-		        	float32(65),
-		        	float32(68),                              // Height of the frame
-				)*/
-		player_color := game.GetPlayerColor(player.ID)
-		var playerModel rl.Texture2D
-		switch player_color {
-		case "Orange":
-			playerModel = player1Model
-		case "Green":
-			playerModel = player2Model
-		case "Violet":
-			playerModel = player3Model
-		case "Blue":
-			playerModel = player4Model
-		}
+		playerModel := getPlayerModel(game.GetPlayerColor(player.ID))
 		position := rl.NewVector2(player.Position.X*TILE_SIZE, player.Position.Y*TILE_SIZE)
 		rl.DrawTextureRec(playerModel, sourceRect, position, rl.White)
 	}
@@ -126,18 +121,22 @@ func drawBombs(game model.Game) {
 	}
 }
 
+func getPowerUpModel(powerUp model.PowerUpType) *rl.Texture2D {
+	switch powerUp {
+	case model.AlcanceMejorado:
+		return &powerUpAlcanceModel
+	case model.MasBombasEnSimultaneo:
+		return &powerUpMasBombasModel
+	case model.Invencibilidad:
+		return &powerUpInvencibilidadModel
+	}
+	return nil
+}
+
 func drawPowerUps(game model.Game) {
 	for _, powerUp := range game.GameMap.PowerUps {
-		var powerUpModel rl.Texture2D
-		switch powerUp.Name {
-		case model.AlcanceMejorado:
-			powerUpModel = powerUpAlcanceModel
-		case model.MasBombasEnSimultaneo:
-			powerUpModel = powerUpMasBombasModel
-		case model.Invencibilidad:
-			powerUpModel = powerUpInvencibilidadModel
-		}
-		rl.DrawTexture(powerUpModel, int32(powerUp.Position.X*TILE_SIZE), int32(powerUp.Position.Y*TILE_SIZE), rl.White)
+		var powerUpModel = getPowerUpModel(powerUp.Name)
+		rl.DrawTexture(*powerUpModel, int32(powerUp.Position.X*TILE_SIZE), int32(powerUp.Position.Y*TILE_SIZE), rl.White)
 	}
 }
 

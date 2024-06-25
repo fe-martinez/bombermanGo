@@ -9,7 +9,7 @@ import (
 )
 
 const MAX_PLAYERS = 4
-const MAX_ROUNDS = 2
+const MAX_ROUNDS = 5
 const ROUND_DURATION = 2 //minutes
 const TICKER_REFRESH = 1 //second
 const MAX_POWER_UPS = 4
