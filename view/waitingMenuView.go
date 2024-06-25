@@ -7,6 +7,8 @@ const (
 	START_TITLE_POS_Y  = 200
 	START_GAME_POS_X   = 370
 	START_GAME_POS_Y   = 350
+	BACK_TO_MENU_POS_X = 370
+	BACK_TO_MENU_POS_Y = 450
 	PLAYER_START_POS_X = 100
 	PLAYER_START_POS_Y = 150
 	PLAYER_GAP_Y       = 30
@@ -34,5 +36,8 @@ func DrawWaitingMenu(players []string, lobbyId string) {
 	// Draw Start Game button
 	rl.DrawRectangle(START_GAME_POS_X, START_GAME_POS_Y, BUTTON_WIDTH, BUTTON_HEIGHT, rl.DarkPurple)
 	rl.DrawText("Start Game", START_GAME_POS_X+10, START_GAME_POS_Y+15, 20, rl.White)
+
+	rl.DrawRectangle(BACK_TO_MENU_POS_X, BACK_TO_MENU_POS_Y, BUTTON_WIDTH, BUTTON_HEIGHT, rl.DarkPurple)
+	rl.DrawText("Back to menu", BACK_TO_MENU_POS_X+10, BACK_TO_MENU_POS_Y+15, 20, rl.White)
 	rl.EndDrawing()
 }

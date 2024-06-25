@@ -24,7 +24,6 @@ func (l *LobbySelectionState) Handle(c *Client) {
 			return
 		} else {
 			c.lobbyId = ack.LobbyID
-			go updateGame(c.connection, &c.game)
 			c.gameState = &WaitingMenuState{}
 		}
 	}

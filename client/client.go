@@ -146,26 +146,17 @@ func (c *Client) receiveLobbyID() error {
 	}
 }
 
-func updateGame(conn net.Conn, game *model.Game) {
-	log.Println("Starting to receive game updates")
-	for {
-		if game.State == model.Finished {
-			log.Println("Ending game updates")
-			return
-		}
-
-		updatedGame, err := receiveGameFromServer(conn)
-		if err != nil {
-			fmt.Println("Error al recibir el juego actualizado:", err)
-			return
-		}
-		*game = *updatedGame
+func updateGame(conn net.Conn, game *model.Game) error {
+	updatedGame, err := receiveGameFromServer(conn)
+	if err != nil {
+		log.Println("Error al recibir el juego actualizado:", err)
 	}
+	*game = *updatedGame
+	return nil
 }
 
 func receivePlayerID(conn net.Conn) (string, error) {
 	dec := gob.NewDecoder(conn)
-	//conn.SetReadDeadline(time.Now().Add(15 * time.Second))
 
 	for {
 		var msg utils.ServerMessage
@@ -175,11 +166,6 @@ func receivePlayerID(conn net.Conn) (string, error) {
 			continue
 		}
 
-		// if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-		// 	log.Println("Timeout waiting for lobbyID")
-		// 	return "", netErr
-		// }
-
 		if msg.Action == utils.PlayerIDMessage {
 			playerID, ok := msg.Data.(string)
 			if !ok {
@@ -187,10 +173,10 @@ func receivePlayerID(conn net.Conn) (string, error) {
 				continue
 			}
 			playerIDString := strings.TrimSpace(playerID)
-			log.Println("Received lobby ID:", playerIDString)
+			log.Println("Received playerID:", playerIDString)
 			return playerIDString, nil
 		}
 
-		fmt.Println("Received non-lobby ID message, action:", msg.Action)
+		fmt.Println("Received non-playerID message, action:", msg.Action)
 	}
 }

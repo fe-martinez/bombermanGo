@@ -7,6 +7,7 @@ import (
 type PlayingState struct{}
 
 func (p *PlayingState) Handle(c *Client) {
+	updateGame(c.connection, &c.game)
 	view.DrawGame(c.game)
 	input := handleInput()
 

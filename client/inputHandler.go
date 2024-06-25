@@ -103,10 +103,17 @@ func isMouseInStartGameButton() bool {
 	return rl.GetMouseX() > view.START_GAME_POS_X && rl.GetMouseX() < view.START_GAME_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.START_GAME_POS_Y && rl.GetMouseY() < view.START_GAME_POS_Y+view.BUTTON_HEIGHT
 }
 
+func isMouseInLobbyBackToMenuButton() bool {
+	return rl.GetMouseX() > view.BACK_TO_MENU_POS_X && rl.GetMouseX() < view.BACK_TO_MENU_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.BACK_TO_MENU_POS_Y && rl.GetMouseY() < view.BACK_TO_MENU_POS_Y+view.BUTTON_HEIGHT
+}
+
 func handleWaitingMenuInput() string {
 	if rl.IsMouseButtonDown(0) {
 		if isMouseInStartGameButton() {
 			return "start"
+		}
+		if isMouseInLobbyBackToMenuButton() {
+			return "back"
 		}
 	}
 	return "none"
