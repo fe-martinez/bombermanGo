@@ -9,7 +9,7 @@ import (
 )
 
 const MAX_PLAYERS = 4
-const MAX_ROUNDS = 5
+const MAX_ROUNDS = 2
 const ROUND_DURATION = 2 //minutes
 const TICKER_REFRESH = 1 //second
 const MAX_POWER_UPS = 4
@@ -19,7 +19,7 @@ const BOMB_REACH_MODIFED = 3
 const SPEED_INCREMENT = 0.1
 const BASE_SPEED = 0
 
-const FRAME_COUNT  = 3
+const FRAME_COUNT = 3
 
 var colors = NewQueue()
 
@@ -33,7 +33,7 @@ const (
 )
 
 type Game struct {
-	State            string
+	State            GameState
 	GameId           string
 	Round            int8
 	Players          map[string]*Player
@@ -41,9 +41,9 @@ type Game struct {
 	GameMap          *GameMap
 	EliminationOrder []string
 	PlayerScores     map[string]int
-	CurrentFrame  	 int
-	FrameDuration 	 time.Duration
-	LastFrameTime 	 time.Time
+	CurrentFrame     int
+	FrameDuration    time.Duration
+	LastFrameTime    time.Time
 }
 
 func initializeColors() {
@@ -64,9 +64,9 @@ func NewGame(id string, GameMap *GameMap) *Game {
 		GameMap:          GameMap,
 		PlayerScores:     make(map[string]int),
 		EliminationOrder: []string{},
-		CurrentFrame:  	  0,
-		FrameDuration: 	  200 * time.Millisecond,
-		LastFrameTime: 	  time.Now(),
+		CurrentFrame:     0,
+		FrameDuration:    200 * time.Millisecond,
+		LastFrameTime:    time.Now(),
 	}
 }
 
@@ -349,7 +349,7 @@ func (g *Game) passRound() {
 
 func (g *Game) endGame() {
 	g.assignScores()
-	g.State = "finished"
+	g.State = Finished
 }
 
 func (g *Game) endRound() {
@@ -518,13 +518,10 @@ func (g *Game) Update() {
 		g.CurrentFrame = (g.CurrentFrame + 1) % FRAME_COUNT
 		g.LastFrameTime = time.Now()
 	}
-	
+
 	now := time.Now()
-
 	g.verifyExplodingBombs(now)
-
 	g.verifyExplosions()
-
 	g.updatePowerUps(now)
 
 	if len(g.Players) == 1 && g.State != "not-started" {

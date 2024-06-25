@@ -14,6 +14,7 @@ type Lobby struct {
 	id      string
 	clients map[string]*Client
 	updates chan utils.ClientMessage
+	done    chan struct{}
 	game    *model.Game
 }
 
@@ -28,7 +29,8 @@ func NewLobby(ownerID string, id string) *Lobby {
 		ownerID: ownerID,
 		id:      id,
 		clients: make(map[string]*Client),
-		updates: make(chan utils.ClientMessage),
+		updates: make(chan utils.ClientMessage, 1000),
+		done:    make(chan struct{}),
 		game:    model.NewGame(id, gameMap),
 	}
 	go lobby.processInput()
@@ -62,6 +64,13 @@ func (l *Lobby) RemoveClient(client *Client) {
 	}
 }
 
+func (l *Lobby) Close() {
+	l.game = nil
+	close(l.done)
+	time.Sleep(1 * time.Second)
+	close(l.updates)
+}
+
 func (l *Lobby) startGame() {
 	if l.game.State == "not-started" {
 		l.game.Start()
@@ -78,9 +87,14 @@ func (l *Lobby) processInput() {
 
 	for {
 		select {
+		case <-l.done:
+			return
 		case input := <-l.updates:
 			l.handlePlayerInput(input)
 		case <-ticker.C:
+			if l.game.State == model.Finished {
+				return
+			}
 			l.game.Update()
 			l.BroadcastGameState()
 		}

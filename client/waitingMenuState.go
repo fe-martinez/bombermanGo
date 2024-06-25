@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bombman/model"
 	"bombman/view"
 	"slices"
 )
@@ -24,11 +25,20 @@ func showDrawingMenu(c *Client) {
 }
 
 func (w *WaitingMenuState) Handle(c *Client) {
+	updateGame(c.connection, &c.game)
 	showDrawingMenu(c)
 	input := handleWaitingMenuInput()
 
 	if c.gameShouldStart(input) {
 		c.sendStartGameMessage()
+	}
+
+	if input == "back" {
+		c.sendMainMenuMessage()
+		c.game = model.Game{}
+		c.lobbyId = ""
+		c.gameState = &MainMenuState{}
+		return
 	}
 
 	if c.game.State == "started" {

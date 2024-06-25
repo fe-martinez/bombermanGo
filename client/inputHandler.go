@@ -83,11 +83,19 @@ func handleRulesInput() string {
 	return "none"
 }
 
+func isMouseInBackLobbySelectionButton() bool {
+	return rl.GetMouseX() > view.LOBBY_SEL_BACK_BUTTON_X && rl.GetMouseX() < view.LOBBY_SEL_BACK_BUTTON_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.LOBBY_SEL_BACK_BUTTON_Y && rl.GetMouseY() < view.LOBBY_SEL_BACK_BUTTON_Y+view.BUTTON_HEIGHT
+}
+
 func handleLobbySelectionInput() (string, string) {
 	key := rl.GetCharPressed()
 
-	if key != 0 {
+	if key != 0 && len(userInput) < 6 {
 		userInput += string(key)
+	}
+
+	if rl.IsMouseButtonDown(0) && isMouseInBackLobbySelectionButton() {
+		return "back", ""
 	}
 
 	if rl.IsKeyDown(rl.KeyEnter) {
@@ -103,10 +111,30 @@ func isMouseInStartGameButton() bool {
 	return rl.GetMouseX() > view.START_GAME_POS_X && rl.GetMouseX() < view.START_GAME_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.START_GAME_POS_Y && rl.GetMouseY() < view.START_GAME_POS_Y+view.BUTTON_HEIGHT
 }
 
+func isMouseInLobbyBackToMenuButton() bool {
+	return rl.GetMouseX() > view.BACK_TO_MENU_POS_X && rl.GetMouseX() < view.BACK_TO_MENU_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.BACK_TO_MENU_POS_Y && rl.GetMouseY() < view.BACK_TO_MENU_POS_Y+view.BUTTON_HEIGHT
+}
+
 func handleWaitingMenuInput() string {
 	if rl.IsMouseButtonDown(0) {
 		if isMouseInStartGameButton() {
 			return "start"
+		}
+		if isMouseInLobbyBackToMenuButton() {
+			return "back"
+		}
+	}
+	return "none"
+}
+
+func isMouseInGameOverReturnButton() bool {
+	return rl.GetMouseX() > view.RETURN_MAIN_MENU_BUTTON_X && rl.GetMouseX() < view.RETURN_MAIN_MENU_BUTTON_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.RETURN_MAIN_MENU_BUTTON_Y && rl.GetMouseY() < view.RETURN_MAIN_MENU_BUTTON_Y+view.BUTTON_HEIGHT
+}
+
+func handleGameOverInput() string {
+	if rl.IsMouseButtonDown(0) {
+		if isMouseInGameOverReturnButton() {
+			return "return"
 		}
 	}
 	return "none"

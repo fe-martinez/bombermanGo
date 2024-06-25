@@ -11,7 +11,6 @@ func (m *MainMenuState) Handle(c *Client) {
 	if input == "create" {
 		c.sendCreateGameMessage()
 		c.receiveLobbyID()
-		go updateGame(c.connection, &c.game)
 		c.gameState = &WaitingMenuState{}
 	} else if input == "join" {
 		c.gameState = &LobbySelectionState{}
