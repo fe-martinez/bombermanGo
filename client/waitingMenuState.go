@@ -38,6 +38,7 @@ func (w *WaitingMenuState) Handle(c *Client) {
 		c.game = model.Game{}
 		c.lobbyId = ""
 		c.gameState = &MainMenuState{}
+		return
 	}
 
 	if c.game.State == "started" {
