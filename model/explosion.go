@@ -1,7 +1,6 @@
 package model
 
 import (
-	"log"
 	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -25,7 +24,6 @@ func NewExplosion(position Position, radius int, game Game) *Explosion {
 func lookForAffectedTiles(game Game, position Position, radius int) []Position {
 	var affectedTiles []Position
 	affectedTiles = append(affectedTiles, position)
-	log.Println("Looking for affected tiles: ", affectedTiles)
 
 	directions := []Position{
 		{X: -1, Y: 0},
@@ -58,10 +56,7 @@ func removeWalls(affectedTiles []Position, game Game) {
 
 func getAffectedTiles(position Position, radius int, game Game) []Position {
 	affectedTiles := lookForAffectedTiles(game, position, radius)
-	log.Println("Affected tiles after look: ", affectedTiles)
-
 	removeWalls(affectedTiles, game)
-
 	return affectedTiles
 }
 
