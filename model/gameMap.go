@@ -136,12 +136,18 @@ func (m *GameMap) PlaceBomb(bomb *Bomb) {
 }
 
 func (m *GameMap) RemoveBomb(explodedBomb *Bomb) {
+	if explodedBomb == nil || m.Bombs == nil {
+		return
+	}
+
 	for i, bomb := range m.Bombs {
 		if explodedBomb.Position == bomb.Position {
 			if len(m.Bombs) == 1 {
 				m.Bombs = []Bomb{}
+				return
 			} else {
 				m.Bombs = append(m.Bombs[:i], m.Bombs[i+1:]...)
+				return
 			}
 		}
 	}

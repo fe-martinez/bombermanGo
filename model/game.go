@@ -9,7 +9,7 @@ import (
 )
 
 const MAX_PLAYERS = 4
-const MAX_ROUNDS = 2
+const MAX_ROUNDS = 5
 const ROUND_DURATION = 2 //minutes
 const TICKER_REFRESH = 1 //second
 const MAX_POWER_UPS = 4
@@ -133,7 +133,7 @@ func (g *Game) collidesWithPlayers(position Position) bool {
 }
 
 func (g *Game) collidesWithPowerUp(position Position) bool {
-	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+	pos := rl.NewRectangle(position.X*65+5, position.Y*65+5, 65, 65)
 
 	for _, powerUp := range g.GameMap.PowerUps {
 		powerUpRect := rl.NewRectangle(powerUp.Position.X*65, powerUp.Position.Y*65, 55, 55)
@@ -170,10 +170,10 @@ func (g *Game) GenerateValidPosition(rowSize int, columnSize int) *Position {
 }
 
 func (g *Game) IsPowerUpPosition(position Position) *Position {
-	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
+	pos := rl.NewRectangle(position.X*65+5, position.Y*65+5, 55, 55)
 
 	for _, powerUp := range g.GameMap.PowerUps {
-		powerUpRect := rl.NewRectangle(powerUp.Position.X*65, powerUp.Position.Y*65, 15, 15)
+		powerUpRect := rl.NewRectangle(powerUp.Position.X*65, powerUp.Position.Y*65, 65, 65)
 		if rl.CheckCollisionRecs(pos, powerUpRect) {
 			return &Position{powerUp.Position.X, powerUp.Position.Y}
 		}
