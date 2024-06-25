@@ -3,6 +3,8 @@ package model
 import (
 	"log"
 	"time"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type Explosion struct {
@@ -56,7 +58,6 @@ func removeWalls(affectedTiles []Position, game Game) {
 
 func getAffectedTiles(position Position, radius int, game Game) []Position {
 	affectedTiles := lookForAffectedTiles(game, position, radius)
-
 	log.Println("Affected tiles after look: ", affectedTiles)
 
 	removeWalls(affectedTiles, game)
@@ -69,8 +70,10 @@ func (e *Explosion) IsExpired() bool {
 }
 
 func (e *Explosion) IsTileInRange(position Position) bool {
+	playerPos := rl.NewRectangle(position.X*65+5, position.Y*65+5, 50, 50)
 	for _, tile := range e.AffectedTiles {
-		if int(position.X) == int(tile.X) && int(position.Y) == int(tile.Y) {
+		explosionRect := rl.NewRectangle(tile.X*65, tile.Y*65, 65, 65)
+		if rl.CheckCollisionRecs(playerPos, explosionRect) {
 			return true
 		}
 	}
