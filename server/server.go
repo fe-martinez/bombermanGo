@@ -37,8 +37,7 @@ func NewServer(address string, maxPlayers int) (*Server, error) {
 
 func (s *Server) Start() {
 	log.Println("Starting game server at", SERVER_ADDRESS)
-	go s.handleConnections()
-	select {}
+	s.handleConnections()
 }
 
 func (s *Server) handleConnections() {
