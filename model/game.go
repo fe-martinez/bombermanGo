@@ -70,49 +70,34 @@ func NewGame(id string, GameMap *GameMap) *Game {
 	}
 }
 
-func checkCollision(a, b Positionable) bool {
+func checkCollision[T Positionable, A Positionable](a T, b A) bool {
 	return rl.CheckCollisionRecs(a.GetRect(), b.GetRect())
 }
 
-func (g *Game) collidesWithWalls(obj Positionable) bool {
-	for _, wall := range g.GameMap.Walls {
-		if checkCollision(wall, obj) {
+func collidesWithAny[T Positionable, A Positionable](obj T, array []A) bool {
+	for _, actual := range array {
+		if checkCollision(actual, obj) {
 			return true
 		}
 	}
 	return false
 }
 
-func (g *Game) collidesWithPlayers(obj Positionable) bool {
+func (g *Game) IsValidPosition(position Position) bool {
+	obj := GameObject{Position: position, Size: 65}
+	collidesWithWalls := collidesWithAny(obj, g.GameMap.Walls)
+	collidesWithBombs := collidesWithAny(obj, g.GameMap.Bombs)
+
+	players := make([]Positionable, 0, len(g.Players))
 	for _, player := range g.Players {
-		if checkCollision(player, obj) {
-			return true
-		}
+		players = append(players, player)
 	}
-	return false
-}
 
-func (g *Game) collidesWithPowerUp(obj Positionable) bool {
-	for _, powerUp := range g.GameMap.PowerUps {
-		if checkCollision(powerUp, obj) {
-			return true
-		}
-	}
-	return false
-}
+	collidesWithPlayers := collidesWithAny(obj, players)
+	collidesWithPowerUp := collidesWithAny(obj, g.GameMap.PowerUps)
+	outOfBounds := g.isOutOfBounds(position)
 
-func (g *Game) collidesWithBomb(obj Positionable) bool {
-	for _, bomb := range g.GameMap.Bombs {
-		if checkCollision(bomb, obj) {
-			return true
-		}
-	}
-	return false
-}
-
-func (g *Game) IsValidPosition(ValidPosition Position) bool {
-	object := GameObject{Position: ValidPosition, Size: 65}
-	return !(g.collidesWithWalls(object) || g.collidesWithPlayers(object) || g.collidesWithPowerUp(object) || g.collidesWithBomb(object) || g.isOutOfBounds(ValidPosition))
+	return !(collidesWithWalls || collidesWithBombs || collidesWithPlayers || collidesWithPowerUp || outOfBounds)
 }
 
 func (g *Game) isOutOfBounds(position Position) bool {
@@ -139,7 +124,7 @@ func (g *Game) handleOutOfBounds(position Position) Position {
 
 func (g *Game) CanMove(player *Player, newX float32, newY float32) bool {
 	newPlayerPos := Player{Position: &Position{newX, newY}}
-	return !g.collidesWithWalls(newPlayerPos)
+	return !collidesWithAny(newPlayerPos, g.GameMap.Walls)
 }
 
 func (g *Game) MovePlayer(player *Player, newX float32, newY float32) {
