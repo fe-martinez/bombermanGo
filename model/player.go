@@ -2,8 +2,9 @@ package model
 
 import (
 	"log"
+
 	petname "github.com/dustinkirkland/golang-petname"
-	
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 const PLAYER_LIVES = 2
@@ -72,4 +73,16 @@ func (p *Player) IsInvencible() bool {
 func (p *Player) LoseHealth() int8 {
 	p.Lives--
 	return p.Lives
+}
+
+func (p Player) GetPosition() Position {
+	return *p.Position
+}
+
+func (p Player) GetSize() float32 {
+	return 55
+}
+
+func (p Player) GetRect() rl.Rectangle {
+	return rl.NewRectangle(p.Position.X*65+5, p.Position.Y*65+5, 55, 55)
 }

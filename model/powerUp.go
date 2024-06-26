@@ -2,6 +2,8 @@ package model
 
 import (
 	"time"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 const POWERUP_EXPIRE_TIME = 10 * time.Second //segundos
@@ -34,4 +36,16 @@ func NewPowerUp(position Position, name PowerUpType) PowerUp {
 func (p *PowerUp) SetPowerUpStartTime() {
 	p.StartTime = time.Now()
 	p.ExpireTime = p.StartTime.Add(p.Duration)
+}
+
+func (p PowerUp) GetPosition() Position {
+	return p.Position
+}
+
+func (p PowerUp) GetSize() float32 {
+	return 65
+}
+
+func (p PowerUp) GetRect() rl.Rectangle {
+	return rl.NewRectangle(p.Position.X*65, p.Position.Y*65, 65, 65)
 }

@@ -1,6 +1,10 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
 
 const EXPLODE_TIME = 3
 
@@ -24,4 +28,16 @@ func NewBomb(x, y float32, alcance int, owner Player) *Bomb {
 		ExplodeTime: EXPLODE_TIME * time.Second,
 		Owner:       &owner,
 	}
+}
+
+func (b Bomb) GetPosition() Position {
+	return b.Position
+}
+
+func (b Bomb) GetSize() float32 {
+	return 65
+}
+
+func (b Bomb) GetRect() rl.Rectangle {
+	return rl.NewRectangle(b.Position.X*65, b.Position.Y*65, 65, 65)
 }

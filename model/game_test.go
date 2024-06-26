@@ -89,10 +89,10 @@ func TestCollidesWithWalls(t *testing.T) {
 	}
 	game := NewGame("1", gameMap)
 	game.GameMap.Walls = append(game.GameMap.Walls, Wall{&Position{1, 1}, false})
-	if !game.collidesWithWalls(Position{1, 1}) {
+	if !game.collidesWithWalls(GameObject{Position: Position{1, 1}, Size: 55}) {
 		t.Error("Player should collide with wall")
 	}
-	if game.collidesWithWalls(Position{2, 2}) {
+	if game.collidesWithWalls(GameObject{Position: Position{2, 2}, Size: 55}) {
 		t.Error("Player should not collide with wall")
 	}
 }
@@ -294,5 +294,3 @@ func TestApplyPowerUpBenefit_MasBombasEnSimultaneo(t *testing.T) {
 // 	game.ApplyPowerUpBenefit(AlcanceMejorado, "106835")
 
 // }
-
-

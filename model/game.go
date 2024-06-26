@@ -70,12 +70,13 @@ func NewGame(id string, GameMap *GameMap) *Game {
 	}
 }
 
-func (g *Game) collidesWithWalls(position Position) bool {
-	pos := rl.NewRectangle(position.X*65+5, position.Y*65+5, 55, 55)
+func checkCollision(a, b Positionable) bool {
+	return rl.CheckCollisionRecs(a.GetRect(), b.GetRect())
+}
 
+func (g *Game) collidesWithWalls(obj Positionable) bool {
 	for _, wall := range g.GameMap.Walls {
-		wallRect := rl.NewRectangle(wall.Position.X*65, wall.Position.Y*65, 65, 65)
-		if rl.CheckCollisionRecs(pos, wallRect) {
+		if checkCollision(wall, obj) {
 			return true
 		}
 	}
@@ -105,7 +106,8 @@ func (g *Game) handleOutOfBounds(position Position) Position {
 }
 
 func (g *Game) CanMove(player *Player, newX float32, newY float32) bool {
-	return !g.collidesWithWalls(Position{newX, newY})
+	newPlayerPos := Player{Position: &Position{newX, newY}}
+	return !g.collidesWithWalls(newPlayerPos)
 }
 
 func (g *Game) MovePlayer(player *Player, newX float32, newY float32) {
@@ -120,37 +122,27 @@ func (g *Game) MovePlayer(player *Player, newX float32, newY float32) {
 	g.GrabPowerUp(player.ID)
 }
 
-func (g *Game) collidesWithPlayers(position Position) bool {
-	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
-
+func (g *Game) collidesWithPlayers(obj Positionable) bool {
 	for _, player := range g.Players {
-		playerRect := rl.NewRectangle(player.Position.X*65, player.Position.Y*65, 55, 55)
-		if rl.CheckCollisionRecs(pos, playerRect) {
+		if checkCollision(player, obj) {
 			return true
 		}
 	}
 	return false
 }
 
-func (g *Game) collidesWithPowerUp(position Position) bool {
-	pos := rl.NewRectangle(position.X*65+5, position.Y*65+5, 65, 65)
-
+func (g *Game) collidesWithPowerUp(obj Positionable) bool {
 	for _, powerUp := range g.GameMap.PowerUps {
-		powerUpRect := rl.NewRectangle(powerUp.Position.X*65, powerUp.Position.Y*65, 55, 55)
-		if rl.CheckCollisionRecs(pos, powerUpRect) {
+		if checkCollision(powerUp, obj) {
 			return true
 		}
-
 	}
 	return false
 }
 
-func (g *Game) collidesWithBomb(position Position) bool {
-	pos := rl.NewRectangle(position.X*65, position.Y*65, 65, 65)
-
+func (g *Game) collidesWithBomb(obj Positionable) bool {
 	for _, bomb := range g.GameMap.Bombs {
-		bombRect := rl.NewRectangle(bomb.Position.X*65, bomb.Position.Y*65, 55, 55)
-		if rl.CheckCollisionRecs(pos, bombRect) {
+		if checkCollision(bomb, obj) {
 			return true
 		}
 	}
@@ -158,7 +150,8 @@ func (g *Game) collidesWithBomb(position Position) bool {
 }
 
 func (g *Game) IsValidPosition(ValidPosition Position) bool {
-	return !(g.collidesWithWalls(ValidPosition) || g.collidesWithPlayers(ValidPosition) || g.collidesWithPowerUp(ValidPosition) || g.collidesWithBomb(ValidPosition) || g.isOutOfBounds(ValidPosition))
+	object := GameObject{Position: ValidPosition, Size: 65}
+	return !(g.collidesWithWalls(object) || g.collidesWithPlayers(object) || g.collidesWithPowerUp(object) || g.collidesWithBomb(object) || g.isOutOfBounds(ValidPosition))
 }
 
 func (g *Game) GenerateValidPosition(rowSize int, columnSize int) *Position {
@@ -169,26 +162,13 @@ func (g *Game) GenerateValidPosition(rowSize int, columnSize int) *Position {
 	return ValidPosition
 }
 
-func (g *Game) IsPowerUpPosition(position Position) *Position {
-	pos := rl.NewRectangle(position.X*65+5, position.Y*65+5, 55, 55)
-
+func (g *Game) IsPowerUpPosition(obj Positionable) *Position {
 	for _, powerUp := range g.GameMap.PowerUps {
-		powerUpRect := rl.NewRectangle(powerUp.Position.X*65, powerUp.Position.Y*65, 65, 65)
-		if rl.CheckCollisionRecs(pos, powerUpRect) {
+		if checkCollision(powerUp, obj) {
 			return &Position{powerUp.Position.X, powerUp.Position.Y}
 		}
-
 	}
 	return nil
-}
-
-func (g *Game) IsBombPosition(position Position) bool {
-	for _, bomb := range g.GameMap.Bombs {
-		if bomb.Position == position {
-			return true
-		}
-	}
-	return false
 }
 
 func (g *Game) PutBomb(player *Player) {
@@ -248,7 +228,7 @@ func (g *Game) TransferPowerUpToPlayer(player *Player, powerUpPosition Position)
 
 func (g *Game) GrabPowerUp(playerId string) {
 	player := g.Players[playerId]
-	powerUpPosition := g.IsPowerUpPosition(*player.Position)
+	powerUpPosition := g.IsPowerUpPosition(player)
 	if powerUpPosition != nil {
 		g.TransferPowerUpToPlayer(player, *powerUpPosition)
 	}
