@@ -75,6 +75,57 @@ func (p *Player) LoseHealth() int8 {
 	return p.Lives
 }
 
+func (p *Player) GetFirstPowerUp() *PowerUp {
+	if len(p.PowerUps) > 0 {
+		return &p.PowerUps[0]
+	}
+	return nil
+}
+
+func (p *Player) AddBomb() bool {
+	firstPowerUp := p.GetFirstPowerUp()
+	if firstPowerUp != nil && firstPowerUp.Name == MasBombasEnSimultaneo {
+		log.Println("First PowerUp:", firstPowerUp.Name)
+		if p.Bombs <= 4 {
+			p.Bombs++
+		}
+	} else if p.Bombs == 0 {
+		log.Println("No PowerUps available")
+		p.Bombs++
+	}
+	return true
+}
+
+func (p *Player) ApplyPowerUpBenefit(powerUp PowerUpType) {
+	switch powerUp {
+	case Invencibilidad:
+		log.Println("Invencibilidad")
+		p.Invencible = true
+	case MasBombasEnSimultaneo:
+		log.Println("Mas bombas en simultaneo")
+		p.Bombs = 5
+	case AlcanceMejorado:
+		log.Println("Alcance mejorado")
+		p.BombReach = BOMB_REACH_MODIFED
+	default:
+	}
+}
+
+func (p *Player) RemovePowerUpBenefit(powerUp PowerUpType) {
+	switch powerUp {
+	case Invencibilidad:
+		log.Println("Removiendo invencibilidad")
+		p.Invencible = false
+	case MasBombasEnSimultaneo:
+		log.Println("Removiendo mas bombas en simultaneo")
+		p.Bombs = 1
+	case AlcanceMejorado:
+		log.Println("Removiendo alcance mejorado")
+		p.BombReach = BOMB_REACH_BASE
+	default:
+	}
+}
+
 func (p Player) GetPosition() Position {
 	return *p.Position
 }

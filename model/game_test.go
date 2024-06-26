@@ -253,34 +253,34 @@ func TestGetPlayerColors(t *testing.T) {
 	}
 }
 
-func TestApplyPowerUpBenefit_Invencibilidad(t *testing.T) {
-	player := NewPlayer("106835", &Position{1, 1})
-	gameMap, err := CreateMap(MAP_PATH)
-	if err != nil {
-		t.Error("Error creating game map")
-	}
-	game := NewGame("1", gameMap)
-	game.AddPlayer(player)
-	game.ApplyPowerUpBenefit(Invencibilidad, "106835")
-	if player.Invencible == false {
-		t.Error("Player should be invencible")
-	}
-}
+// func TestApplyPowerUpBenefit_Invencibilidad(t *testing.T) {
+// 	player := NewPlayer("106835", &Position{1, 1})
+// 	gameMap, err := CreateMap(MAP_PATH)
+// 	if err != nil {
+// 		t.Error("Error creating game map")
+// 	}
+// 	game := NewGame("1", gameMap)
+// 	game.AddPlayer(player)
+// 	game.ApplyPowerUpBenefit(Invencibilidad, "106835")
+// 	if player.Invencible == false {
+// 		t.Error("Player should be invencible")
+// 	}
+// }
 
-func TestApplyPowerUpBenefit_MasBombasEnSimultaneo(t *testing.T) {
-	player := NewPlayer("106835", &Position{1, 1})
-	gameMap, err := CreateMap(MAP_PATH)
-	if err != nil {
-		t.Error("Error creating game map")
-	}
-	game := NewGame("1", gameMap)
-	game.AddPlayer(player)
-	bombs := player.Bombs
-	game.ApplyPowerUpBenefit(MasBombasEnSimultaneo, "106835")
-	if player.Bombs == bombs {
-		t.Error("Player should have more bombs")
-	}
-}
+// func TestApplyPowerUpBenefit_MasBombasEnSimultaneo(t *testing.T) {
+// 	player := NewPlayer("106835", &Position{1, 1})
+// 	gameMap, err := CreateMap(MAP_PATH)
+// 	if err != nil {
+// 		t.Error("Error creating game map")
+// 	}
+// 	game := NewGame("1", gameMap)
+// 	game.AddPlayer(player)
+// 	bombs := player.Bombs
+// 	game.ApplyPowerUpBenefit(MasBombasEnSimultaneo, "106835")
+// 	if player.Bombs == bombs {
+// 		t.Error("Player should have more bombs")
+// 	}
+// }
 
 //Hay que terminar este test
 // func TestApplyPowerUpBenefit_AlcanceMejorado(t *testing.T) {

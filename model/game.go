@@ -83,6 +83,38 @@ func (g *Game) collidesWithWalls(obj Positionable) bool {
 	return false
 }
 
+func (g *Game) collidesWithPlayers(obj Positionable) bool {
+	for _, player := range g.Players {
+		if checkCollision(player, obj) {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) collidesWithPowerUp(obj Positionable) bool {
+	for _, powerUp := range g.GameMap.PowerUps {
+		if checkCollision(powerUp, obj) {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) collidesWithBomb(obj Positionable) bool {
+	for _, bomb := range g.GameMap.Bombs {
+		if checkCollision(bomb, obj) {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) IsValidPosition(ValidPosition Position) bool {
+	object := GameObject{Position: ValidPosition, Size: 65}
+	return !(g.collidesWithWalls(object) || g.collidesWithPlayers(object) || g.collidesWithPowerUp(object) || g.collidesWithBomb(object) || g.isOutOfBounds(ValidPosition))
+}
+
 func (g *Game) isOutOfBounds(position Position) bool {
 	return position.X < 0 || position.X > float32(g.GameMap.ColumnSize)-1 || position.Y < 0 || position.Y > float32(g.GameMap.RowSize)-1
 }
@@ -122,38 +154,6 @@ func (g *Game) MovePlayer(player *Player, newX float32, newY float32) {
 	g.GrabPowerUp(player.ID)
 }
 
-func (g *Game) collidesWithPlayers(obj Positionable) bool {
-	for _, player := range g.Players {
-		if checkCollision(player, obj) {
-			return true
-		}
-	}
-	return false
-}
-
-func (g *Game) collidesWithPowerUp(obj Positionable) bool {
-	for _, powerUp := range g.GameMap.PowerUps {
-		if checkCollision(powerUp, obj) {
-			return true
-		}
-	}
-	return false
-}
-
-func (g *Game) collidesWithBomb(obj Positionable) bool {
-	for _, bomb := range g.GameMap.Bombs {
-		if checkCollision(bomb, obj) {
-			return true
-		}
-	}
-	return false
-}
-
-func (g *Game) IsValidPosition(ValidPosition Position) bool {
-	object := GameObject{Position: ValidPosition, Size: 65}
-	return !(g.collidesWithWalls(object) || g.collidesWithPlayers(object) || g.collidesWithPowerUp(object) || g.collidesWithBomb(object) || g.isOutOfBounds(ValidPosition))
-}
-
 func (g *Game) GenerateValidPosition(rowSize int, columnSize int) *Position {
 	var ValidPosition = getRandomPosition(rowSize, columnSize)
 	for !g.IsValidPosition(*ValidPosition) {
@@ -181,26 +181,6 @@ func (g *Game) PutBomb(player *Player) {
 	}
 }
 
-func (p *Player) GetFirstPowerUp() *PowerUp {
-	if len(p.PowerUps) > 0 {
-		return &p.PowerUps[0]
-	}
-	return nil
-}
-
-func (g *Game) AddBombToPlayer(player *Player) {
-	firstPowerUp := player.GetFirstPowerUp()
-	if firstPowerUp != nil && firstPowerUp.Name == MasBombasEnSimultaneo {
-		log.Println("First PowerUp:", firstPowerUp.Name)
-		if player.Bombs <= 4 {
-			player.Bombs++
-		}
-	} else if player.Bombs == 0 {
-		log.Println("No PowerUps available")
-		player.Bombs++
-	}
-}
-
 func (g *Game) ExplodeBomb(bomb *Bomb) {
 	g.GameMap.RemoveBomb(bomb)
 	explosion := NewExplosion(bomb.Position, int(bomb.Alcance), *g)
@@ -209,7 +189,7 @@ func (g *Game) ExplodeBomb(bomb *Bomb) {
 	for _, player := range g.Players {
 		if player.ID == bomb.Owner.ID {
 			log.Println("Player has bombs: %i", player.Bombs)
-			g.AddBombToPlayer(player)
+			player.AddBomb()
 		}
 	}
 }
@@ -219,9 +199,8 @@ func (g *Game) TransferPowerUpToPlayer(player *Player, powerUpPosition Position)
 
 	if powerUp != nil {
 		powerUp.SetPowerUpStartTime()
-		log.Println("Power up start time is setted")
 		player.AddPowerUp(*powerUp)
-		g.ApplyPowerUpBenefit(powerUp.Name, player.ID)
+		player.ApplyPowerUpBenefit(powerUp.Name)
 		g.GameMap.RemovePowerUp(powerUpPosition)
 	}
 }
@@ -279,36 +258,6 @@ func (g *Game) Start() {
 	}()
 }
 
-func (g *Game) ApplyPowerUpBenefit(powerUp PowerUpType, playerID string) {
-	switch powerUp {
-	case Invencibilidad:
-		log.Println("Invencibilidad")
-		g.Players[playerID].Invencible = true
-	case MasBombasEnSimultaneo:
-		log.Println("Mas bombas en simultaneo")
-		g.Players[playerID].Bombs = 5
-	case AlcanceMejorado:
-		log.Println("Alcance mejorado")
-		g.Players[playerID].BombReach = BOMB_REACH_MODIFED
-	default:
-	}
-}
-
-func (g *Game) RemovePowerUpBenefit(powerUp PowerUpType, playerID string) {
-	switch powerUp {
-	case Invencibilidad:
-		log.Println("Removiendo invencibilidad")
-		g.Players[playerID].Invencible = false
-	case MasBombasEnSimultaneo:
-		log.Println("Removiendo mas bombas en simultaneo")
-		g.Players[playerID].Bombs = 1
-	case AlcanceMejorado:
-		log.Println("Removiendo alcance mejorado")
-		g.Players[playerID].BombReach = BOMB_REACH_BASE
-	default:
-	}
-}
-
 func (g *Game) assignScores() {
 	score := 12
 	for i := len(g.EliminationOrder) - 1; i >= 0; i-- {
@@ -363,7 +312,7 @@ func (g *Game) IsEmpty() bool {
 	return len(g.Players) == 0
 }
 
-func (g *Game) GetAPlayerId() string {
+func (g *Game) RandomPlayerId() string {
 	for key := range g.Players {
 		return key
 	}
@@ -487,7 +436,7 @@ func (g *Game) updatePowerUps(now time.Time) {
 			if !powerUp.StartTime.IsZero() {
 				if now.After(powerUp.ExpireTime) {
 					log.Println("PowerUp expired")
-					g.RemovePowerUpBenefit(powerUp.Name, player.ID)
+					player.RemovePowerUpBenefit(powerUp.Name)
 					player.RemovePowerUp(powerUp)
 				}
 			}
