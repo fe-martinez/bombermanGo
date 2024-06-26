@@ -21,7 +21,7 @@ const BASE_SPEED = 0
 
 const FRAME_COUNT = 3
 
-var colors = NewQueue()
+var colors = NewQueue[string]()
 
 type GameState string
 

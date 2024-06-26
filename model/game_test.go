@@ -89,10 +89,10 @@ func TestCollidesWithWalls(t *testing.T) {
 	}
 	game := NewGame("1", gameMap)
 	game.GameMap.Walls = append(game.GameMap.Walls, Wall{&Position{1, 1}, false})
-	if !game.collidesWithWalls(GameObject{Position: Position{1, 1}, Size: 55}) {
+	if !collidesWithAny(GameObject{Position: Position{1, 1}, Size: 55}, game.GameMap.Walls) {
 		t.Error("Player should collide with wall")
 	}
-	if game.collidesWithWalls(GameObject{Position: Position{2, 2}, Size: 55}) {
+	if collidesWithAny(GameObject{Position: Position{2, 2}, Size: 55}, game.GameMap.Walls) {
 		t.Error("Player should not collide with wall")
 	}
 }

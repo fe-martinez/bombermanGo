@@ -112,7 +112,6 @@ func receiveGameFromServer(conn net.Conn) (*model.Game, error) {
 
 func (c *Client) receiveLobbyID() error {
 	dec := gob.NewDecoder(c.connection)
-	//c.connection.SetReadDeadline(time.Now().Add(15 * time.Second))
 
 	for {
 		var msg utils.ServerMessage
@@ -122,10 +121,6 @@ func (c *Client) receiveLobbyID() error {
 				log.Println("No more messages to read")
 				return err
 			}
-			// if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-			// 	log.Println("Timeout waiting for lobbyID")
-			// 	return err
-			// }
 
 			log.Println("Error decoding lobby id message", err)
 			continue

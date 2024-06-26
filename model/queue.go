@@ -1,22 +1,23 @@
 package model
 
-type Queue struct {
-	items []string
+type Queue[T any] struct {
+	items []T
 }
 
-func NewQueue() *Queue {
-	return &Queue{}
+func NewQueue[T any]() *Queue[T] {
+	return &Queue[T]{}
 }
 
 // Encolar agrega un elemento al final de la cola
-func (q *Queue) Enqueue(item string) {
+func (q *Queue[T]) Enqueue(item T) {
 	q.items = append(q.items, item)
 }
 
 // Desencolar elimina y devuelve el elemento al inicio de la cola
-func (q *Queue) Dequeue() (string, bool) {
+func (q *Queue[T]) Dequeue() (T, bool) {
 	if len(q.items) == 0 {
-		return "", false
+		var zero T
+		return zero, false
 	}
 	item := q.items[0]
 	q.items = q.items[1:]

@@ -30,44 +30,28 @@ func handleInput() []string {
 	return inputs
 }
 
-func isMouseInJoinButton() bool {
-	return rl.GetMouseX() > view.JOIN_GAME_POS_X && rl.GetMouseX() < view.JOIN_GAME_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.JOIN_GAME_POS_Y && rl.GetMouseY() < view.JOIN_GAME_POS_Y+view.BUTTON_HEIGHT
-}
-
-func isMouseInCreateButton() bool {
-	return rl.GetMouseX() > view.CREATE_GAME_POS_X && rl.GetMouseX() < view.CREATE_GAME_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.CREATE_GAME_POS_Y && rl.GetMouseY() < view.CREATE_GAME_POS_Y+view.BUTTON_HEIGHT
-}
-
-func isMouseInRulesButton() bool {
-	return rl.GetMouseX() > view.RULES_POS_X && rl.GetMouseX() < view.RULES_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.RULES_POS_Y && rl.GetMouseY() < view.RULES_POS_Y+view.BUTTON_HEIGHT
-}
-
-func isMouseInControlsButton() bool {
-	return rl.GetMouseX() > view.CONTROLS_POS_X && rl.GetMouseX() < view.CONTROLS_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.CONTROLS_POS_Y && rl.GetMouseY() < view.CONTROLS_POS_Y+view.BUTTON_HEIGHT
+func isMouseInButton(buttonX int32, buttonY int32) bool {
+	return rl.GetMouseX() > buttonX && rl.GetMouseX() < buttonX+view.BUTTON_WIDTH && rl.GetMouseY() > buttonY && rl.GetMouseY() < buttonY+view.BUTTON_HEIGHT
 }
 
 func handleMainMenuInput() string {
 	if rl.IsMouseButtonDown(0) {
-		if isMouseInJoinButton() {
+		if isMouseInButton(view.JOIN_GAME_POS_X, view.JOIN_GAME_POS_Y) {
 			return "join"
-		} else if isMouseInCreateButton() {
+		} else if isMouseInButton(view.CREATE_GAME_POS_X, view.CREATE_GAME_POS_Y) {
 			return "create"
-		} else if isMouseInRulesButton() {
+		} else if isMouseInButton(view.RULES_POS_X, view.RULES_POS_Y) {
 			return "rules"
-		} else if isMouseInControlsButton() {
+		} else if isMouseInButton(view.CONTROLS_POS_X, view.CONTROLS_POS_Y) {
 			return "controls"
 		}
 	}
 	return "none"
 }
 
-func isMouseInBackButton() bool {
-	return rl.GetMouseX() > view.BACK_BUTTON_X && rl.GetMouseX() < view.BACK_BUTTON_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.BACK_BUTTON_Y && rl.GetMouseY() < view.BACK_BUTTON_Y+view.BUTTON_HEIGHT
-}
-
 func handleControlRulesInput() string {
 	if rl.IsMouseButtonDown(0) {
-		if isMouseInBackButton() {
+		if isMouseInButton(view.BACK_BUTTON_X, view.BACK_BUTTON_Y) {
 			return "back"
 		}
 	}
@@ -76,15 +60,11 @@ func handleControlRulesInput() string {
 
 func handleRulesInput() string {
 	if rl.IsMouseButtonDown(0) {
-		if isMouseInBackButton() {
+		if isMouseInButton(view.BACK_BUTTON_X, view.BACK_BUTTON_Y) {
 			return "back"
 		}
 	}
 	return "none"
-}
-
-func isMouseInBackLobbySelectionButton() bool {
-	return rl.GetMouseX() > view.LOBBY_SEL_BACK_BUTTON_X && rl.GetMouseX() < view.LOBBY_SEL_BACK_BUTTON_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.LOBBY_SEL_BACK_BUTTON_Y && rl.GetMouseY() < view.LOBBY_SEL_BACK_BUTTON_Y+view.BUTTON_HEIGHT
 }
 
 func handleLobbySelectionInput() (string, string) {
@@ -94,7 +74,7 @@ func handleLobbySelectionInput() (string, string) {
 		userInput += string(key)
 	}
 
-	if rl.IsMouseButtonDown(0) && isMouseInBackLobbySelectionButton() {
+	if rl.IsMouseButtonDown(0) && isMouseInButton(view.LOBBY_SEL_BACK_BUTTON_X, view.LOBBY_SEL_BACK_BUTTON_Y) {
 		return "back", ""
 	}
 
@@ -107,33 +87,21 @@ func handleLobbySelectionInput() (string, string) {
 	return "none", userInput
 }
 
-func isMouseInStartGameButton() bool {
-	return rl.GetMouseX() > view.START_GAME_POS_X && rl.GetMouseX() < view.START_GAME_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.START_GAME_POS_Y && rl.GetMouseY() < view.START_GAME_POS_Y+view.BUTTON_HEIGHT
-}
-
-func isMouseInLobbyBackToMenuButton() bool {
-	return rl.GetMouseX() > view.BACK_TO_MENU_POS_X && rl.GetMouseX() < view.BACK_TO_MENU_POS_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.BACK_TO_MENU_POS_Y && rl.GetMouseY() < view.BACK_TO_MENU_POS_Y+view.BUTTON_HEIGHT
-}
-
 func handleWaitingMenuInput() string {
 	if rl.IsMouseButtonDown(0) {
-		if isMouseInStartGameButton() {
+		if isMouseInButton(view.START_GAME_POS_X, view.START_GAME_POS_Y) {
 			return "start"
 		}
-		if isMouseInLobbyBackToMenuButton() {
+		if isMouseInButton(view.BACK_TO_MENU_POS_X, view.BACK_TO_MENU_POS_Y) {
 			return "back"
 		}
 	}
 	return "none"
 }
 
-func isMouseInGameOverReturnButton() bool {
-	return rl.GetMouseX() > view.RETURN_MAIN_MENU_BUTTON_X && rl.GetMouseX() < view.RETURN_MAIN_MENU_BUTTON_X+view.BUTTON_WIDTH && rl.GetMouseY() > view.RETURN_MAIN_MENU_BUTTON_Y && rl.GetMouseY() < view.RETURN_MAIN_MENU_BUTTON_Y+view.BUTTON_HEIGHT
-}
-
 func handleGameOverInput() string {
 	if rl.IsMouseButtonDown(0) {
-		if isMouseInGameOverReturnButton() {
+		if isMouseInButton(view.RETURN_MAIN_MENU_BUTTON_X, view.RETURN_MAIN_MENU_BUTTON_Y) {
 			return "return"
 		}
 	}

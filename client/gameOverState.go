@@ -15,6 +15,7 @@ func (g *GameOverState) Handle(c *Client) {
 		c.game = model.Game{}
 		c.lobbyId = ""
 		c.gameState = &MainMenuState{}
+
 	}
 
 }
