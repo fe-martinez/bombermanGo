@@ -10,18 +10,18 @@ import (
 	"log"
 	"net"
 	"os"
-	"slices"
 	"strings"
 )
 
 const SERVER_ADDRESS = "localhost:8080"
 
 type Client struct {
-	connection net.Conn
-	playerID   string
-	lobbyId    string
-	game       model.Game
-	gameState  ClientState
+	connection   net.Conn
+	playerID     string
+	lobbyId      string
+	game         model.Game
+	gameState    ClientState
+	eventEmitter *EventEmitter
 }
 
 func NewClient() *Client {
@@ -36,46 +36,13 @@ func NewClient() *Client {
 	var game model.Game
 
 	return &Client{
-		connection: connection,
-		playerID:   playerID,
-		lobbyId:    "",
-		game:       game,
-		gameState:  &MainMenuState{},
+		connection:   connection,
+		playerID:     playerID,
+		lobbyId:      "",
+		game:         game,
+		gameState:    &MainMenuState{},
+		eventEmitter: &EventEmitter{connection: connection},
 	}
-}
-
-func (c *Client) sendGameInput(input []string) {
-	if slices.Contains(input, "bomb") {
-		SendBombMessage(c.connection, c.playerID)
-	} else {
-		SendMoveMessage(input, c.connection, c.playerID)
-	}
-}
-
-func (c *Client) sendLeaveMessage() {
-	SendLeaveMessage(c.connection, c.playerID)
-}
-
-func (c *Client) sendCreateGameMessage() {
-	err := SendCreateGameMessage(c.connection, c.playerID)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
-func (c *Client) sendJoinGameMessage(lobbyID string) {
-	err := SendJoinGameMessage(c.connection, c.playerID, lobbyID)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
-func (c *Client) sendStartGameMessage() {
-	SendStartGameMessage(c.connection, c.playerID)
-}
-
-func (c *Client) sendMainMenuMessage() {
-	SendMainMenuMessage(c.connection, c.playerID)
 }
 
 func (c *Client) Start() {
@@ -85,29 +52,6 @@ func (c *Client) Start() {
 	for !view.WindowShouldClose() {
 		c.gameState.Handle(c)
 	}
-}
-
-func dial(serverAddress string) net.Conn {
-	connection, err := net.Dial("tcp", serverAddress)
-	if err != nil {
-		fmt.Println("Error connecting to server:", err)
-		os.Exit(1)
-	}
-	return connection
-}
-
-func receiveGameFromServer(conn net.Conn) (*model.Game, error) {
-	buffer := make([]byte, 9000)
-	n, err := conn.Read(buffer)
-	if err != nil {
-		return nil, fmt.Errorf("error al leer del servidor: %s", err)
-	}
-	decodedGame, err := utils.DecodeGame(buffer[:n])
-	if err != nil {
-		return nil, fmt.Errorf("error al decodificar el juego del servidor: %s", err)
-	}
-
-	return decodedGame, nil
 }
 
 func (c *Client) receiveLobbyID() error {
@@ -139,6 +83,37 @@ func (c *Client) receiveLobbyID() error {
 
 		fmt.Println("Received non-lobby ID message, action:", msg.Action)
 	}
+}
+
+func (c *Client) EmitEvent(eventType EventType, payload interface{}) error {
+	return c.eventEmitter.Emit(GameEvent{
+		Type:     eventType,
+		PlayerID: c.playerID,
+		Payload:  payload,
+	})
+}
+
+func dial(serverAddress string) net.Conn {
+	connection, err := net.Dial("tcp", serverAddress)
+	if err != nil {
+		fmt.Println("Error connecting to server:", err)
+		os.Exit(1)
+	}
+	return connection
+}
+
+func receiveGameFromServer(conn net.Conn) (*model.Game, error) {
+	buffer := make([]byte, 9000)
+	n, err := conn.Read(buffer)
+	if err != nil {
+		return nil, fmt.Errorf("error al leer del servidor: %s", err)
+	}
+	decodedGame, err := utils.DecodeGame(buffer[:n])
+	if err != nil {
+		return nil, fmt.Errorf("error al decodificar el juego del servidor: %s", err)
+	}
+
+	return decodedGame, nil
 }
 
 func updateGame(conn net.Conn, game *model.Game) error {

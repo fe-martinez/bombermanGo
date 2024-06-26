@@ -2,6 +2,7 @@ package client
 
 import (
 	"bombman/view"
+	"slices"
 )
 
 type PlayingState struct{}
@@ -12,11 +13,15 @@ func (p *PlayingState) Handle(c *Client) {
 	input := handleInput()
 
 	if len(input) > 0 {
-		c.sendGameInput(input)
+		if slices.Contains(input, "bomb") {
+			c.EmitEvent(EventPlaceBomb, "")
+		}
+
+		c.EmitEvent(EventMove, input)
 	}
 
 	if view.WindowShouldClose() {
-		c.sendLeaveMessage()
+		c.EmitEvent(EventLeave, "")
 	}
 
 	if c.game.State == "finished" {

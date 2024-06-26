@@ -17,7 +17,7 @@ func (l *LobbySelectionState) Handle(c *Client) {
 	}
 
 	if userInput != "none" && len(lobbyID) == 3 {
-		c.sendJoinGameMessage(lobbyID)
+		c.EmitEvent(EventJoinGame, lobbyID)
 		ack, err := readLobbyAcknowledgeMessage(c.connection)
 
 		if err != nil {

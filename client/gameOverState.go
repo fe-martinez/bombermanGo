@@ -11,11 +11,9 @@ func (g *GameOverState) Handle(c *Client) {
 	view.DrawGameOverScreen(c.game)
 
 	if handleGameOverInput() == "return" {
-		c.sendMainMenuMessage()
+		c.EmitEvent(EventMainMenu, "")
 		c.game = model.Game{}
 		c.lobbyId = ""
 		c.gameState = &MainMenuState{}
-
 	}
-
 }
