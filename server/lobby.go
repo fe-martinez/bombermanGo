@@ -102,7 +102,13 @@ func (l *Lobby) processInput() {
 }
 
 func (l *Lobby) BroadcastGameState() {
+	encodedGame, err := utils.EncodeGame(*l.game)
+	if err != nil {
+		log.Println("Error encoding game:", err)
+		return
+	}
+
 	for _, client := range l.clients {
-		sendGameMessageToClient(client.connection, l.game)
+		sendGameMessageToClient(client.connection, encodedGame)
 	}
 }

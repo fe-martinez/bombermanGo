@@ -99,6 +99,7 @@ func dial(serverAddress string) net.Conn {
 		fmt.Println("Error connecting to server:", err)
 		os.Exit(1)
 	}
+	connection.(*net.TCPConn).SetNoDelay(true)
 	return connection
 }
 

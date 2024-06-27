@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bombman/model"
 	"bombman/utils"
 	"encoding/gob"
 	"fmt"
@@ -29,13 +28,8 @@ func readClientMessage(conn net.Conn) (utils.ClientMessage, error) {
 	return clientMsg, nil
 }
 
-func sendGameMessageToClient(conn net.Conn, game *model.Game) {
-	encodedGame, err := utils.EncodeGame(*game)
-	if err != nil {
-		fmt.Println("Error encoding game:", err)
-		return
-	}
-	_, err = conn.Write(encodedGame)
+func sendGameMessageToClient(conn net.Conn, encodedGame []byte) {
+	_, err := conn.Write(encodedGame)
 	if err != nil {
 		fmt.Println("Error al enviar el juego al cliente:", err)
 		return
