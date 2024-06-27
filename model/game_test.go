@@ -292,7 +292,7 @@ func TestApplyPowerUpBenefit_AlcanceMejorado(t *testing.T) {
 	game.AddPlayer(player)
 
 	oldBombReach := player.BombReach
-	game.ApplyPowerUpBenefit(AlcanceMejorado, "106835")
+	player.ApplyPowerUpBenefit(AlcanceMejorado)
 
 	updatedPlayer := game.Players["106835"]
 	newBombReach := updatedPlayer.BombReach
