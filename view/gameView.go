@@ -33,6 +33,7 @@ func WindowShouldClose() bool {
 
 var (
 	once                       sync.Once
+	onceBomb				   sync.Once
 	player1Model               rl.Texture2D
 	player2Model               rl.Texture2D
 	player3Model               rl.Texture2D
@@ -42,6 +43,7 @@ var (
 	powerUpAlcanceModel        rl.Texture2D
 	powerUpMasBombasModel      rl.Texture2D
 	powerUpInvencibilidadModel rl.Texture2D
+	bombModel				   rl.Texture2D
 )
 
 func getColorFromString(colorName string) rl.Color {
@@ -115,9 +117,19 @@ func drawPlayers(game model.Game) {
 	}
 }
 
+func loadBombModel() {
+	onceBomb.Do(func() {
+		bombModel = rl.LoadTexture("./view/resources/res.png")
+	})
+}
+
 func drawBombs(game model.Game) {
+	loadBombModel()
 	for _, bomb := range game.GameMap.Bombs {
-		rl.DrawRectangle(int32(bomb.Position.X*TILE_SIZE), int32(bomb.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Maroon)
+		//rl.DrawRectangle(int32(bomb.Position.X*TILE_SIZE), int32(bomb.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Maroon)
+		sourceRect := rl.NewRectangle(float32(0), float32(0),float32(54), float32(65),)
+		position := rl.NewVector2(bomb.Position.X*TILE_SIZE, bomb.Position.Y*TILE_SIZE)
+		rl.DrawTextureRec(bombModel, sourceRect, position, rl.White)
 	}
 }
 
