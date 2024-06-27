@@ -44,12 +44,11 @@ func TestRemovePlayer(t *testing.T) {
 	}
 }
 
-// No sé por qué falla xd lol
 func TestGameIsFull(t *testing.T) {
 	player1 := NewPlayer("106835", &Position{1, 1})
-	player2 := NewPlayer("106835", &Position{1, 2})
-	player3 := NewPlayer("106835", &Position{1, 3})
-	player4 := NewPlayer("106835", &Position{1, 4})
+	player2 := NewPlayer("106836", &Position{1, 2})
+	player3 := NewPlayer("106837", &Position{1, 3})
+	player4 := NewPlayer("106838", &Position{1, 4})
 	gameMap, err := CreateMap(MAP_PATH)
 	if err != nil {
 		t.Error("Error creating game map")
@@ -66,8 +65,8 @@ func TestGameIsFull(t *testing.T) {
 
 func TestGameIsNotFull(t *testing.T) {
 	player1 := NewPlayer("106835", &Position{1, 1})
-	player2 := NewPlayer("106835", &Position{1, 2})
-	player3 := NewPlayer("106835", &Position{1, 3})
+	player2 := NewPlayer("106836", &Position{1, 2})
+	player3 := NewPlayer("106837", &Position{1, 3})
 	gameMap, err := CreateMap(MAP_PATH)
 	if err != nil {
 		t.Error("Error creating game map")
@@ -282,17 +281,25 @@ func TestApplyPowerUpBenefit_MasBombasEnSimultaneo(t *testing.T) {
 	}
 }
 
-//Hay que terminar este test
-// func TestApplyPowerUpBenefit_AlcanceMejorado(t *testing.T) {
-// 	player := NewPlayer("106835", &Position{1, 1})
-// 	gameMap, err := CreateMap(MAP_PATH)
-// 	if err != nil {
-// 		t.Error("Error creating game map")
-// 	}
-// 	game := NewGame("1", gameMap)
-// 	game.AddPlayer(player)
-// 	game.ApplyPowerUpBenefit(AlcanceMejorado, "106835")
+// Hay que terminar este test
+func TestApplyPowerUpBenefit_AlcanceMejorado(t *testing.T) {
+	player := NewPlayer("106835", &Position{1, 1})
+	gameMap, err := CreateMap(MAP_PATH)
+	if err != nil {
+		t.Error("Error creating game map")
+	}
+	game := NewGame("1", gameMap)
+	game.AddPlayer(player)
 
-// }
+	oldBombReach := player.BombReach
 
+	game.ApplyPowerUpBenefit(AlcanceMejorado, "106835")
 
+	updatedPlayer := game.Players["106835"]
+	newBombReach := updatedPlayer.BombReach
+
+	if newBombReach <= oldBombReach {
+		t.Error("Bomb reach does not increase")
+	}
+
+}
