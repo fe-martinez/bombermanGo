@@ -18,7 +18,7 @@ type Server struct {
 	clients  map[string]*Client
 }
 
-const SERVER_ADDRESS = "localhost:8080"
+const SERVER_ADDRESS = "192.168.0.2:8080"
 const GAME_SPEED = 33 * time.Millisecond
 
 func NewServer(address string, maxPlayers int) (*Server, error) {

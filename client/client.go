@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const SERVER_ADDRESS = "localhost:8080"
+const SERVER_ADDRESS = "192.168.0.2:8080"
 
 type Client struct {
 	connection   net.Conn

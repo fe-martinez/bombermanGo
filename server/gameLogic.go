@@ -21,16 +21,22 @@ var directionMap = map[string]Direction{
 }
 
 func handlePlayerAction(msg utils.ClientMessage, game *model.Game) {
+	game.Mu.RLock()
 	if game.Players[msg.ID].Lives == 0 {
 		return
 	}
+	game.Mu.RUnlock()
 
 	switch msg.Action {
 	case utils.ActionMove:
 		direction := msg.Data.([]string)
+		game.Mu.Lock()
 		movePlayer(game.Players[msg.ID], direction, game)
+		game.Mu.Unlock()
 	case utils.ActionBomb:
+		game.Mu.Lock()
 		game.PutBomb(game.Players[msg.ID])
+		game.Mu.Unlock()
 	default:
 		fmt.Println("Action unknown")
 	}

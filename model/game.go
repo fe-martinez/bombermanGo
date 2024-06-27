@@ -3,6 +3,7 @@ package model
 import (
 	"log"
 	"math"
+	"sync"
 	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -44,6 +45,7 @@ type Game struct {
 	CurrentFrame     int
 	FrameDuration    time.Duration
 	LastFrameTime    time.Time
+	Mu               sync.RWMutex
 }
 
 func initializeColors() {
