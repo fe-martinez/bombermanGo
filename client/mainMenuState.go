@@ -9,7 +9,7 @@ func (m *MainMenuState) Handle(c *Client) {
 
 	input := handleMainMenuInput()
 	if input == "create" {
-		c.sendCreateGameMessage()
+		c.EmitEvent(EventCreateGame, "")
 		c.receiveLobbyID()
 		c.gameState = &WaitingMenuState{}
 	} else if input == "join" {

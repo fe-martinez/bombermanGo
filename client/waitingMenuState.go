@@ -30,11 +30,11 @@ func (w *WaitingMenuState) Handle(c *Client) {
 	input := handleWaitingMenuInput()
 
 	if c.gameShouldStart(input) {
-		c.sendStartGameMessage()
+		c.EmitEvent(EventStartGame, "")
 	}
 
 	if input == "back" {
-		c.sendMainMenuMessage()
+		c.EmitEvent(EventMainMenu, "")
 		c.game = model.Game{}
 		c.lobbyId = ""
 		c.gameState = &MainMenuState{}

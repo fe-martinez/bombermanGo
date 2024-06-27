@@ -19,11 +19,6 @@ type GameMap struct {
 	ColumnSize int
 }
 
-type Wall struct {
-	Position       *Position
-	Indestructible bool
-}
-
 func CreateMap(filepath string) (*GameMap, error) {
 	file, err := os.Open(filepath)
 	if err != nil {

@@ -52,7 +52,7 @@ func (l *Lobby) LeavingClientIsOwner(clientID string) bool {
 
 func (l *Lobby) AsignNewOwnerId(clientID string) {
 	if !l.game.IsEmpty() {
-		l.ownerID = l.game.GetAPlayerId()
+		l.ownerID = l.game.RandomPlayerId()
 	}
 }
 

@@ -6,21 +6,21 @@ import (
 )
 
 type ClientMessage struct {
-	Action MessageAction
+	Action Action
 	Data   interface{}
 	ID     string
 }
 
-type MessageAction int
+type Action int
 
 const (
-	ActionMove       MessageAction = 0
-	ActionBomb       MessageAction = 1
-	ActionLeave      MessageAction = 2
-	ActionJoinGame   MessageAction = 3
-	ActionCreateGame MessageAction = 4
-	ActionStartGame  MessageAction = 5
-	ActionMainMenu   MessageAction = 6
+	ActionMove Action = iota
+	ActionBomb
+	ActionLeave
+	ActionJoinGame
+	ActionCreateGame
+	ActionStartGame
+	ActionMainMenu
 )
 
 func EncodeClientMessage(msg ClientMessage) ([]byte, error) {
