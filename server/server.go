@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -16,6 +17,7 @@ type Server struct {
 	listener net.Listener
 	lobbies  map[string]*Lobby
 	clients  map[string]*Client
+	mu       sync.RWMutex
 }
 
 const SERVER_ADDRESS = "192.168.0.2:8080"
@@ -138,6 +140,8 @@ func (s *Server) handleGameAction(message utils.ClientMessage, client *Client) e
 }
 
 func (s *Server) createLobby(client *Client) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	lobbyID := s.createUniqueLobbyID()
 	lobby := NewLobby(client.clientID, lobbyID)
 	lobby.AddClient(client)
@@ -153,6 +157,8 @@ func (s *Server) createLobby(client *Client) {
 }
 
 func (s *Server) joinLobby(lobbyID string, client *Client) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	lobby := s.lobbies[lobbyID]
 	if lobby == nil {
 		log.Println("Lobby", lobbyID, "not found")
@@ -164,6 +170,8 @@ func (s *Server) joinLobby(lobbyID string, client *Client) {
 }
 
 func (s *Server) disconnectClient(clientID string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	client, exists := s.clients[clientID]
 	if !exists || client == nil {
 		return

@@ -3,7 +3,6 @@ package model
 import (
 	"log"
 	"math"
-	"sync"
 	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -45,7 +44,6 @@ type Game struct {
 	CurrentFrame     int
 	FrameDuration    time.Duration
 	LastFrameTime    time.Time
-	Mu               sync.RWMutex
 }
 
 func initializeColors() {
@@ -225,6 +223,10 @@ func (g *Game) GetPlayerColors() map[string]string {
 
 func (g *Game) GetPlayerColor(id string) string {
 	return g.PlayerColors[id]
+}
+
+func (g *Game) GetPlayer(playerID string) *Player {
+	return g.Players[playerID]
 }
 
 func (g *Game) RemovePlayer(playerID string) {

@@ -121,7 +121,9 @@ func updateGame(conn net.Conn, game *model.Game) error {
 	updatedGame, err := receiveGameFromServer(conn)
 	if err != nil {
 		log.Println("Error al recibir el juego actualizado:", err)
+		return nil
 	}
+
 	*game = *updatedGame
 	return nil
 }
