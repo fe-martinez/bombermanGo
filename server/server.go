@@ -20,11 +20,10 @@ type Server struct {
 	mu       sync.RWMutex
 }
 
-const SERVER_ADDRESS = "192.168.0.2:8080"
 const GAME_SPEED = 33 * time.Millisecond
 
 func NewServer(address string, maxPlayers int) (*Server, error) {
-	listener, err := listen(SERVER_ADDRESS)
+	listener, err := listen(address)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +37,7 @@ func NewServer(address string, maxPlayers int) (*Server, error) {
 }
 
 func (s *Server) Start() {
-	log.Println("Starting game server at", SERVER_ADDRESS)
+	log.Println("Starting game server at", s.address)
 	s.handleConnections()
 }
 

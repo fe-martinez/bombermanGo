@@ -13,8 +13,6 @@ import (
 	"strings"
 )
 
-const SERVER_ADDRESS = "192.168.0.2:8080"
-
 type Client struct {
 	connection   net.Conn
 	playerID     string
@@ -24,8 +22,8 @@ type Client struct {
 	eventEmitter *EventEmitter
 }
 
-func NewClient() *Client {
-	connection := dial(SERVER_ADDRESS)
+func NewClient(address string) *Client {
+	connection := dial(address)
 	playerID, err := receivePlayerID(connection)
 	if err != nil {
 		fmt.Println("Error while receiving player id")
