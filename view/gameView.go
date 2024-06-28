@@ -44,6 +44,7 @@ var (
 	powerUpMasBombasModel      rl.Texture2D
 	powerUpInvencibilidadModel rl.Texture2D
 	bombModel				   rl.Texture2D
+	explosionModel			   rl.Texture2D
 )
 
 func getColorFromString(colorName string) rl.Color {
@@ -72,6 +73,7 @@ func loadPlayerModel() {
 		powerUpAlcanceModel = rl.LoadTexture("./view/resources/powerup_alcance.png")
 		powerUpMasBombasModel = rl.LoadTexture("./view/resources/powerup_masbombas.png")
 		powerUpInvencibilidadModel = rl.LoadTexture("./view/resources/powerup_invencibility.png")
+		explosionModel = rl.LoadTexture("./view/resources/explosion.png")
 	})
 }
 
@@ -119,7 +121,7 @@ func drawPlayers(game model.Game) {
 
 func loadBombModel() {
 	onceBomb.Do(func() {
-		bombModel = rl.LoadTexture("./view/resources/res.png")
+		bombModel = rl.LoadTexture("./view/resources/bomb.png")
 	})
 }
 
@@ -167,9 +169,11 @@ func drawWalls(game model.Game) {
 
 func drawExplosions(game model.Game) {
 	for _, explosion := range game.GameMap.Explosions {
-		rl.DrawRectangle(int32(explosion.Position.X*TILE_SIZE), int32(explosion.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Red)
+		//rl.DrawRectangle(int32(explosion.Position.X*TILE_SIZE), int32(explosion.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Red)
+		rl.DrawTexture(explosionModel, int32(explosion.Position.X*TILE_SIZE), int32(explosion.Position.Y*TILE_SIZE), rl.White)
 		for _, affectedTile := range explosion.AffectedTiles {
-			rl.DrawRectangle(int32(affectedTile.X*TILE_SIZE), int32(affectedTile.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Red)
+			//rl.DrawRectangle(int32(affectedTile.X*TILE_SIZE), int32(affectedTile.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Red)
+			rl.DrawTexture(explosionModel, int32(affectedTile.X*TILE_SIZE), int32(affectedTile.Y*TILE_SIZE), rl.White)
 		}
 	}
 }
