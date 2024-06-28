@@ -62,7 +62,7 @@ func getColorFromString(colorName string) rl.Color {
 	}
 }
 
-func loadPlayerModel() {
+func loadModels() {
 	once.Do(func() {
 		player1Model = rl.LoadTexture("./view/resources/player1.png")
 		player2Model = rl.LoadTexture("./view/resources/player2.png")
@@ -73,6 +73,7 @@ func loadPlayerModel() {
 		powerUpAlcanceModel = rl.LoadTexture("./view/resources/powerup_alcance.png")
 		powerUpMasBombasModel = rl.LoadTexture("./view/resources/powerup_masbombas.png")
 		powerUpInvencibilidadModel = rl.LoadTexture("./view/resources/powerup_invencibility.png")
+		bombModel = rl.LoadTexture("./view/resources/bomb.png")
 		explosionModel = rl.LoadTexture("./view/resources/explosion.png")
 	})
 }
@@ -106,7 +107,7 @@ func getPlayerModel(playerColor string) rl.Texture2D {
 }
 
 func drawPlayers(game model.Game) {
-	loadPlayerModel()
+	loadModels()
 	for _, player := range game.Players {
 		if player.Lives == 0 {
 			continue
@@ -119,14 +120,8 @@ func drawPlayers(game model.Game) {
 	}
 }
 
-func loadBombModel() {
-	onceBomb.Do(func() {
-		bombModel = rl.LoadTexture("./view/resources/bomb.png")
-	})
-}
-
 func drawBombs(game model.Game) {
-	loadBombModel()
+	//loadBombModel()
 	for _, bomb := range game.GameMap.Bombs {
 		//rl.DrawRectangle(int32(bomb.Position.X*TILE_SIZE), int32(bomb.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Maroon)
 		sourceRect := rl.NewRectangle(float32(0), float32(0),float32(54), float32(65),)
@@ -169,10 +164,8 @@ func drawWalls(game model.Game) {
 
 func drawExplosions(game model.Game) {
 	for _, explosion := range game.GameMap.Explosions {
-		//rl.DrawRectangle(int32(explosion.Position.X*TILE_SIZE), int32(explosion.Position.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Red)
 		rl.DrawTexture(explosionModel, int32(explosion.Position.X*TILE_SIZE), int32(explosion.Position.Y*TILE_SIZE), rl.White)
 		for _, affectedTile := range explosion.AffectedTiles {
-			//rl.DrawRectangle(int32(affectedTile.X*TILE_SIZE), int32(affectedTile.Y*TILE_SIZE), TILE_SIZE, TILE_SIZE, rl.Red)
 			rl.DrawTexture(explosionModel, int32(affectedTile.X*TILE_SIZE), int32(affectedTile.Y*TILE_SIZE), rl.White)
 		}
 	}
