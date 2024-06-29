@@ -11,6 +11,7 @@ import (
 	"net"
 	"os"
 	"strings"
+	"time"
 )
 
 type Client struct {
@@ -53,14 +54,26 @@ func (c *Client) Start() {
 }
 
 func (c *Client) receiveLobbyID() error {
+	timeout := 5 * time.Second
+	err := c.connection.SetReadDeadline(time.Now().Add(timeout))
+	if err != nil {
+		return fmt.Errorf("failed to set read deadline: %w", err)
+	}
 	dec := gob.NewDecoder(c.connection)
 
 	for {
 		var msg utils.ServerMessage
 		err := dec.Decode(&msg)
 		if err != nil {
+			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+				log.Println("Timeout while waiting for lobby ID")
+				c.connection.SetReadDeadline(time.Time{})
+				return err
+			}
+
 			if err == io.EOF {
 				log.Println("No more messages to read")
+				c.connection.SetReadDeadline(time.Time{})
 				return err
 			}
 
@@ -76,7 +89,8 @@ func (c *Client) receiveLobbyID() error {
 			}
 			c.lobbyId = strings.TrimSpace(lobbyID)
 			log.Println("Received lobby ID:", c.lobbyId)
-			return err
+			c.connection.SetReadDeadline(time.Time{})
+			return nil
 		}
 
 		fmt.Println("Received non-lobby ID message, action:", msg.Action)
@@ -127,12 +141,22 @@ func updateGame(conn net.Conn, game *model.Game) error {
 }
 
 func receivePlayerID(conn net.Conn) (string, error) {
+	timeout := 5 * time.Second
+	err := conn.SetReadDeadline(time.Now().Add(timeout))
+	if err != nil {
+		return "", fmt.Errorf("failed to set read deadline: %w", err)
+	}
 	dec := gob.NewDecoder(conn)
 
 	for {
 		var msg utils.ServerMessage
 		err := dec.Decode(&msg)
 		if err != nil {
+			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+				log.Println("Timeout while waiting for lobby ID")
+				conn.SetReadDeadline(time.Time{})
+				return "", err
+			}
 			log.Println("Error decoding player id message", err)
 			continue
 		}
@@ -145,6 +169,7 @@ func receivePlayerID(conn net.Conn) (string, error) {
 			}
 			playerIDString := strings.TrimSpace(playerID)
 			log.Println("Received playerID:", playerIDString)
+			conn.SetReadDeadline(time.Time{})
 			return playerIDString, nil
 		}
 
