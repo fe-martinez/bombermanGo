@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -16,13 +17,13 @@ type Server struct {
 	listener net.Listener
 	lobbies  map[string]*Lobby
 	clients  map[string]*Client
+	mu       sync.RWMutex
 }
 
-const SERVER_ADDRESS = "localhost:8080"
 const GAME_SPEED = 33 * time.Millisecond
 
 func NewServer(address string, maxPlayers int) (*Server, error) {
-	listener, err := listen(SERVER_ADDRESS)
+	listener, err := listen(address)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +37,7 @@ func NewServer(address string, maxPlayers int) (*Server, error) {
 }
 
 func (s *Server) Start() {
-	log.Println("Starting game server at", SERVER_ADDRESS)
+	log.Println("Starting game server at", s.address)
 	s.handleConnections()
 }
 
@@ -138,6 +139,8 @@ func (s *Server) handleGameAction(message utils.ClientMessage, client *Client) e
 }
 
 func (s *Server) createLobby(client *Client) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	lobbyID := s.createUniqueLobbyID()
 	lobby := NewLobby(client.clientID, lobbyID)
 	lobby.AddClient(client)
@@ -153,6 +156,8 @@ func (s *Server) createLobby(client *Client) {
 }
 
 func (s *Server) joinLobby(lobbyID string, client *Client) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	lobby := s.lobbies[lobbyID]
 	if lobby == nil {
 		log.Println("Lobby", lobbyID, "not found")
@@ -164,6 +169,8 @@ func (s *Server) joinLobby(lobbyID string, client *Client) {
 }
 
 func (s *Server) disconnectClient(clientID string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	client, exists := s.clients[clientID]
 	if !exists || client == nil {
 		return

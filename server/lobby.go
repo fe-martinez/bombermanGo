@@ -4,6 +4,7 @@ import (
 	"bombman/model"
 	"bombman/utils"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -16,6 +17,7 @@ type Lobby struct {
 	updates chan utils.ClientMessage
 	done    chan struct{}
 	game    *model.Game
+	mu      sync.RWMutex
 }
 
 func NewLobby(ownerID string, id string) *Lobby {
@@ -38,6 +40,8 @@ func NewLobby(ownerID string, id string) *Lobby {
 }
 
 func (l *Lobby) AddClient(client *Client) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
 	player := model.NewPlayer(client.clientID, l.game.GetPlayerPosition(len(l.game.Players)))
 	l.game.AddPlayer(player)
 	l.clients[client.clientID] = client
@@ -57,6 +61,9 @@ func (l *Lobby) AsignNewOwnerId(clientID string) {
 }
 
 func (l *Lobby) RemoveClient(client *Client) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	delete(l.clients, client.clientID)
 	l.game.RemovePlayer(client.clientID)
 	if l.LeavingClientIsOwner(client.clientID) {
@@ -102,7 +109,16 @@ func (l *Lobby) processInput() {
 }
 
 func (l *Lobby) BroadcastGameState() {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
+
+	encodedGame, err := utils.EncodeGame(*l.game)
+	if err != nil {
+		log.Println("Error encoding game:", err)
+		return
+	}
+
 	for _, client := range l.clients {
-		sendGameMessageToClient(client.connection, l.game)
+		sendGameMessageToClient(client.connection, encodedGame)
 	}
 }

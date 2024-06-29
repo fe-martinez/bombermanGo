@@ -3,11 +3,14 @@ package main
 import (
 	"bombman/client"
 	"bombman/server"
+	"encoding/json"
 	"fmt"
 	"os"
 )
 
-const SERVER_ADDRESS = "localhost:8080"
+type Config struct {
+	ServerAddress string `json:"server_address"`
+}
 
 func validateArgs() {
 	if len(os.Args) != 2 {
@@ -17,13 +20,46 @@ func validateArgs() {
 	}
 }
 
+func getConfig() Config {
+	file, err := os.Open("config.json")
+
+	if err != nil {
+		fmt.Println("Error while opening config file: ", err)
+		return Config{}
+	}
+
+	defer file.Close()
+
+	var config Config
+	err = json.NewDecoder(file).Decode(&config)
+
+	if err != nil {
+		fmt.Println("Error while decoding config file: ", err)
+		return Config{}
+	}
+
+	return config
+}
+
 func runClient() {
-	client := client.NewClient()
+	config := getConfig()
+	address := config.ServerAddress
+	if address == "" {
+		address = "localhost:8080"
+	}
+
+	client := client.NewClient(address)
 	client.Start()
 }
 
 func runServer() {
-	server, err := server.NewServer(SERVER_ADDRESS, 4)
+	config := getConfig()
+	address := config.ServerAddress
+	if address == "" {
+		address = "localhost:8080"
+	}
+
+	server, err := server.NewServer(address, 4)
 	if err != nil {
 		fmt.Println("Error while starting server: ", err)
 	}

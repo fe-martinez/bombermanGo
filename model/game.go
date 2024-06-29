@@ -225,6 +225,10 @@ func (g *Game) GetPlayerColor(id string) string {
 	return g.PlayerColors[id]
 }
 
+func (g *Game) GetPlayer(playerID string) *Player {
+	return g.Players[playerID]
+}
+
 func (g *Game) RemovePlayer(playerID string) {
 	delete(g.Players, playerID)
 	color := g.GetPlayerColor(playerID)

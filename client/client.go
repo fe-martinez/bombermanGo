@@ -13,8 +13,6 @@ import (
 	"strings"
 )
 
-const SERVER_ADDRESS = "localhost:8080"
-
 type Client struct {
 	connection   net.Conn
 	playerID     string
@@ -24,8 +22,8 @@ type Client struct {
 	eventEmitter *EventEmitter
 }
 
-func NewClient() *Client {
-	connection := dial(SERVER_ADDRESS)
+func NewClient(address string) *Client {
+	connection := dial(address)
 	playerID, err := receivePlayerID(connection)
 	if err != nil {
 		fmt.Println("Error while receiving player id")
@@ -99,6 +97,7 @@ func dial(serverAddress string) net.Conn {
 		fmt.Println("Error connecting to server:", err)
 		os.Exit(1)
 	}
+	connection.(*net.TCPConn).SetNoDelay(true)
 	return connection
 }
 
@@ -120,7 +119,9 @@ func updateGame(conn net.Conn, game *model.Game) error {
 	updatedGame, err := receiveGameFromServer(conn)
 	if err != nil {
 		log.Println("Error al recibir el juego actualizado:", err)
+		return nil
 	}
+
 	*game = *updatedGame
 	return nil
 }
