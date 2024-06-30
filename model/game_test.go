@@ -44,12 +44,11 @@ func TestRemovePlayer(t *testing.T) {
 	}
 }
 
-// No sé por qué falla xd lol
 func TestGameIsFull(t *testing.T) {
-	player1 := NewPlayer("106835", &Position{1, 1})
-	player2 := NewPlayer("106835", &Position{1, 2})
-	player3 := NewPlayer("106835", &Position{1, 3})
-	player4 := NewPlayer("106835", &Position{1, 4})
+	player1 := NewPlayer("000000", &Position{1, 1})
+	player2 := NewPlayer("111111", &Position{1, 2})
+	player3 := NewPlayer("222222", &Position{1, 3})
+	player4 := NewPlayer("333333", &Position{1, 4})
 	gameMap, err := CreateMap(MAP_PATH)
 	if err != nil {
 		t.Error("Error creating game map")

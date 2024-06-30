@@ -26,7 +26,7 @@ func TestLookForAffectedTiles(t *testing.T) {
 	if game == nil {
 		t.Error("Error creating game")
 	}
-	position := Position{1, 1}
+	position := Position{0, 0}
 	var affectedTiles = lookForAffectedTiles(*game, position, 1)
 
 	//Esta no es la condición real, cambiarla
@@ -44,7 +44,7 @@ func TestGetAffectedTiles(t *testing.T) {
 	if game == nil {
 		t.Error("Error creating game")
 	}
-	affectedTiles := getAffectedTiles(Position{1, 1}, 1, *game)
+	affectedTiles := getAffectedTiles(Position{0, 0}, 1, *game)
 	if len(affectedTiles) != 1 {
 		t.Error("Error getting affected tiles")
 	}

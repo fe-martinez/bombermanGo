@@ -37,7 +37,7 @@ func lookForAffectedTiles(game Game, position Position, radius int) []Position {
 	for _, dir := range directions {
 		for i := 1; i <= radius; i++ {
 			newPos := Position{X: position.X + float32(i)*dir.X, Y: position.Y + float32(i)*dir.Y}
-			if !game.GameMap.isUnbreakableWall(newPos) {
+			if !game.GameMap.isUnbreakableWall(newPos) && newPos.X > 0 && newPos.Y > 0  {
 				affectedTiles = append(affectedTiles, newPos)
 			} else {
 				break
